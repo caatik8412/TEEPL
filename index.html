@@ -877,19 +877,27 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
           <div class="fg"><label>Subcontractor</label><select id="wp_sub"><option>-- Select --</option></select></div>
         </div>
         <div class="form-row">
-          <div class="fg" style="flex:3">
-            <label>Activity</label>
-            <select id="wp_activity" onchange="onWPActivitySelected()" style="font-size:12px">
-              <option value="">-- Select Activity --</option>
+          <div class="fg">
+            <label>Poles Erected</label>
+            <input type="number" id="wp_poles" placeholder="0" min="0" step="1" style="width:120px" oninput="if(this.value<0)this.value=0;">
+          </div>
+          <div class="fg">
+            <label>Line Strung (KM)</label>
+            <input type="number" id="wp_kms" placeholder="0.00" min="0" step="0.01" style="width:140px" oninput="if(this.value<0)this.value=0;">
+          </div>
+          <div class="fg">
+            <label>Work Type</label>
+            <select id="wp_type" style="min-width:160px">
+              <option>Pole Erection</option>
+              <option>Line Stringing</option>
+              <option>Both</option>
+              <option>Foundation</option>
+              <option>Stay Fixing</option>
+              <option>Termination</option>
+              <option>DT Commissioning</option>
+              <option>Substation Work</option>
+              <option>Other</option>
             </select>
-          </div>
-          <div class="fg">
-            <label>Qty Done</label>
-            <input type="number" id="wp_qty" placeholder="e.g. 2.5" step="0.01" min="0" style="width:110px">
-          </div>
-          <div class="fg">
-            <label id="wp_unit_label">Unit</label>
-            <input type="text" id="wp_unit" placeholder="Per KM" readonly style="width:100px;background:var(--bg3)">
           </div>
           <div class="fg" style="flex:2">
             <label>Remarks</label>
@@ -1032,6 +1040,28 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
               <div class="fg"><label>Assigned Site</label><select id="new_sub_site"><option>-- Select --</option></select></div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="addMasterSubcon()">+ Add Subcontractor</button>
+          </div>
+        </div>
+
+        <!-- SUBCON SCOPE ALLOCATION -->
+        <div class="settings-section" style="grid-column:1/-1">
+          <div class="settings-hdr">
+            <div class="settings-hdr-title">📐 Subcontractor Scope Allocation</div>
+            <span class="badge bblue" id="scope-count">Loading...</span>
+          </div>
+          <div class="settings-list" id="scope-list"><div style="padding:20px;text-align:center"><div class="skeleton sk-r w80" style="margin:0 auto"></div></div></div>
+          <div class="settings-add-form">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Assign Scope to Subcontractor</div>
+            <div class="form-row">
+              <div class="fg" style="flex:2"><label>Subcontractor</label><select id="new_scope_sub"><option>-- Select --</option></select></div>
+              <div class="fg" style="flex:1"><label>Site</label><select id="new_scope_site"><option>-- Select --</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Allocated Poles</label><input type="number" id="new_scope_poles" placeholder="e.g. 200" min="0" style="width:120px"></div>
+              <div class="fg"><label>Allocated KMs</label><input type="number" id="new_scope_kms" placeholder="e.g. 18.5" min="0" step="0.1" style="width:120px"></div>
+              <div class="fg" style="flex:2"><label>Remarks</label><input type="text" id="new_scope_remarks" placeholder="e.g. T-07 Gondia Phase 1"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addSubconScope()">+ Assign Scope</button>
           </div>
         </div>
 
@@ -1185,7 +1215,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 // ══════════════════════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════════════════════
-const API = "https://script.google.com/macros/s/AKfycbyS-S4f8Lkq97wMomRtcj8QeN-eUybiYBTsMgabLtkPoaQ5BRPTDKTjiKsTKQRpkk5p/exec";
+const API = "https://script.google.com/macros/s/AKfycbwqvxRgnj4JNz_dNU0_jClUFnnq0UYYCK6TI0yWyWONmD5aRpq5HsgS41d0Pr0oBqUx/exec";
 
 // ══════════════════════════════════════════════════════
 //  STATE
@@ -1220,7 +1250,8 @@ let MASTERS = {
     {code:'1401A', name:'LT Line 3ph 4W AAAC 55mm2 PSC 8M Pole',           unit:'Per KM'},
     {code:'1425A', name:'LT Line 3ph 5W AAAC 55mm2 PSC 8M Pole',           unit:'Per KM'},
   ],
-  siteScope: [],
+  siteScope:    [],
+  subconScope:  [],
   bom: {}
 };
 let DASH       = null;
@@ -1372,7 +1403,7 @@ function launchApp() {
   const cd = loadCache('teepl_dashboard');
   if (cm) {
     MASTERS.items=cm.items||[]; MASTERS.sites=cm.sites||[]; MASTERS.subcons=cm.subcons||[];
-    MASTERS.activities=cm.activities||[]; MASTERS.siteScope=cm.siteScope||[]; MASTERS.bom=cm.bom||{};
+    MASTERS.activities=cm.activities||[]; MASTERS.siteScope=cm.siteScope||[]; MASTERS.subconScope=cm.subconScope||[]; MASTERS.bom=cm.bom||{};
     populateDropdowns(); renderSettingsLists(); addInitialRows();
   }
   if (cd) { DASH=cd; STOCK=cd.stock||[]; renderDashStats(cd.summary); renderDashSites(cd.sites); renderDashAlerts(cd.alerts||[]); renderDashSubcons(cd.subcons||[]); renderStockTable(STOCK,'all'); renderWPSites(cd.sites); }
@@ -1418,7 +1449,8 @@ async function loadMasters() {
     MASTERS.sites      = data.sites      && data.sites.length      ? data.sites      : MASTERS.sites;
     MASTERS.subcons    = data.subcons    && data.subcons.length    ? data.subcons    : MASTERS.subcons;
     MASTERS.activities = data.activities && data.activities.length ? data.activities : MASTERS.activities;
-    MASTERS.siteScope  = data.siteScope  && data.siteScope.length  ? data.siteScope  : MASTERS.siteScope;
+    MASTERS.siteScope    = data.siteScope    && data.siteScope.length    ? data.siteScope    : MASTERS.siteScope;
+    MASTERS.subconScope  = data.subconScope  && data.subconScope.length  ? data.subconScope  : MASTERS.subconScope;
     MASTERS.bom        = data.bom        && Object.keys(data.bom).length ? data.bom : MASTERS.bom;
     populateDropdowns();
     renderSettingsLists();
@@ -1462,6 +1494,8 @@ function populateDropdowns() {
   setOpts('i_site', sites);   setOpts('c_site', sites);  setOpts('wp_site', sites);
   setOpts('i_sub',  subcons); setOpts('c_sub',  subcons); setOpts('wp_sub',  subcons);
   setOpts('new_sub_site', sites);
+  setOpts('new_scope_sub', subcons);
+  setOpts('new_scope_site', sites);
   setOpts('sr_site', sites);  setOpts('sr_sub', subcons);
 
   // Activity dropdowns — Issue, Consumption, WorkProgress
@@ -1654,6 +1688,26 @@ function renderSettingsLists() {
       <div><div class="settings-item-name">${s.name}</div><div class="settings-item-meta">${s.contact}${s.phone ? ' · ' + s.phone : ''}${s.site ? ' · ' + s.site : ''}</div></div>
       <span class="badge borange">${s.site || '—'}</span>
     </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No subcontractors yet</div>';
+
+  // SubconScope
+  const scopeList = document.getElementById('scope-list');
+  const scopeCount = document.getElementById('scope-count');
+  const scopes = MASTERS.subconScope || [];
+  if (scopeCount) scopeCount.textContent = scopes.length + ' allocated';
+  if (scopeList) {
+    scopeList.innerHTML = scopes.length ? scopes.map(s => `
+      <div class="settings-item">
+        <div>
+          <div class="settings-item-name">${s.subcon}</div>
+          <div class="settings-item-meta">📍 ${s.site} · ${s.poles||0} poles · ${s.kms||0} KM${s.remarks?' · '+s.remarks:''}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge bok">${s.poles||0} poles</span>
+          <span class="badge bblue" style="margin-left:4px">${s.kms||0} KM</span>
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No scope allocated yet</div>';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1671,6 +1725,25 @@ async function addMasterItem() {
     document.getElementById('new_item_min').value  = '';
     await loadMasters();
   } catch(e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+async function addSubconScope() {
+  const sub     = document.getElementById('new_scope_sub').value;
+  const site    = document.getElementById('new_scope_site').value;
+  const poles   = parseInt(document.getElementById('new_scope_poles').value)||0;
+  const kms     = parseFloat(document.getElementById('new_scope_kms').value)||0;
+  const remarks = document.getElementById('new_scope_remarks').value.trim();
+  if (!sub || sub==='-- Select --') { toast('Select subcontractor','warning'); return; }
+  if (!site || site==='-- Select --') { toast('Select site','warning'); return; }
+  if (!poles && !kms) { toast('Enter poles or kms','warning'); return; }
+  try {
+    await apiPost('SubconScope', [[sub, site, poles, kms, remarks]]);
+    toast(`Scope assigned to ${sub}`, 'success');
+    document.getElementById('new_scope_poles').value   = '';
+    document.getElementById('new_scope_kms').value     = '';
+    document.getElementById('new_scope_remarks').value = '';
+    await loadMasters();
+  } catch(e) { toast('Failed: '+e.message, 'error'); }
 }
 
 async function addMasterSite() {
@@ -1834,123 +1907,100 @@ function updateAlertBadge(alerts) {
 //  WORK PROGRESS
 // ══════════════════════════════════════════════════════
 function renderWPSites(sites) {
+  const container = document.getElementById('wp-container');
   if (!sites || !sites.length) {
-    document.getElementById('wp-container').innerHTML =
-      `<div class="card" style="text-align:center;padding:40px;color:var(--text3)">
-        <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-size:14px;font-weight:600">No work progress entries yet</div>
-        <div style="font-size:12px;margin-top:6px">Add entries using the form below</div>
-      </div>`;
+    container.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:12px">📋</div>
+      <div style="font-size:14px;font-weight:600">No work progress entries yet</div>
+      <div style="font-size:12px;margin-top:6px">Add entries using the form below</div>
+    </div>`;
     return;
   }
-  document.getElementById('wp-container').innerHTML = sites.map(s => {
-    const bc = {ontrack:'bok',slow:'blow',delayed:'bout'}[s.status]||'blow';
 
-    // Activity progress rows — if available
-    let actRows = '';
-    if (s.activityProgress && s.activityProgress.length) {
-      actRows = s.activityProgress.map(a => {
-        const pct = a.pct || 0;
-        const barColor = pct>=60?'var(--green)':pct>=30?'var(--accent)':'var(--red)';
-        const statusBadge = pct>=60
-          ? `<span class="badge bok">On Track</span>`
-          : pct>=30
-          ? `<span class="badge blow">Slow</span>`
-          : `<span class="badge bout">Delayed</span>`;
-        return `<div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <div style="font-size:11px;color:var(--text2);font-weight:600">${a.activityCode} — ${a.activityName}</div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:11px;color:var(--text3)">${a.done} / ${a.scope||'?'} ${a.unit}</span>
-              ${statusBadge}
-              <span style="font-size:11px;font-weight:700;color:${barColor}">${pct}%</span>
-            </div>
-          </div>
-          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${Math.min(pct,100)}%;background:${barColor};border-radius:3px;transition:width .5s"></div>
-          </div>
-        </div>`;
-      }).join('');
-    } else {
-      // Fallback to poles/kms
-      const pc = s.polePct>=75?'var(--green)':s.polePct>=40?'var(--accent)':'var(--red)';
-      const kc = s.kmPct  >=75?'var(--green)':s.kmPct  >=40?'var(--accent)':'var(--red)';
-      actRows = `
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
-            <span style="color:var(--text2);font-weight:600">Pole Erection</span>
-            <span style="color:var(--text3)">${s.polesErected} / ${s.totalPoles} · <strong style="color:${pc}">${s.polePct}%</strong></span>
-          </div>
-          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${Math.min(s.polePct,100)}%;background:${pc};border-radius:3px"></div>
-          </div>
+  // Build subcon progress map from dashboard sites data
+  // sites[].subcons = [{name, poles, kms}]
+  const scopes = MASTERS.subconScope || [];
+
+  // Group subcon progress by subcon+site
+  const subconProgress = {}; // key = subcon|site
+  sites.forEach(s => {
+    (s.subcons || []).forEach(sc => {
+      const key = sc.name + '|' + s.site;
+      subconProgress[key] = {
+        subcon: sc.name,
+        site:   s.site,
+        done_poles: sc.poles || 0,
+        done_kms:   sc.kms   || 0
+      };
+    });
+  });
+
+  // Merge with scope allocation
+  const rows = scopes.map(scope => {
+    const key  = scope.subcon + '|' + scope.site;
+    const done = subconProgress[key] || { done_poles: 0, done_kms: 0 };
+    const polePct = scope.poles > 0 ? Math.round(done.done_poles / scope.poles * 100) : null;
+    const kmPct   = scope.kms   > 0 ? Math.round(done.done_kms   / scope.kms   * 100) : null;
+    const overallPct = (polePct !== null && kmPct !== null)
+      ? Math.round((polePct + kmPct) / 2)
+      : polePct ?? kmPct ?? 0;
+    return { ...scope, ...done, polePct, kmPct, overallPct };
+  });
+
+  // Also show subcons with progress but no scope assigned
+  Object.values(subconProgress).forEach(p => {
+    const hasScope = scopes.some(s => s.subcon === p.subcon && s.site === p.site);
+    if (!hasScope) rows.push({ ...p, poles: 0, kms: 0, polePct: null, kmPct: null, overallPct: 0, noScope: true });
+  });
+
+  if (!rows.length) {
+    container.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:12px">📐</div>
+      <div style="font-size:14px;font-weight:600">No scope allocated yet</div>
+      <div style="font-size:12px;margin-top:6px">Go to Settings → Assign Scope to Subcontractors</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = rows.map(r => {
+    const pc = (r.polePct||0) >= 75 ? 'var(--green)' : (r.polePct||0) >= 40 ? 'var(--accent)' : 'var(--red)';
+    const kc = (r.kmPct||0)   >= 75 ? 'var(--green)' : (r.kmPct||0)   >= 40 ? 'var(--accent)' : 'var(--red)';
+    const oc = (r.overallPct) >= 75 ? 'var(--green)' : (r.overallPct) >= 40 ? 'var(--accent)' : 'var(--red)';
+    const badge = r.noScope
+      ? `<span class="badge blow">No Scope Set</span>`
+      : `<span class="badge ${r.overallPct>=75?'bok':r.overallPct>=40?'blow':'bout'}">${r.overallPct}% overall</span>`;
+
+    const poleRow = r.poles > 0 ? `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span style="color:var(--text2);font-weight:600">🏗 Poles Erected</span>
+          <span style="color:var(--text3)">${r.done_poles} / ${r.poles} poles &nbsp;<strong style="color:${pc}">${r.polePct}%</strong></span>
         </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
-            <span style="color:var(--text2);font-weight:600">Line Stringing</span>
-            <span style="color:var(--text3)">${fmtKm(s.kmsStrung)} / ${s.totalKms} km · <strong style="color:${kc}">${s.kmPct}%</strong></span>
-          </div>
-          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${Math.min(s.kmPct,100)}%;background:${kc};border-radius:3px"></div>
-          </div>
-        </div>`;
-    }
+        <div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(r.polePct||0,100)}%;background:${pc};border-radius:4px;transition:width .5s"></div>
+        </div>
+      </div>` : r.done_poles ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">🏗 ${r.done_poles} poles erected (no scope set)</div>` : '';
+
+    const kmRow = r.kms > 0 ? `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span style="color:var(--text2);font-weight:600">⚡ Line Strung</span>
+          <span style="color:var(--text3)">${r.done_kms} / ${r.kms} KM &nbsp;<strong style="color:${kc}">${r.kmPct}%</strong></span>
+        </div>
+        <div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(r.kmPct||0,100)}%;background:${kc};border-radius:4px;transition:width .5s"></div>
+        </div>
+      </div>` : r.done_kms ? `<div style="font-size:11px;color:var(--text3)">⚡ ${r.done_kms} KM strung (no scope set)</div>` : '';
 
     return `<div class="wp-site">
       <div class="wp-hdr">
-        <div class="wp-name">📍 ${s.site}${s.contractNo?' <span style="font-size:11px;color:var(--text3);font-weight:400">'+s.contractNo+'</span>':''}</div>
-        <span class="badge ${bc}">${s.overallPct}% overall</span>
+        <div class="wp-name">👷 ${r.subcon} <span style="font-size:11px;color:var(--text3);font-weight:400">— 📍 ${r.site}</span></div>
+        ${badge}
       </div>
-      <div style="padding:12px 0">${actRows}</div>
+      <div style="padding:10px 0">${poleRow}${kmRow}</div>
     </div>`;
   }).join('');
 }
-
-// ── WORK PROGRESS RECENT ENTRIES ────────────────────────
-async function loadWPRecent() {
-  const el = document.getElementById('wp-recent');
-  if (!el) return;
-  try {
-    const vouchers = await apiFetch({action:'recent', sheet:'WorkProgress'});
-    if (!vouchers.length) {
-      el.innerHTML='<p style="padding:16px;color:var(--text3);font-size:12px;text-align:center">No entries yet</p>';
-      return;
-    }
-    let h = `<table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:var(--bg3)">
-        <th style="padding:8px;text-align:left">Date</th>
-        <th style="padding:8px;text-align:left">Site</th>
-        <th style="padding:8px;text-align:left">Subcontractor</th>
-        <th style="padding:8px;text-align:left">Activity</th>
-        <th style="padding:8px;text-align:center">Qty Done</th>
-        <th style="padding:8px;text-align:center">Unit</th>
-      </tr></thead><tbody>`;
-    // WP entries come as individual rows not grouped
-    const rows = await apiFetch({action:'recent', sheet:'WorkProgress'});
-    // Handle both grouped and flat responses
-    const entries = Array.isArray(rows) && rows[0] && rows[0].items
-      ? rows.flatMap(v => v.items.map(i=>({...i, date:v.date, voucher:v.voucher})))
-      : rows;
-    entries.slice(0,20).forEach((r,i) => {
-      const bg = i%2===0?'var(--bg2)':'var(--bg3)';
-      if (Array.isArray(r)) {
-        // flat row: [date,site,subcon,actCode,actName,qty,unit,remarks]
-        h+=`<tr style="background:${bg}">
-          <td style="padding:7px 8px;color:var(--text3)">${r[0]||''}</td>
-          <td style="padding:7px 8px">${r[1]||''}</td>
-          <td style="padding:7px 8px">${r[2]||''}</td>
-          <td style="padding:7px 8px;font-weight:600">${r[3]||''} — ${r[4]||''}</td>
-          <td style="padding:7px 8px;text-align:center;font-family:var(--mono);font-weight:700;color:var(--green)">${r[5]||''}</td>
-          <td style="padding:7px 8px;text-align:center;color:var(--text3)">${r[6]||''}</td>
-        </tr>`;
-      }
-    });
-    el.innerHTML = h + '</tbody></table>';
-  } catch(e) {
-    el.innerHTML = `<p style="padding:12px;color:var(--red);font-size:12px">Error: ${e.message}</p>`;
-  }
-}
-
 
 function onWPActivitySelected() {
   const sel = document.getElementById('wp_activity');
@@ -1965,28 +2015,26 @@ async function saveWorkProgress() {
   const st = document.getElementById('wp-status');
   st.textContent = 'Saving...'; st.style.color = 'var(--text3)';
 
-  const actSel  = document.getElementById('wp_activity');
-  const actCode = actSel ? actSel.value : '';
-  const actName = actSel ? actSel.options[actSel.selectedIndex].text.replace(/^\S+ — /,'') : '';
-  const qty     = parseFloat(document.getElementById('wp_qty').value) || 0;
-  const unit    = document.getElementById('wp_unit').value || '';
+  const poles   = parseFloat(document.getElementById('wp_poles')?.value) || 0;
+  const kms     = parseFloat(document.getElementById('wp_kms')?.value)   || 0;
+  const wtype   = document.getElementById('wp_type')?.value   || 'Both';
   const site    = document.getElementById('wp_site').value;
   const sub     = document.getElementById('wp_sub').value;
   const date    = document.getElementById('wp_date').value;
   const remarks = document.getElementById('wp_remarks').value;
 
   if (!site || site === '-- Select --') { toast('Select a site','warning'); st.textContent=''; return; }
-  if (!actCode) { toast('Select an activity','warning'); st.textContent=''; return; }
-  if (!qty) { toast('Enter quantity done','warning'); st.textContent=''; return; }
+  if (!poles && !kms) { toast('Enter poles erected or kms strung','warning'); st.textContent=''; return; }
 
-  // New format: Date, Site, Subcon, ActivityCode, ActivityName, QtyDone, Unit, Remarks
-  const row = [date, site, sub, actCode, actName, qty, unit, remarks];
+  // Format: Date, Site, Subcon, WorkType, PolesErected, KmsStrung, Remarks
+  const row = [date, site, sub, wtype, poles, kms, remarks];
 
   try {
     await apiPost('WorkProgress', [row]);
     st.textContent = '✓ Saved'; st.style.color = 'var(--green)';
     toast('Work progress saved','success');
-    document.getElementById('wp_qty').value = '';
+    if (document.getElementById('wp_poles')) document.getElementById('wp_poles').value = '';
+    if (document.getElementById('wp_kms'))   document.getElementById('wp_kms').value   = '';
     document.getElementById('wp_remarks').value = '';
     REPORT_DATA = null;
     loadWPRecent();
