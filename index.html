@@ -1185,7 +1185,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 // ══════════════════════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════════════════════
-const API = "https://script.google.com/macros/s/AKfycbwvQItiNQNIRK1rViEwIMOYU612Ybhr5DE9eotF-wExgV9KBQhIJcY1k-h8UTRu0QCr/exec";
+const API = "https://script.google.com/macros/s/AKfycbz9C6ccAKyr1G0R28o9w5Cf5AQg0fEmrL5wpxFRQuyMQMNVzph_fxzfTWx3Qvd3bRwH/exec";
 
 // ══════════════════════════════════════════════════════
 //  STATE
@@ -2299,9 +2299,13 @@ function autoUnit(sel) {
 
 function getStockQty(item, location) {
   if (!item || !STOCK.length) return null;
-  const loc = location || 'Main Store';
-  const s = STOCK.find(r => r.item === item && r.location === loc);
-  return s ? s.qty : 0;
+  const s = STOCK.find(r => r.item === item);
+  if (!s) return 0;
+  const loc = (location || 'Main Store').trim();
+  // STOCK structure: { item, main, sites:{siteName:qty}, total }
+  if (loc === 'Main Store') return s.main || 0;
+  if (s.sites && s.sites[loc] !== undefined) return s.sites[loc] || 0;
+  return 0;
 }
 
 function updateStockBadge(sel, type) {
