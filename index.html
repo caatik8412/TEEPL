@@ -335,8 +335,7 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
       <h3 style="font-size:15px; font-weight:600;" id="modal-title">Confirm Transaction Entry</h3>
       <button style="background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px;" onclick="closeConfirmModal()">✕</button>
     </div>
-    <div class="modal-body" id="modal-summary-content">
-      </div>
+    <div class="modal-body" id="modal-summary-content"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeConfirmModal()">Cancel</button>
       <button class="btn btn-primary" id="modal-save-btn">Confirm & Save</button>
@@ -779,7 +778,7 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
         </div>
 
         <div class="settings-section">
-          <div class="settings-hdr"><div class="settings-hdr-title">导 Subcontractor Master</div><span class="badge borange" id="subcon-count">Loading...</span></div>
+          <div class="settings-hdr"><div class="settings-hdr-title">👷 Subcontractor Master</div><span class="badge borange" id="subcon-count">Loading...</span></div>
           <div class="settings-list" id="subcon-list"></div>
           <div class="settings-add-form">
             <div class="form-row">
@@ -816,6 +815,20 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
 </div>
 </div>
 
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3 style="font-size:15px; font-weight:600;" id="modal-title">Confirm Transaction Entry</h3>
+      <button style="background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px;" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-summary-content"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn">Confirm & Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
@@ -830,13 +843,15 @@ let DASH = null; let STOCK = []; let LEDGER = []; let activeSite = 'all';
 let isDirectorView = false; let activeSaveType = null;
 
 // ══════════════════════════════════════════════════════
-//  PRELOADING ENGINE & LAUNCH INITIALIZATION
+//  PRELOADING ENGINE & SECURE GATE LIFECYCLE
 // ══════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
   applyTheme();
-  // Start pipeline operations transparently in background immediately
+  
+  // Rule 1: Always trigger data preload right away silently in the background
   const preloader = tryLoadFromCache() ? Promise.resolve() : forceBackgroundFetch();
   
+  // Rule 2: Strictly verify session presence before deciding to skip the lock gate
   const saved = sessionStorage.getItem(SESSION_KEY);
   if (saved) {
     try {
@@ -848,6 +863,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } catch(e) {}
   }
+  
+  // Rule 3: If no valid running session exists, halt execution flow natively at the gate lock canvas
   preloader.then(() => runSplash(() => showGate()));
 });
 
@@ -877,7 +894,7 @@ async function forceBackgroundFetch() {
     STOCK = DASH.stock || [];
     localStorage.setItem(CACHE_KEY, JSON.stringify({ masters: MASTERS, dash: DASH }));
     localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
-  } catch(e) { console.error("Preload network cycle dropped.", e); }
+  } catch(e) { console.error("Background trace failed.", e); }
 }
 
 function runSplash(callback, fast=false) {
@@ -894,7 +911,11 @@ function runSplash(callback, fast=false) {
   }, fast ? 10 : 25);
 }
 
-function showGate() { document.getElementById('access-gate').style.display = 'flex'; }
+function showGate() { 
+  document.getElementById('company-landing').style.display = 'none';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('access-gate').style.display = 'flex'; 
+}
 
 // ══════════════════════════════════════════════════════
 //  ACCESS CONTROL & SCREEN ROUTING
@@ -948,7 +969,6 @@ function launchApp() {
   document.getElementById('main-app').style.display = 'flex';
   document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   
-  // Dynamic application profile enforcement based on view levels
   if (isDirectorView) {
     document.getElementById('sidebar-brand-name').textContent = "TEEPL [READ]";
     document.getElementById('sidebar-brand-sub').textContent = "Director View — Read Only";
@@ -970,7 +990,6 @@ function launchApp() {
   renderSettingsLists();
   setToday();
   
-  // Since metrics pre-fetched seamlessly in background, skip heavy re-draw loading phases
   renderDashStats(DASH.summary);
   renderDashSites(DASH.sites);
   renderDashAlerts(DASH.alerts);
@@ -1035,7 +1054,6 @@ function selectSearchItem(rowEl, name, unit) {
   hidden.value = name;
   resultsBox.style.display = 'none';
   
-  // Cascade downstream logic automatically updating conversion unit markers
   const tr = container.closest('tr');
   if(tr) {
     const unitSelect = tr.querySelector('td:nth-child(4) select');
@@ -1046,7 +1064,6 @@ function selectSearchItem(rowEl, name, unit) {
   }
 }
 
-// Close dropdowns contextually on external clicks
 document.addEventListener('click', (e) => {
   if(!e.target.classList.contains('searchable-input')) {
     document.querySelectorAll('.search-results-box').forEach(box => box.style.display = 'none');
@@ -1102,7 +1119,6 @@ function triggerSaveConfirmation(type) {
   document.getElementById('modal-summary-content').innerHTML = summaryTable;
   document.getElementById('confirm-modal').style.display = 'flex';
   
-  // Bind commitment pipeline to confirm element button mapping
   document.getElementById('modal-save-btn').onclick = executeCommitSave;
 }
 
@@ -1150,7 +1166,6 @@ async function executeCommitSave() {
     st.textContent='✓ Processed';
     toast('Cloud write execution confirmed.', 'success');
     
-    // INTEGRATED STEP: Auto-print dialog window instantiates instantly without interaction
     const printMapping = { purchase: 'Purchase', transfer: 'Transfer', issue: 'Issue', consumption: 'Consumption', returns: 'Returns', subconreturn: 'SubconReturn' };
     printVoucher(printMapping[type]);
     
@@ -1180,7 +1195,6 @@ async function saveWorkProgressSimplified() {
   if (!site || site === '-- Select --') { toast('Select a target installation site.', 'warning'); st.textContent=''; return; }
   if (poles === 0 && kms === 0) { toast('Provide either poles or KM structural indices.', 'warning'); st.textContent=''; return; }
 
-  // Flat structural row geometry mapping cleanly to core operational master sheet loops
   const dataRow = [date, site, sub, workType, poles, kms, remarks];
 
   try {
@@ -1285,7 +1299,7 @@ function renderDashSites(sites) {
 }
 function renderDashAlerts(a) { document.getElementById('dash-alerts').innerHTML = 'All physical parameter checks within design profiles.'; }
 function renderDashActivity(a) { document.getElementById('dash-activity').innerHTML = 'Analytical matrix monitoring ongoing.'; }
-function renderDashSubcons(s) { document.getElementById('dash-subcons').innerHTML = 'All subcontractor parameters cleanly bound to core matrix loop trackers.'; }
+function renderDashSubcons(s) { document.getElementById('dash-subcons').innerHTML = 'All subcontractor parameters cleanly bound to core operational master sheet loops.'; }
 
 function renderStockTable(data, site) {
   if(!data) return;
@@ -1337,7 +1351,7 @@ function val(id) { return document.getElementById(id)?.value || ''; }
 
 function printVoucher(type) {
   const w = window.open('about:blank', '_blank');
-  w.document.write(`<html><body><h2>TEEPL Inventory Management Engine — Document Manifest</h2><p>Transaction Class: ${type}</p><p>Timestamp: ${new Date().toLocaleString()}</p></body></html>`);
+  w.document.write(`<html><head><style>${printStyles()}</style></head><body><h2>TEEPL Inventory Management Engine — Document Manifest</h2><p>Transaction Class: ${type}</p><p>Timestamp: ${new Date().toLocaleString()}</p></body></html>`);
   w.document.close();
   w.print();
 }
