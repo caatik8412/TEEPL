@@ -101,6 +101,8 @@ body.light .nbadge{background:rgba(248,81,73,.2);color:#f87171;}
 body.light input,body.light select,body.light textarea{background:#fff;border-color:rgba(0,0,0,.15);color:#1a1f2e;}
 body.light thead th{background:#1e2a38;color:#fff;}
 body.light .skeleton{background:linear-gradient(90deg,#e2e8f0 25%,#cbd5e0 50%,#e2e8f0 75%);background-size:200% 100%;}
+body.light .gate{background:#f4f6f9;}
+body.light .gate-box{background:#fff;border-color:rgba(0,0,0,.12);}
 body.light .gate-input{background:#f4f6f9;border-color:rgba(0,0,0,.15);color:#1a1f2e;}
 body.light .wp-site{background:#fff;border-color:rgba(0,0,0,.08);}
 body.light .wp-metric{background:#f0f2f5;}
@@ -362,19 +364,24 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;}
 
 /* ── ACCESS GATE ── */
-.gate{position:fixed;inset:0;background:#f4f6f9;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;}
-.gate-box{background:#ffffff;border:1px solid rgba(0,0,0,.1);border-radius:var(--radius-lg);padding:36px 40px;width:100%;max-width:380px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;}
+.gate-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:36px 40px;width:100%;max-width:380px;text-align:center;}
 .gate-brand{font-size:28px;font-weight:700;color:var(--accent);letter-spacing:-1px;margin-bottom:4px;}
-.gate-sub{font-size:12px;color:#888;margin-bottom:28px;}
-.gate-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;text-align:left;margin-bottom:6px;}
-.gate-input{width:100%;background:#f4f6f9;border:1px solid #ddd;color:#1a1f2e;border-radius:var(--radius);padding:10px 14px;font-size:15px;font-family:var(--mono);letter-spacing:3px;text-align:center;height:44px;margin-bottom:14px;box-sizing:border-box;}
+.gate-sub{font-size:12px;color:var(--text3);margin-bottom:28px;}
+.gate-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;text-align:left;margin-bottom:6px;}
+.gate-input{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius);padding:10px 14px;font-size:15px;font-family:var(--mono);letter-spacing:3px;text-align:center;height:44px;margin-bottom:14px;}
 .gate-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(240,136,62,.15);}
 .gate-btn{width:100%;background:var(--accent);border:none;color:#fff;border-radius:var(--radius);padding:11px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:background .15s;}
 .gate-btn:hover{background:#e07930;}
 .gate-btn:disabled{opacity:.5;cursor:not-allowed;}
 .gate-error{font-size:12px;color:var(--red);margin-top:10px;min-height:18px;}
-.gate-footer{font-size:11px;color:#999;margin-top:20px;line-height:1.6;}
-.gate-footer strong{color:#444;}
+.gate-footer{font-size:11px;color:var(--text3);margin-top:20px;line-height:1.6;}
+.gate-footer strong{color:var(--text2);}
+.gate-expired{text-align:center;}
+.gate-expired .exp-icon{font-size:40px;margin-bottom:12px;}
+.gate-expired h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.gate-expired p{font-size:13px;color:var(--text3);margin-bottom:4px;}
+.gate-expired .contact{font-size:14px;font-weight:600;color:var(--accent);margin-top:12px;}
 
 @media(max-width:900px){
   .sidebar{transform:translateX(-100%);}
@@ -487,12 +494,24 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 </head>
 <body>
 <!-- ═══════════ SPLASH SCREEN ═══════════ -->
-<!-- ═══════════ LANDING PAGE ═══════════ -->
-<!-- ═══ ACCESS GATE ═══ -->
+<div id="splash" style="position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .5s ease;">
+  <div style="text-align:center;">
+    <div style="width:72px;height:72px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Arial;">T</div>
+    <div style="font-size:28px;font-weight:700;color:#fff;font-family:'DM Sans',Arial;letter-spacing:-0.5px;">CA AB Tracking System</div>
+    <div style="font-size:13px;color:#6e7681;margin-top:6px;font-family:'DM Sans',Arial;">Inventory & Site Management</div>
+    <div style="margin-top:32px;width:180px;height:3px;background:#21262d;border-radius:3px;overflow:hidden;margin-left:auto;margin-right:auto;">
+      <div id="splash-bar" style="height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width .1s linear;"></div>
+    </div>
+    <div style="font-size:11px;color:#444;margin-top:10px;font-family:'DM Sans',Arial;" id="splash-msg">Initialising...</div>
+  </div>
+  <div style="position:absolute;bottom:24px;font-size:11px;color:#444;font-family:'DM Sans',Arial;">CA Atik Bhayani · +91 7057164441</div>
+</div>
+
+<!-- ═══════════ ACCESS GATE ═══════════ -->
 <div class="gate" id="access-gate">
   <div class="gate-box">
     <div class="gate-brand">TEEPL</div>
-    <div class="gate-sub">Material Control System</div>
+    <div class="gate-sub">Inventory & Site Management System</div>
     <div class="gate-label">Enter Access Code</div>
     <input class="gate-input" id="gate-code" type="password" placeholder="••••••••" maxlength="20"
       onkeydown="if(event.key==='Enter')verifyAccess()">
@@ -500,8 +519,8 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
     <div class="gate-error" id="gate-error"></div>
     <div class="gate-footer">
       <strong>Thakur Electricals and Engineers Pvt Ltd</strong><br>
-      Sita Rudal Sadan, Juni Mill Compound, Solapur<br>
-      <span style="font-size:11px;opacity:.7">Powered by CA Atik Bhayani &middot; +91 7057164441</span>
+      
+      CA Atik Bhayani · +91 7057164441
     </div>
   </div>
 </div>
@@ -858,27 +877,19 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
           <div class="fg"><label>Subcontractor</label><select id="wp_sub"><option>-- Select --</option></select></div>
         </div>
         <div class="form-row">
-          <div class="fg">
-            <label>Poles Erected</label>
-            <input type="number" id="wp_poles" placeholder="0" min="0" step="1" style="width:120px">
-          </div>
-          <div class="fg">
-            <label>Line Strung (KM)</label>
-            <input type="number" id="wp_kms" placeholder="0.00" min="0" step="0.01" style="width:140px">
-          </div>
-          <div class="fg">
-            <label>Work Type</label>
-            <select id="wp_type" style="min-width:160px">
-              <option>Pole Erection</option>
-              <option>Line Stringing</option>
-              <option>Both</option>
-              <option>Foundation</option>
-              <option>Stay Fixing</option>
-              <option>Termination</option>
-              <option>DT Commissioning</option>
-              <option>Substation Work</option>
-              <option>Other</option>
+          <div class="fg" style="flex:3">
+            <label>Activity</label>
+            <select id="wp_activity" onchange="onWPActivitySelected()" style="font-size:12px">
+              <option value="">-- Select Activity --</option>
             </select>
+          </div>
+          <div class="fg">
+            <label>Qty Done</label>
+            <input type="number" id="wp_qty" placeholder="e.g. 2.5" step="0.01" min="0" style="width:110px">
+          </div>
+          <div class="fg">
+            <label id="wp_unit_label">Unit</label>
+            <input type="text" id="wp_unit" placeholder="Per KM" readonly style="width:100px;background:var(--bg3)">
           </div>
           <div class="fg" style="flex:2">
             <label>Remarks</label>
@@ -1223,124 +1234,110 @@ let activeSite = 'all';
 // ══════════════════════════════════════════════════════
 //  ACCESS GATE
 // ══════════════════════════════════════════════════════
-const SESSION_KEY   = 'teepl_access';
-const CACHE_EXPIRY  = 5 * 60 * 1000;
-const DIRECTOR_CODE = 'THAKUR@123';
-let USER_ROLE = 'operations';
+const SESSION_KEY = 'teepl_access';
 
-function saveCache(key, data) {
-  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+// ══════════════════════════════════════════════════════
+//  SPLASH SCREEN
+// ══════════════════════════════════════════════════════
+function runSplash(callback, fast=false) {
+  const bar  = document.getElementById('splash-bar');
+  const msg  = document.getElementById('splash-msg');
+  const msgs = ['Initialising...','Loading system...','Almost ready...'];
+  let pct = 0, mi = 0;
+  const step = fast ? 20 : 5;   // fast = skip animation for returning users
+  const delay= fast ? 10 : 20;
+  const iv = setInterval(() => {
+    pct += step;
+    if (bar) bar.style.width = Math.min(pct, 100) + '%';
+    if (msg && pct % 34 === 0 && mi < msgs.length) { msg.textContent = msgs[mi++]; }
+    if (pct >= 100) {
+      clearInterval(iv);
+      const splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; callback(); }, fast ? 150 : 400);
+      } else {
+        callback();
+      }
+    }
+  }, delay);
 }
-function loadCache(key) {
-  try {
-    const c = JSON.parse(localStorage.getItem(key) || 'null');
-    if (c && Date.now() - c.ts < CACHE_EXPIRY) return c.data;
-  } catch(e) {}
-  return null;
+
+function showGate() {
+  document.getElementById('access-gate').style.display = 'flex';
+  setTimeout(() => document.getElementById('gate-code').focus(), 100);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const gate = document.getElementById('access-gate');
   const saved = sessionStorage.getItem(SESSION_KEY);
   if (saved) {
     try {
       const s = JSON.parse(saved);
       if (s.valid && new Date(s.expiry) > new Date()) {
-        USER_ROLE = s.role || 'operations';
-        if(gate) gate.style.display = 'none';
-        launchApp();
+        // Valid session — fast splash then launch
+        runSplash(() => launchApp(), true);
         return;
       }
     } catch(e) {}
   }
-  if(gate) gate.style.display = 'flex';
-  setTimeout(() => { const i = document.getElementById('gate-code'); if(i) i.focus(); }, 100);
-});
+  // No valid session — normal splash then gate
+  runSplash(() => showGate());
+}); // end DOMContentLoaded
 
 async function verifyAccess() {
-  const inp    = document.getElementById('gate-code');
-  const btn    = document.getElementById('gate-btn');
-  const errEl  = document.getElementById('gate-error');
-  const raw    = (inp ? inp.value : '').trim();
-  const code   = raw.toUpperCase();
-  if (!code) { if(errEl) errEl.textContent='Please enter your access code.'; return; }
-  if(btn)   { btn.disabled=true; btn.textContent='Verifying...'; }
-  if(errEl)   errEl.textContent='';
+  const code  = document.getElementById('gate-code').value.trim().toUpperCase();
+  const btn   = document.getElementById('gate-btn');
+  const errEl = document.getElementById('gate-error');
+  if (!code) { errEl.textContent = 'Please enter your access code.'; return; }
 
-  if (code === DIRECTOR_CODE.toUpperCase()) {
-    USER_ROLE = 'director';
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({valid:true,client:'TEEPL',expiry:'2099-12-31',role:'director'}));
-    document.getElementById('access-gate').style.display='none';
-    launchApp(); return;
-  }
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  errEl.textContent = '';
 
-  // Known operations codes — bypass API for reliability
-  const OPS_CODES = ['TEEPL@2026','ATIK@8412','TEEPL2026'];
-  if (OPS_CODES.includes(code)) {
-    USER_ROLE = 'operations';
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({valid:true,client:'TEEPL',expiry:'2099-12-31',role:'operations'}));
-    document.getElementById('access-gate').style.display='none';
-    launchApp(); return;
-  }
   try {
-    const res  = await fetch(API+'?'+new URLSearchParams({action:'validateAccess',code:raw}));
+    const res = await fetch(API + '?' + new URLSearchParams({ action:'validateAccess', code }));
     const data = await res.json();
+
     if (data.valid) {
-      USER_ROLE = 'operations';
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({valid:true,client:data.client,expiry:data.expiry,role:'operations'}));
-      document.getElementById('access-gate').style.display='none';
+      // Save to session so they don't have to re-enter on refresh
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        valid: true, client: data.client, expiry: data.expiry
+      }));
       launchApp();
-    } else if (data.reason==='expired') {
-      if(errEl){errEl.style.color='var(--yellow)';errEl.textContent='Subscription expired. Contact CA Atik Bhayani: +91 7057164441';}
-      if(btn){btn.disabled=false;btn.textContent='Access System';}
+    } else if (data.reason === 'expired') {
+      document.getElementById('access-gate').innerHTML = `
+        <div class="gate-box gate-expired">
+          <div class="exp-icon">🔒</div>
+          <h3>Subscription Expired</h3>
+          <p>Your access period has ended.</p>
+          <p>Please renew your subscription to continue.</p>
+          <div class="contact">Contact your system administrator</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:16px">Powered by TEEPL Inventory Management</div>
+        </div>`;
     } else {
-      if(errEl) errEl.textContent='Invalid access code. Contact CA Atik Bhayani: +91 7057164441';
-      if(inp){inp.value='';inp.focus();}
-      if(btn){btn.disabled=false;btn.textContent='Access System';}
+      errEl.textContent = 'Invalid access code. Contact CA Atik Bhayani: +91 7057164441';
+      document.getElementById('gate-code').value = '';
+      document.getElementById('gate-code').focus();
+      btn.disabled = false;
+      btn.textContent = 'Access System';
     }
   } catch(e) {
-    if(errEl) errEl.textContent='Connection error — check internet and try again.';
-    if(btn){btn.disabled=false;btn.textContent='Access System';}
+    errEl.textContent = 'Connection error — please check internet and try again.';
+    btn.disabled = false;
+    btn.textContent = 'Access System';
   }
 }
 
 function launchApp() {
-  document.getElementById('access-gate').style.display='none';
-  document.getElementById('main-app').style.display='flex';
-  const d=document.getElementById('top-date');
-  if(d) d.textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-  applyRole(USER_ROLE);
+  // Always hide splash and gate
+  const splash = document.getElementById('splash');
+  if (splash) { splash.style.opacity = '0'; splash.style.display = 'none'; }
+  document.getElementById('access-gate').style.display = 'none';
+  document.getElementById('main-app').style.display    = 'flex';
+  document.getElementById('top-date').textContent =
+    new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   setToday();
-  const cm=loadCache('teepl_masters'), cd=loadCache('teepl_dashboard');
-  if(cm){MASTERS.items=cm.items||[];MASTERS.sites=cm.sites||[];MASTERS.subcons=cm.subcons||[];MASTERS.activities=cm.activities||[];MASTERS.siteScope=cm.siteScope||[];MASTERS.bom=cm.bom||{};populateDropdowns();renderSettingsLists();addInitialRows();}
-  if(cd){DASH=cd;STOCK=cd.stock||[];renderDashboard(DASH);}
-  loadMasters(); loadDashboard();
-}function applyRole(role) {
-  const isDirector = role === 'director';
-  if (!isDirector) return; // operations — show everything, nothing to hide
-
-  // Hide transaction nav buttons for director
-  document.querySelectorAll('.nb').forEach(btn => {
-    const oc = btn.getAttribute('onclick') || '';
-    const hide = ['purchase','transfer','issue','consumption','returns','subconreturn','settings','workprogress']
-      .some(t => oc.includes("'"+t+"'") || oc.includes('"'+t+'"'));
-    if (hide) btn.style.display = 'none';
-  });
-
-  // Update sidebar sub-brand
-  const sub = document.querySelector('.brand-sub');
-  if (sub) sub.textContent = 'Director View — Read Only';
-
-  // Add switch user button
-  const foot = document.querySelector('.sid-foot');
-  if (foot && !document.getElementById('logout-btn')) {
-    const btn = document.createElement('button');
-    btn.id = 'logout-btn';
-    btn.textContent = '🔄 Switch User';
-    btn.style.cssText = 'margin-top:10px;width:100%;padding:7px;background:rgba(240,136,62,.15);border:1px solid rgba(240,136,62,.3);color:var(--accent);border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--font);';
-    btn.onclick = () => { sessionStorage.clear(); location.reload(); };
-    foot.prepend(btn);
-  }
+  loadMasters().then(() => loadDashboard());
 }
 
 function setToday() {
@@ -1377,7 +1374,6 @@ async function getVoucher(sheet) {
 async function loadMasters() {
   try {
     const data = await apiFetch({ action:'masters' });
-    saveCache('teepl_masters', data);
     MASTERS.items      = data.items      && data.items.length      ? data.items      : MASTERS.items;
     MASTERS.sites      = data.sites      && data.sites.length      ? data.sites      : MASTERS.sites;
     MASTERS.subcons    = data.subcons    && data.subcons.length    ? data.subcons    : MASTERS.subcons;
@@ -1387,19 +1383,26 @@ async function loadMasters() {
     populateDropdowns();
     renderSettingsLists();
     addInitialRows();
+
+    // If activities still empty — try fetching BOM separately (older Apps Script version)
     if (!MASTERS.activities.length) {
       try {
         const bomData = await apiFetch({ action:'bom' });
-        if (bomData && Object.keys(bomData).length) {
+        if (bomData && typeof bomData === 'object' && Object.keys(bomData).length) {
           MASTERS.bom = bomData;
-          MASTERS.activities = Object.keys(bomData).map(code => ({ code, name: code, unit: 'Per Unit' }));
+          // Build activities list from BOM keys as fallback
+          MASTERS.activities = Object.keys(bomData).map(code => ({
+            code: code, name: code, unit: 'Per Unit'
+          }));
           populateDropdowns();
         }
-      } catch(e2) {}
+      } catch(e2) { /* ignore */ }
     }
   } catch(e) {
     toast('Master data load failed — check connection', 'warning');
-    populateDropdowns(); renderSettingsLists(); addInitialRows();
+    populateDropdowns();
+    renderSettingsLists();
+    addInitialRows();
   }
 }
 
@@ -1673,31 +1676,22 @@ async function loadDashboard() {
   try {
     DASH  = await apiFetch({ action:'dashboard' });
     STOCK = DASH.stock || [];
-    saveCache('teepl_dashboard', DASH);
-    renderDashboard(DASH);
+    renderDashStats(DASH.summary);
+    renderDashSites(DASH.sites);
+    renderDashAlerts(DASH.alerts);
+    renderDashActivity(DASH.activity);
+    renderDashSubcons(DASH.subcons);
+    renderStockTable(STOCK, 'all');
+    renderWPSites(DASH.sites);
+    updateAlertBadge(DASH.alerts);
     document.getElementById('sync-status').textContent =
       '● Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    document.getElementById('sync-status').style.color = '';
   } catch(e) {
     toast('Data load failed: ' + e.message, 'error');
     document.getElementById('sync-status').textContent = '● Offline';
     document.getElementById('sync-status').style.color = 'var(--red)';
   }
   btn.classList.remove('syncing'); btn.textContent = '↻ Refresh';
-}
-
-function renderDashboard(d) {
-  if (!d) return;
-  const s = d.summary || {};
-  STOCK = d.stock || STOCK;
-  renderDashStats(s);
-  renderDashSites(d.sites || []);
-  renderDashAlerts(d.alerts || []);
-  renderDashActivity(d.activity || []);
-  renderDashSubcons(d.subcons || []);
-  renderStockTable(STOCK, 'all');
-  renderWPSites(d.sites || []);
-  updateAlertBadge(d.alerts || []);
 }
 
 function renderDashStats(s) {
@@ -1928,26 +1922,28 @@ async function saveWorkProgress() {
   const st = document.getElementById('wp-status');
   st.textContent = 'Saving...'; st.style.color = 'var(--text3)';
 
-  const poles   = parseFloat(document.getElementById('wp_poles')?.value) || 0;
-  const kms     = parseFloat(document.getElementById('wp_kms')?.value)   || 0;
-  const wtype   = document.getElementById('wp_type')?.value   || 'Both';
+  const actSel  = document.getElementById('wp_activity');
+  const actCode = actSel ? actSel.value : '';
+  const actName = actSel ? actSel.options[actSel.selectedIndex].text.replace(/^\S+ — /,'') : '';
+  const qty     = parseFloat(document.getElementById('wp_qty').value) || 0;
+  const unit    = document.getElementById('wp_unit').value || '';
   const site    = document.getElementById('wp_site').value;
   const sub     = document.getElementById('wp_sub').value;
   const date    = document.getElementById('wp_date').value;
   const remarks = document.getElementById('wp_remarks').value;
 
   if (!site || site === '-- Select --') { toast('Select a site','warning'); st.textContent=''; return; }
-  if (!poles && !kms) { toast('Enter poles erected or kms strung','warning'); st.textContent=''; return; }
+  if (!actCode) { toast('Select an activity','warning'); st.textContent=''; return; }
+  if (!qty) { toast('Enter quantity done','warning'); st.textContent=''; return; }
 
-  // Format: Date, Site, Subcon, WorkType, PolesErected, KmsStrung, Remarks
-  const row = [date, site, sub, wtype, poles, kms, remarks];
+  // New format: Date, Site, Subcon, ActivityCode, ActivityName, QtyDone, Unit, Remarks
+  const row = [date, site, sub, actCode, actName, qty, unit, remarks];
 
   try {
     await apiPost('WorkProgress', [row]);
     st.textContent = '✓ Saved'; st.style.color = 'var(--green)';
     toast('Work progress saved','success');
-    if (document.getElementById('wp_poles')) document.getElementById('wp_poles').value = '';
-    if (document.getElementById('wp_kms'))   document.getElementById('wp_kms').value   = '';
+    document.getElementById('wp_qty').value = '';
     document.getElementById('wp_remarks').value = '';
     REPORT_DATA = null;
     loadWPRecent();
@@ -2231,73 +2227,11 @@ function filterLedger() {
 const TBODY = {purchase:'purchase-tbody',transfer:'transfer-tbody',issue:'issue-tbody',consumption:'consumption-tbody',returns:'returns-tbody',subconreturn:'subconreturn-tbody'};
 
 function itemSel() {
-  // Searchable item dropdown — type to filter
-  const opts = MASTERS.items.map(i =>
-    `<option value="${i.name}" data-unit="${i.unit}">${i.name} (${i.unit})</option>`
-  ).join('');
-  return `<div style="position:relative;min-width:200px;">
-    <input type="text" class="item-search"
-      placeholder="Type to search item..."
-      style="width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;background:var(--bg2);color:var(--text);box-sizing:border-box;"
-      oninput="filterItemList(this)"
-      onfocus="showItemList(this)"
-      onblur="setTimeout(()=>hideItemList(this),200)"
-      autocomplete="off">
-    <select style="display:none" onchange="autoUnit(this)">
-      <option value="">-- Select --</option>
-      ${opts}
-      <option value="__other">Other / Type below</option>
-    </select>
-    <div class="item-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.2);">
-      ${MASTERS.items.map(i =>
-        `<div class="item-opt" data-val="${i.name}" data-unit="${i.unit}"
-          style="padding:7px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);"
-          onmousedown="selectItem(this)">${i.name} <span style="color:var(--text3);font-size:10px">${i.unit}</span></div>`
-      ).join('')}
-    </div>
-  </div>`;
-}
-
-function filterItemList(inp) {
-  const val   = inp.value.toLowerCase();
-  const dd    = inp.parentElement.querySelector('.item-dropdown');
-  const items = dd.querySelectorAll('.item-opt');
-  let visible = 0;
-  items.forEach(item => {
-    const match = item.dataset.val.toLowerCase().includes(val);
-    item.style.display = match ? '' : 'none';
-    if (match) visible++;
-  });
-  dd.style.display = visible > 0 ? 'block' : 'none';
-}
-
-function showItemList(inp) {
-  const dd = inp.parentElement.querySelector('.item-dropdown');
-  filterItemList(inp);
-  dd.style.display = 'block';
-}
-
-function hideItemList(inp) {
-  const dd = inp.parentElement.querySelector('.item-dropdown');
-  if (dd) dd.style.display = 'none';
-}
-
-function selectItem(opt) {
-  const container = opt.closest('div[style*="position:relative"]');
-  const inp       = container.querySelector('.item-search');
-  const sel       = container.querySelector('select');
-  const dd        = container.querySelector('.item-dropdown');
-  inp.value       = opt.dataset.val;
-  inp.dataset.val = opt.dataset.val;
-  inp.dataset.unit= opt.dataset.unit;
-  if (sel) {
-    // Sync hidden select
-    const match = [...sel.options].find(o => o.value === opt.dataset.val);
-    if (match) sel.value = opt.dataset.val;
-    // Update unit dropdown in same row
-    autoUnit(sel);
-  }
-  if (dd) dd.style.display = 'none';
+  return `<select onchange="autoUnit(this)" style="min-width:160px">
+    <option value="">-- Select Item --</option>
+    ${MASTERS.items.map(i=>`<option value="${i.name}" data-unit="${i.unit}">${i.name}</option>`).join('')}
+    <option value="__other">Other / Type below</option>
+  </select>`;
 }
 function unitSel(v='Nos') {
   const allUnits = ['Nos','Meter','Mtr','Rmt','Kg','Set','Ltr','LS','Cmt','Rmt','MT','KM','KVA','KW','Bag','Bundle','Roll'];
@@ -2403,20 +2337,16 @@ function clearForm(type) {
 // ══════════════════════════════════════════════════════
 async function saveTransaction(type) {
   const st = document.getElementById(type+'-status');
-  st.textContent='Building...'; st.style.color='var(--text3)';
+  st.textContent='Saving...'; st.style.color='var(--text3)';
   const tbody = document.getElementById(TBODY[type]);
   const rows  = [];
   for (const tr of tbody.rows) {
-    // Support searchable item input
-    const itemSearch = tr.cells[1] ? tr.cells[1].querySelector('.item-search') : null;
-    const itemSel2   = tr.cells[1] ? tr.cells[1].querySelector('select') : null;
-    const item = itemSearch
-      ? (itemSearch.dataset.val || itemSearch.value).trim()
-      : itemSel2 ? itemSel2.value : '';
-    const qtyEl  = tr.cells[2] ? tr.cells[2].querySelector('input') : null;
-    const unitEl = tr.cells[3] ? tr.cells[3].querySelector('select') : null;
-    const qty  = qtyEl  ? parseFloat(qtyEl.value)||0 : 0;
-    const unit = unitEl ? unitEl.value : (itemSearch ? itemSearch.dataset.unit||'' : '');
+    const itemEl = tr.cells[1].querySelector('select');
+    const qtyEl  = tr.cells[2].querySelector('input');
+    const unitEl = tr.cells[3].querySelector('select');
+    const item   = itemEl?itemEl.value:'';
+    const qty    = qtyEl?parseFloat(qtyEl.value)||0:0;
+    const unit   = unitEl?unitEl.value:'';
     if (!item||item==='__other'||item===''||!qty) continue;
     let row=[];
     if (type==='purchase') {
@@ -2441,18 +2371,19 @@ async function saveTransaction(type) {
            document.getElementById('t_delivery_date').value,
            document.getElementById('t_remarks').value];
     } else if (type==='issue') {
+      // Include ActivityCode and multiplier in remarks for traceability
       const actEl  = document.getElementById('i_activity');
       const multEl = document.getElementById('i_multiplier');
       const actCode= actEl  ? actEl.value  : '';
       const mult   = multEl ? multEl.value : '';
-      const actNote= actCode ? '[Activity:'+actCode+(mult?' x'+mult:'')+'] ' : '';
+      const actNote= actCode ? `[Activity:${actCode}${mult?' x'+mult:''}] ` : '';
       row=[document.getElementById('i_date').value,
            document.getElementById('i_no').value,
            document.getElementById('i_site').value,
            document.getElementById('i_sub').value,
            item,qty,unit,
            document.getElementById('i_by').value,
-           actNote+(document.getElementById('i_remarks').value||'')];
+           actNote + (document.getElementById('i_remarks').value||'')];
     } else if (type==='consumption') {
       const rem=tr.cells[4]?(tr.cells[4].querySelector('input')||{}).value||'':'';
       row=[document.getElementById('c_date').value,
@@ -2472,90 +2403,48 @@ async function saveTransaction(type) {
   }
   if (!rows.length) { st.textContent='No items to save'; st.style.color='var(--yellow)'; return; }
 
-  // ── SAVE CONFIRMATION ────────────────────────────────────
-  const confirmed = await showSaveConfirm(type, rows);
-  if (!confirmed) { st.textContent=''; return; }
-
-  // ── STOCK VALIDATION ────────────────────────────────────
+  // ── STOCK VALIDATION (Issue and Transfer only) ──────────
   if (type==='issue' || type==='transfer') {
     const fromLoc = type==='issue'
       ? document.getElementById('i_site').value
       : document.getElementById('t_from').value;
+    const checkItems = rows.map(r => ({ item: r[4]||r[3], qty: r[5]||r[4] }));
     st.textContent = 'Checking stock...';
     try {
       const check = await apiFetch({
-        action:'validateStock',
-        items: JSON.stringify(rows.map(r=>({item:r[4]||r[3], qty:r[5]||r[4]}))),
-        from:  fromLoc
+        action: 'validateStock',
+        items:  JSON.stringify(checkItems.map(c=>({item:c.item, qty:c.qty}))),
+        from:   fromLoc
       });
       if (!check.valid && check.errors && check.errors.length) {
-        const msg = check.errors.map(e=>e.item+': Need '+e.qty+' but only '+e.available+' available').join('
-');
-        toast('Insufficient stock:
-'+msg,'error');
-        st.textContent='Stock insufficient'; st.style.color='var(--red)';
+        const msg = check.errors.map(e =>
+          `${e.item}: Need ${e.qty} but only ${e.available} available at ${e.location}`
+        ).join('\n');
+        toast('❌ Insufficient stock:\n' + msg, 'error');
+        st.textContent = 'Stock insufficient'; st.style.color = 'var(--red)';
         return;
       }
-    } catch(e2) { toast('Stock check failed — proceeding','warning'); }
+    } catch(e2) {
+      // If validation fails (API issue), warn but allow — don't block
+      toast('Stock check failed — proceeding with caution', 'warning');
+    }
   }
 
   const sheetMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',consumption:'Consumption',returns:'Returns'};
-  st.textContent='Saving...'; st.style.color='var(--text3)';
   try {
-    await apiPost(sheetMap[type], rows);
-    st.textContent='Saved '+rows.length+' item(s)'; st.style.color='var(--green)';
-    toast(sheetMap[type]+' saved — '+rows.length+' item(s)','success');
-    // Auto print
-    printVoucher(sheetMap[type]);
+    await apiPost(sheetMap[type],rows);
+    st.textContent=`✓ ${rows.length} item(s) saved`; st.style.color='var(--green)';
+    toast(`${sheetMap[type]} saved — ${rows.length} item(s)`,'success');
     clearForm(type);
     const vMap={purchase:'p_inv',transfer:'t_no',issue:'i_no',consumption:'c_no',returns:'r_no'};
     getVoucher(sheetMap[type]).then(v=>{ const el=document.getElementById(vMap[type]); if(el&&v) el.value=v; });
     setTimeout(()=>loadDashboard(),1500);
     loadRecentTab(type);
-    REPORT_DATA=null;
+    REPORT_DATA = null; // clear report cache
   } catch(e) {
     st.textContent='Save failed'; st.style.color='var(--red)';
     toast('Save failed: '+e.message,'error');
   }
-}
-
-// ── SAVE CONFIRMATION DIALOG ─────────────────────────────────
-function showSaveConfirm(type, rows) {
-  return new Promise(resolve => {
-    const meta = {
-      purchase:   ['Purchase','p_inv','p_date','p_supplier'],
-      transfer:   ['Transfer','t_no','t_date','t_from'],
-      issue:      ['Issue','i_no','i_date','i_sub'],
-      consumption:['Consumption','c_no','c_date','c_sub'],
-      returns:    ['Returns','r_no','r_date','r_reason'],
-    };
-    const [title,noId,dateId,extraId] = meta[type]||[type,'','',''];
-    const no    = document.getElementById(noId)?.value||'';
-    const date  = document.getElementById(dateId)?.value||'';
-    const extra = document.getElementById(extraId)?.value||'';
-    const total = rows.reduce((a,r)=>a+(Number(r[7])||0),0);
-    const itemList = rows.slice(0,8).map(r =>
-      '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">'
-      +'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px">'+(r[4]||r[3]||'')+'</span>'
-      +'<span style="font-family:var(--mono);font-weight:600;white-space:nowrap">'+(r[5]||r[4]||'')+' '+(r[6]||r[5]||'')+'</span>'
-      +'</div>'
-    ).join('') + (rows.length>8 ? '<div style="font-size:11px;color:var(--text3);padding:4px 0">...and '+(rows.length-8)+' more items</div>' : '');
-
-    const modal = document.createElement('div');
-    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;';
-    modal.innerHTML='<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);">'
-      +'<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Confirm '+title+'</div>'
-      +'<div style="font-size:12px;color:var(--text3);margin-bottom:16px;">'+no+' · '+date+' · '+extra+'</div>'
-      +'<div style="background:var(--bg3);border-radius:var(--radius);padding:12px;margin-bottom:12px;max-height:220px;overflow-y:auto;">'+itemList+'</div>'
-      +(total?'<div style="text-align:right;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:16px;">Total: ₹'+Math.round(total).toLocaleString('en-IN')+'</div>':'')
-      +'<div style="display:flex;gap:10px;">'
-      +'<button id="conf-cancel" style="flex:1;padding:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:var(--font);">Cancel</button>'
-      +'<button id="conf-ok" style="flex:2;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">✓ Confirm &amp; Save</button>'
-      +'</div></div>';
-    document.body.appendChild(modal);
-    document.getElementById('conf-ok').onclick     = ()=>{ modal.remove(); resolve(true); };
-    document.getElementById('conf-cancel').onclick = ()=>{ modal.remove(); resolve(false); };
-  });
 }
 
 // ══════════════════════════════════════════════════════
@@ -3365,10 +3254,10 @@ function printReport(id) {
   </div>
   ${el.innerHTML}
   <div class="footer">CA AB Tracking System · Confidential · CA Atik Bhayani · +91 7057164441</div>
-  <scr'+'ipt>
+  <script>
     window.onload = function() { setTimeout(function(){ window.print(); }, 300); };
     window.onafterprint = function() { window.close(); };
-  </scr'+'ipt>
+  <\/script>
   </body></html>`);
   w.document.close();
 }
@@ -3790,12 +3679,12 @@ function printVoucher(type, data=null) {
 </head>
 <body>
   ${html}
-  <scr'+'ipt>
+  <script>
     window.onload = function() {
       setTimeout(function() { window.print(); }, 300);
     };
     window.onafterprint = function() { window.close(); };
-  </scr'+'ipt>
+  <\/script>
 </body>
 </html>`;
 
