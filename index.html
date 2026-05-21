@@ -1727,6 +1727,8 @@ async function loadDashboard() {
     updateAlertBadge(DASH.alerts);
     document.getElementById('sync-status').textContent =
       '● Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    // Refresh stock badges on any open form
+    ['issue','transfer'].forEach(t => refreshStockBadges(t));
   } catch(e) {
     toast('Data load failed: ' + e.message, 'error');
     document.getElementById('sync-status').textContent = '● Offline';
@@ -1988,7 +1990,7 @@ async function saveWorkProgress() {
     document.getElementById('wp_remarks').value = '';
     REPORT_DATA = null;
     loadWPRecent();
-    setTimeout(() => loadDashboard(), 1500);
+    setTimeout(() => loadDashboard(), 500);
   } catch(e) {
     st.textContent = 'Failed'; st.style.color = 'var(--red)';
     toast('Save failed: '+e.message,'error');
@@ -2541,7 +2543,7 @@ async function saveTransaction(type) {
     clearForm(type);
     const vMap={purchase:'p_inv',transfer:'t_no',issue:'i_no',consumption:'c_no',returns:'r_no'};
     getVoucher(sheetMap[type]).then(v=>{ const el=document.getElementById(vMap[type]); if(el&&v) el.value=v; });
-    setTimeout(()=>loadDashboard(),1500);
+    setTimeout(()=>loadDashboard(),500);
     loadRecentTab(type);
     REPORT_DATA = null; // clear report cache
   } catch(e) {
@@ -3831,7 +3833,7 @@ async function createReversal(storeKey) {
   try {
     await apiPost(sheetName, rows);
     toast('Reversal ' + revNo + ' created — ' + rows.length + ' item(s)', 'success');
-    setTimeout(() => loadDashboard(), 1500);
+    setTimeout(() => loadDashboard(), 500);
     REPORT_DATA = null;
   } catch(e) {
     toast('Reversal failed: ' + e.message, 'error');
@@ -3869,7 +3871,7 @@ async function saveSubconReturn() {
     document.getElementById('sr_reason').value='';
     getVoucher('SubconReturn').then(v=>{ const el=document.getElementById('sr_no'); if(el&&v) el.value=v; });
     loadRecentTab('subconreturn');
-    setTimeout(()=>loadDashboard(),1500);
+    setTimeout(()=>loadDashboard(),500);
   } catch(e) {
     st.textContent='Save failed'; st.style.color='var(--red)';
     toast('Save failed: '+e.message,'error');
