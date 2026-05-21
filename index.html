@@ -667,7 +667,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         <div class="form-row">
           <div class="fg"><label>Transfer No.</label><input type="text" id="t_no" placeholder="Auto-generated" readonly></div>
           <div class="fg"><label>Date</label><input type="date" id="t_date"></div>
-          <div class="fg"><label>From</label><select id="t_from"><option>Main Store</option></select></div>
+          <div class="fg"><label>From</label><select id="t_from" onchange="refreshStockBadges('transfer')"><option>Main Store</option></select></div>
           <div class="fg"><label>To</label><select id="t_to"><option>Main Store</option></select></div>
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)">People & Transport</div>
@@ -710,7 +710,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         <div class="form-row">
           <div class="fg"><label>Issue No.</label><input type="text" id="i_no" placeholder="Auto-generated" readonly></div>
           <div class="fg"><label>Date</label><input type="date" id="i_date"></div>
-          <div class="fg"><label>Site</label><select id="i_site"><option>-- Select --</option></select></div>
+          <div class="fg"><label>Site</label><select id="i_site" onchange="refreshStockBadges('issue')"><option>-- Select --</option></select></div>
           <div class="fg"><label>Issued To (Subcontractor)</label><select id="i_sub"><option>-- Select --</option></select></div>
           <div class="fg"><label>Issued By</label><input type="text" id="i_by" placeholder="Store in-charge name"></div>
           <div class="fg" style="flex:2"><label>Remarks</label><input type="text" id="i_remarks" placeholder="Any notes"></div>
@@ -1235,6 +1235,18 @@ let activeSite = 'all';
 //  ACCESS GATE
 // ══════════════════════════════════════════════════════
 const SESSION_KEY   = 'teepl_access';
+const CACHE_EXPIRY  = 5 * 60 * 1000; // 5 minutes
+
+function saveCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+function loadCache(key) {
+  try {
+    const c = JSON.parse(localStorage.getItem(key) || 'null');
+    if (c && Date.now() - c.ts < CACHE_EXPIRY) return c.data;
+  } catch(e) {}
+  return null;
+}
 const DIRECTOR_CODE = 'THAKUR@123';
 let USER_ROLE = 'operations';
 
@@ -1355,6 +1367,15 @@ function launchApp() {
   document.getElementById('top-date').textContent =
     new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   setToday();
+  // Show cached data instantly then refresh
+  const cm = loadCache('teepl_masters');
+  const cd = loadCache('teepl_dashboard');
+  if (cm) {
+    MASTERS.items=cm.items||[]; MASTERS.sites=cm.sites||[]; MASTERS.subcons=cm.subcons||[];
+    MASTERS.activities=cm.activities||[]; MASTERS.siteScope=cm.siteScope||[]; MASTERS.bom=cm.bom||{};
+    populateDropdowns(); renderSettingsLists(); addInitialRows();
+  }
+  if (cd) { DASH=cd; STOCK=cd.stock||[]; renderDashStats(cd.summary); renderDashSites(cd.sites); renderDashAlerts(cd.alerts||[]); renderDashSubcons(cd.subcons||[]); renderStockTable(STOCK,'all'); renderWPSites(cd.sites); }
   loadMasters().then(() => loadDashboard());
 }
 
@@ -1392,6 +1413,7 @@ async function getVoucher(sheet) {
 async function loadMasters() {
   try {
     const data = await apiFetch({ action:'masters' });
+    saveCache('teepl_masters', data);
     MASTERS.items      = data.items      && data.items.length      ? data.items      : MASTERS.items;
     MASTERS.sites      = data.sites      && data.sites.length      ? data.sites      : MASTERS.sites;
     MASTERS.subcons    = data.subcons    && data.subcons.length    ? data.subcons    : MASTERS.subcons;
@@ -1694,6 +1716,7 @@ async function loadDashboard() {
   try {
     DASH  = await apiFetch({ action:'dashboard' });
     STOCK = DASH.stock || [];
+    saveCache('teepl_dashboard', DASH);
     renderDashStats(DASH.summary);
     renderDashSites(DASH.sites);
     renderDashAlerts(DASH.alerts);
@@ -2244,7 +2267,7 @@ function filterLedger() {
 // ══════════════════════════════════════════════════════
 const TBODY = {purchase:'purchase-tbody',transfer:'transfer-tbody',issue:'issue-tbody',consumption:'consumption-tbody',returns:'returns-tbody',subconreturn:'subconreturn-tbody'};
 
-function itemSel() {
+function itemSel(type) {
   return `<select onchange="autoUnit(this)" style="min-width:160px">
     <option value="">-- Select Item --</option>
     ${MASTERS.items.map(i=>`<option value="${i.name}" data-unit="${i.unit}">${i.name}</option>`).join('')}
@@ -2274,16 +2297,47 @@ function autoUnit(sel) {
   }
 }
 
+function getStockQty(item, location) {
+  if (!item || !STOCK.length) return null;
+  const loc = location || 'Main Store';
+  const s = STOCK.find(r => r.item === item && r.location === loc);
+  return s ? s.qty : 0;
+}
+
+function updateStockBadge(sel, type) {
+  const row  = sel.closest('tr');
+  if (!row) return;
+  const item = sel.value;
+  let location = 'Main Store';
+  if (type === 'issue')    { const el = document.getElementById('i_site'); if(el) location = el.value; }
+  if (type === 'transfer') { const el = document.getElementById('t_from'); if(el) location = el.value; }
+  const badge = row.querySelector('.stock-badge');
+  if (!badge) return;
+  if (!item || item === '__other' || item === '') { badge.textContent = ''; badge.style.display='none'; return; }
+  const qty = getStockQty(item, location);
+  if (qty === null) { badge.textContent = ''; badge.style.display='none'; return; }
+  badge.style.display = 'inline';
+  badge.textContent   = 'Stock: ' + qty;
+  badge.style.background = qty <= 0 ? 'rgba(248,81,73,.15)' : qty < 10 ? 'rgba(210,153,34,.15)' : 'rgba(63,185,80,.12)';
+  badge.style.color      = qty <= 0 ? 'var(--red)'          : qty < 10 ? 'var(--yellow)'         : 'var(--green)';
+}
+
 function addRow(type) {
   const tbody = document.getElementById(TBODY[type]);
   if (!tbody) return;
   const sr  = tbody.rows.length+1;
   const isPurchase    = type==='purchase';
   const isConsumption = type==='consumption';
+  const showStock     = type==='issue' || type==='transfer';
   const r   = tbody.insertRow();
   r.innerHTML = `
     <td style="color:var(--text3);font-size:12px;width:28px">${sr}</td>
-    <td>${itemSel()}</td>
+    <td>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        ${itemSel(type)}
+        ${showStock ? '<span class="stock-badge" style="display:none;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;width:fit-content;"></span>' : ''}
+      </div>
+    </td>
     <td><input type="number" min="0" placeholder="0" style="width:70px"></td>
     <td>${unitSel()}</td>
     ${isPurchase?`<td><input type="number" min="0" placeholder="0" style="width:80px"></td><td class="amt-cell td-n">—</td>`:''}
@@ -2294,8 +2348,21 @@ function addRow(type) {
     const calc = () => { const q=parseFloat(ins[0].value)||0, rt=parseFloat(ins[1].value)||0; r.querySelector('.amt-cell').textContent = q&&rt?'₹'+(q*rt).toLocaleString('en-IN'):'—'; };
     ins[0].addEventListener('input',calc); ins[1].addEventListener('input',calc);
   }
+  if (showStock) {
+    const sel = r.querySelector('select');
+    if (sel) sel.addEventListener('change', () => updateStockBadge(sel, type));
+  }
 }
 function renumber(tid) { document.querySelectorAll(`#${tid} tr`).forEach((r,i)=>r.cells[0].textContent=i+1); }
+
+function refreshStockBadges(type) {
+  const tbodyId = TBODY[type];
+  if (!tbodyId) return;
+  document.querySelectorAll('#'+tbodyId+' tr').forEach(row => {
+    const sel = row.querySelector('select');
+    if (sel) updateStockBadge(sel, type);
+  });
+}
 
 function addInitialRows() {
   Object.keys(TBODY).forEach(t => { for(let i=0;i<3;i++) addRow(t); });
@@ -3714,6 +3781,44 @@ function printVoucher(type, data=null) {
 // ── REPRINT from recent table row data ──────────────────
 // Legacy shim — reprintFromRow kept for compatibility
 function reprintFromRow(type, rowData) { /* replaced by reprintVoucher */ }
+
+// ── REVERSE ENTRY ─────────────────────────────────────────
+async function createReversal(storeKey) {
+  const stored = VOUCHER_STORE[storeKey];
+  if (!stored) { toast('Data not found — reload recent entries', 'error'); return; }
+  const sheet = stored.sheet;
+  const items = stored.items || [];
+  const meta  = stored.meta  || {};
+
+  const reason = prompt('Reason for reversal (required):');
+  if (!reason || !reason.trim()) { toast('Reason is required for reversal', 'warning'); return; }
+
+  // Build reversal rows — same as original but negative qty
+  const sheetName = sheet;
+  const revNo     = 'REV-' + stored.voucher;
+  const today     = new Date().toLocaleDateString('en-IN');
+  const rows = items.map(r => {
+    if (sheet === 'Issue') {
+      return [today, revNo, meta.site, meta.subcon, r.item, -Math.abs(r.qty), r.unit, meta.issuedBy||'', 'REVERSAL: '+reason+' (was '+stored.voucher+')'];
+    } else if (sheet === 'Consumption') {
+      return [today, revNo, meta.site, meta.subcon, r.item, -Math.abs(r.qty), r.unit, 'REVERSAL: '+reason+' (was '+stored.voucher+')'];
+    } else if (sheet === 'Transfer') {
+      return [today, revNo, meta.to, meta.from, r.item, -Math.abs(r.qty), r.unit, '','','','','','',today,'REVERSAL: '+reason+' (was '+stored.voucher+')'];
+    }
+    return null;
+  }).filter(Boolean);
+
+  if (!rows.length) { toast('No items to reverse', 'warning'); return; }
+
+  try {
+    await apiPost(sheetName, rows);
+    toast('Reversal ' + revNo + ' created — ' + rows.length + ' item(s)', 'success');
+    setTimeout(() => loadDashboard(), 1500);
+    REPORT_DATA = null;
+  } catch(e) {
+    toast('Reversal failed: ' + e.message, 'error');
+  }
+}
 
 // ── SAVE SUBCON RETURN ──────────────────────────────────────
 async function saveSubconReturn() {
