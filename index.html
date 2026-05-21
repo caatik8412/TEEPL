@@ -2516,6 +2516,20 @@ async function saveTransaction(type) {
   }
 
   const sheetMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',consumption:'Consumption',returns:'Returns'};
+
+  // Ensure all rows use the SAME voucher number
+  // If field is empty (async fetch hadn't returned), generate one locally
+  const vMap={purchase:'p_inv',transfer:'t_no',issue:'i_no',consumption:'c_no',returns:'r_no'};
+  const vField = document.getElementById(vMap[type]);
+  if (vField && !vField.value) {
+    const prefixes={purchase:'INV',transfer:'TR',issue:'ISS',consumption:'CON',returns:'RET'};
+    const prefix = prefixes[type]||type.toUpperCase().substring(0,3);
+    vField.value = prefix+'-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-4);
+  }
+  // Re-read rows with correct voucher number (in case it was empty before)
+  const voucherNo = vField ? vField.value : '';
+  rows.forEach(r => { if (r[1] === '' || r[1] === undefined) r[1] = voucherNo; });
+
   try {
     await apiPost(sheetMap[type],rows);
     st.textContent=`✓ ${rows.length} item(s) saved`; st.style.color='var(--green)';
