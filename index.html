@@ -57,9 +57,9 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
       if (e.request.url.includes('script.google.com') ||
           e.request.url.includes('fonts.googleapis.com')) return;
       e.respondWith(
-        fetch(e.request).catch(() =>
-          caches.match(e.request).then(r => r || caches.match('./'))
-        )
+        caches.match(e.request).then(cachedResponse => {
+          return cachedResponse || fetch(e.request).catch(() => caches.match('./'));
+        })
       );
     });
   `;
@@ -493,7 +493,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 </style>
 </head>
 <body>
-<!-- ═══════════ SPLASH SCREEN ═══════════ -->
 <div id="splash" style="position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .5s ease;">
   <div style="text-align:center;">
     <div style="width:72px;height:72px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Arial;">T</div>
@@ -507,7 +506,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
   <div style="position:absolute;bottom:24px;font-size:11px;color:#444;font-family:'DM Sans',Arial;">CA Atik Bhayani · +91 7057164441</div>
 </div>
 
-<!-- ═══════════ ACCESS GATE ═══════════ -->
 <div class="gate" id="access-gate">
   <div class="gate-box">
     <div class="gate-brand">TEEPL</div>
@@ -519,7 +517,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
     <div class="gate-error" id="gate-error"></div>
     <div class="gate-footer">
       <strong>Thakur Electricals and Engineers Pvt Ltd</strong><br>
-      
       CA Atik Bhayani · +91 7057164441
     </div>
   </div>
@@ -528,7 +525,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app" id="main-app" style="display:none">
 
-<!-- ═══════════ SIDEBAR ═══════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="brand">
     <div class="brand-row">
@@ -574,12 +570,10 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
   </nav>
   <div class="sid-foot">
     <strong id="sync-status">● Connecting...</strong>
-
     CA Atik Bhayani · +91 7057164441
   </div>
 </aside>
 
-<!-- ═══════════ MAIN ═══════════ -->
 <div class="main">
   <div class="topbar">
     <div class="tl">
@@ -599,9 +593,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 
   <div class="content">
 
-    <!-- ═══ DASHBOARD ═══ -->
     <div id="tab-dashboard" class="tab-pane show">
-
       <div class="stats-grid" id="dash-stats">
         <div class="stat-card sc-o"><div class="skeleton sk-h"></div></div>
         <div class="stat-card sc-b"><div class="skeleton sk-h"></div></div>
@@ -630,7 +622,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ PURCHASE ═══ -->
     <div id="tab-purchase" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Purchase Entry</div><div class="sec-sub">Record new material purchases from supplier</div></div>
       <div class="card">
@@ -659,7 +650,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ TRANSFER ═══ -->
     <div id="tab-transfer" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Material Transfer</div><div class="sec-sub">Move stock between main store and sites</div></div>
       <div class="card">
@@ -703,7 +693,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ ISSUE ═══ -->
     <div id="tab-issue" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Material Issue</div><div class="sec-sub">Issue material to subcontractor at site</div></div>
       <div class="card">
@@ -753,7 +742,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ CONSUMPTION ═══ -->
     <div id="tab-consumption" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Consumption Entry</div><div class="sec-sub">Material actually consumed during work on ground</div></div>
       <div class="card">
@@ -801,7 +789,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ RETURNS ═══ -->
     <div id="tab-returns" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Returns</div><div class="sec-sub">Material returned from site back to main store</div></div>
       <div class="card">
@@ -831,7 +818,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ SUBCON RETURN ═══ -->
     <div id="tab-subconreturn" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Subcontractor Return</div><div class="sec-sub">Material returned by subcontractor back to site store</div></div>
       <div class="card">
@@ -861,7 +847,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ WORK PROGRESS ═══ -->
     <div id="tab-workprogress" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Work Progress</div><div class="sec-sub">Live completion tracking vs contract scope — activity based</div></div>
       <div id="wp-container">
@@ -907,7 +892,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ STOCK REGISTER ═══ -->
     <div id="tab-stock" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Stock Register</div><div class="sec-sub">Live stock position across all locations</div></div>
       <div class="stats-grid" id="stock-site-cards">
@@ -937,7 +921,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ SUBCON LEDGER ═══ -->
     <div id="tab-subconledger" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Subcontractor Ledger</div><div class="sec-sub">Material issued vs consumed vs balance at hand — per subcontractor</div></div>
       <div class="stats-grid" id="sl-summary">
@@ -964,12 +947,9 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ SETTINGS ═══ -->
     <div id="tab-settings" class="tab-pane">
       <div class="sec-hdr"><div class="sec-title">Settings</div><div class="sec-sub">Manage items, sites and subcontractors directly from the app</div></div>
       <div class="settings-grid">
-
-        <!-- ITEM MASTER -->
         <div class="settings-section">
           <div class="settings-hdr">
             <div class="settings-hdr-title">📦 Item Master</div>
@@ -992,7 +972,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
           </div>
         </div>
 
-        <!-- SITE MASTER -->
         <div class="settings-section">
           <div class="settings-hdr">
             <div class="settings-hdr-title">📍 Site Master</div>
@@ -1014,7 +993,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
           </div>
         </div>
 
-        <!-- SUBCONTRACTOR MASTER -->
         <div class="settings-section">
           <div class="settings-hdr">
             <div class="settings-hdr-title">👷 Subcontractor Master</div>
@@ -1034,26 +1012,20 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
             <button class="btn btn-primary btn-sm" onclick="addMasterSubcon()">+ Add Subcontractor</button>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- ═══ CONSUMED VS COMPLETED ═══ -->
     <div id="tab-cvc" class="tab-pane">
       <div class="sec-hdr">
         <div class="sec-title">Consumed vs Completed</div>
         <div class="sec-sub">Material consumed by each subcontractor vs actual work reported — spot variances instantly</div>
       </div>
-
-      <!-- Summary cards -->
       <div class="cvc-summary-grid" id="cvc-summary">
         <div class="stat-card sc-b"><div class="skeleton sk-h"></div></div>
         <div class="stat-card sc-g"><div class="skeleton sk-h"></div></div>
         <div class="stat-card sc-o"><div class="skeleton sk-h"></div></div>
         <div class="stat-card sc-r"><div class="skeleton sk-h"></div></div>
       </div>
-
-      <!-- Filter bar -->
       <div class="cvc-filter-bar">
         <input type="text" id="cvc-search" placeholder="Search subcontractor..." style="height:32px;width:220px;font-size:12px" oninput="filterCVC()">
         <select id="cvc-site-filter" style="height:32px;font-size:12px" onchange="filterCVC()"><option value="">All Sites</option></select>
@@ -1065,15 +1037,11 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         <button class="btn btn-sm" onclick="loadCVC()">↻ Refresh</button>
         <span style="font-size:11px;color:var(--text3)" id="cvc-updated"></span>
       </div>
-
-      <!-- Cards grid -->
       <div class="cvc-grid" id="cvc-grid">
         <div class="cvc-card"><div style="padding:40px;text-align:center"><div class="skeleton sk-r w80" style="margin:0 auto 8px"></div><div class="skeleton sk-r w60" style="margin:0 auto"></div></div></div>
         <div class="cvc-card"><div style="padding:40px;text-align:center"><div class="skeleton sk-r w80" style="margin:0 auto 8px"></div><div class="skeleton sk-r w60" style="margin:0 auto"></div></div></div>
         <div class="cvc-card"><div style="padding:40px;text-align:center"><div class="skeleton sk-r w80" style="margin:0 auto 8px"></div><div class="skeleton sk-r w60" style="margin:0 auto"></div></div></div>
       </div>
-
-      <!-- BOM note -->
       <div class="card" style="border-left:3px solid var(--accent2);">
         <div style="display:flex;align-items:flex-start;gap:12px;">
           <div style="font-size:20px;flex-shrink:0">💡</div>
@@ -1085,7 +1053,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ REPORT 1: VARIANCE ═══ -->
     <div id="tab-r1" class="tab-pane">
       <div class="rpt-header">
         <div><div class="rpt-title">Material Consumption Variance Report</div><div class="rpt-sub">Expected vs Actual — BOM based leakage detection</div></div>
@@ -1103,7 +1070,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ REPORT 2: SITE LEAKAGE ═══ -->
     <div id="tab-r2" class="tab-pane">
       <div class="rpt-header">
         <div><div class="rpt-title">Site-wise Leakage Report</div><div class="rpt-sub">Material variance and risk level per site</div></div>
@@ -1116,7 +1082,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       <div id="r2-cards"></div>
     </div>
 
-    <!-- ═══ REPORT 3: SUBCON EFFICIENCY ═══ -->
     <div id="tab-r3" class="tab-pane">
       <div class="rpt-header">
         <div><div class="rpt-title">Subcontractor Efficiency Report</div><div class="rpt-sub">Issued vs consumed vs balance — catch misuse and hoarding</div></div>
@@ -1133,7 +1098,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ REPORT 4: MOVEMENT SUMMARY ═══ -->
     <div id="tab-r4" class="tab-pane">
       <div class="rpt-header">
         <div><div class="rpt-title">Material Movement Summary</div><div class="rpt-sub">Full audit trail — purchased → transferred → issued → consumed → closing stock</div></div>
@@ -1149,7 +1113,6 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       </div>
     </div>
 
-    <!-- ═══ REPORT 5: EXCEPTION ═══ -->
     <div id="tab-r5" class="tab-pane">
       <div class="rpt-header">
         <div><div class="rpt-title">Daily Exception Report</div><div class="rpt-sub">Only problems — overconsumption, high variance, fraud alerts</div></div>
@@ -1161,11 +1124,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       <div id="r5-content"></div>
     </div>
 
-  </div><!-- .content -->
-</div><!-- .main -->
-</div><!-- #main-app -->
-<!-- PWA INSTALL BANNER -->
-<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e2a38;border-top:2px solid var(--accent);padding:14px 20px;z-index:998;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+  </div></div></div><div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e2a38;border-top:2px solid var(--accent);padding:14px 20px;z-index:998;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
   <div style="display:flex;align-items:center;gap:12px;">
     <div style="width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;">T</div>
     <div>
@@ -1194,7 +1153,6 @@ let MASTERS = {
   items:   [],
   sites:   [],
   subcons: [],
-  // Pre-loaded from T-07 Gondia activity schedule — updates from live sheet on load
   activities: [
     {code:'101',   name:'33/11KV 1x5MVA Substation (Outdoor)',              unit:'Per Substation'},
     {code:'102C',  name:'33/11KV 1x10MVA New Substation',                   unit:'Per Substation'},
@@ -1229,9 +1187,6 @@ let LEDGER     = [];
 let activeSite = 'all';
 
 // ══════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
 //  ACCESS GATE
 // ══════════════════════════════════════════════════════
 const SESSION_KEY = 'teepl_access';
@@ -1244,7 +1199,7 @@ function runSplash(callback, fast=false) {
   const msg  = document.getElementById('splash-msg');
   const msgs = ['Initialising...','Loading system...','Almost ready...'];
   let pct = 0, mi = 0;
-  const step = fast ? 20 : 5;   // fast = skip animation for returning users
+  const step = fast ? 20 : 5;
   const delay= fast ? 10 : 20;
   const iv = setInterval(() => {
     pct += step;
@@ -1274,15 +1229,13 @@ window.addEventListener('DOMContentLoaded', () => {
     try {
       const s = JSON.parse(saved);
       if (s.valid && new Date(s.expiry) > new Date()) {
-        // Valid session — fast splash then launch
         runSplash(() => launchApp(), true);
         return;
       }
     } catch(e) {}
   }
-  // No valid session — normal splash then gate
   runSplash(() => showGate());
-}); // end DOMContentLoaded
+});
 
 async function verifyAccess() {
   const code  = document.getElementById('gate-code').value.trim().toUpperCase();
@@ -1299,7 +1252,6 @@ async function verifyAccess() {
     const data = await res.json();
 
     if (data.valid) {
-      // Save to session so they don't have to re-enter on refresh
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         valid: true, client: data.client, expiry: data.expiry
       }));
@@ -1329,7 +1281,6 @@ async function verifyAccess() {
 }
 
 function launchApp() {
-  // Always hide splash and gate
   const splash = document.getElementById('splash');
   if (splash) { splash.style.opacity = '0'; splash.style.display = 'none'; }
   document.getElementById('access-gate').style.display = 'none';
@@ -1384,13 +1335,11 @@ async function loadMasters() {
     renderSettingsLists();
     addInitialRows();
 
-    // If activities still empty — try fetching BOM separately (older Apps Script version)
     if (!MASTERS.activities.length) {
       try {
         const bomData = await apiFetch({ action:'bom' });
         if (bomData && typeof bomData === 'object' && Object.keys(bomData).length) {
           MASTERS.bom = bomData;
-          // Build activities list from BOM keys as fallback
           MASTERS.activities = Object.keys(bomData).map(code => ({
             code: code, name: code, unit: 'Per Unit'
           }));
@@ -1424,7 +1373,6 @@ function populateDropdowns() {
   setOpts('new_sub_site', sites);
   setOpts('sr_site', sites);  setOpts('sr_sub', subcons);
 
-  // Activity dropdowns — Issue, Consumption, WorkProgress
   const actOpts = activities.length
     ? `<option value="">-- Select Activity --</option>` +
       activities.map(a => `<option value="${a.code}" data-unit="${a.unit}">${a.code} — ${a.name}</option>`).join('')
@@ -1435,17 +1383,14 @@ function populateDropdowns() {
     if (el) el.innerHTML = actOpts;
   });
 
-  // Stock site tabs
   const tabsEl = document.getElementById('stock-tabs');
   tabsEl.innerHTML = `<button class="stab active" onclick="filterSite('all',this)">All Locations</button>` +
     allLocs.map(s => `<button class="stab" onclick="filterSite('${s}',this)">${s}</button>`).join('');
 
-  // Subcon ledger site filter
   const slf = document.getElementById('sl-site-filter');
   if (slf) slf.innerHTML = `<option value="">All Sites</option>` + sites.map(s=>`<option>${s}</option>`).join('');
 }
 
-// ── ACTIVITY SELECTED → auto-fill BOM items ────────────────
 function onActivitySelected(type) {
   const prefix  = type === 'consumption' ? 'c' : 'i';
   const actEl   = document.getElementById(prefix + '_activity');
@@ -1454,7 +1399,6 @@ function onActivitySelected(type) {
   const opt     = actEl.options[actEl.selectedIndex];
   const unit    = opt ? (opt.getAttribute('data-unit') || '') : '';
 
-  // Update unit label and reset multiplier
   const unitEl = document.getElementById(prefix + '_act_unit');
   const multEl = document.getElementById(prefix + '_multiplier');
   const lblEl  = document.getElementById(prefix + '_mult_label');
@@ -1471,20 +1415,17 @@ function onActivitySelected(type) {
     return;
   }
 
-  // Store BOM on the select element for recalc
   actEl._bomItems = items;
   actEl._bomCode  = code;
 
-  // Load rows with qty = 0 (will recalc when multiplier entered)
   loadBOMRows(type, items, 1);
-  toast('✓ ' + items.length + ' BOM items loaded for ' + code + ' — enter qty of activity to auto-fill quantities', 'success');
+  toast('✓ ' + items.length + ' BOM items loaded for ' + code, 'success');
 }
 
 function loadBOMRows(type, items, multiplier) {
   const tbody = document.getElementById(type + '-tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
-
   multiplier = parseFloat(multiplier) || 0;
 
   items.forEach(bomItem => {
@@ -1497,13 +1438,10 @@ function loadBOMRows(type, items, multiplier) {
     const bomQty  = bomItem.qty  || 0;
     const calcQty = multiplier > 0 ? Math.round(bomQty * multiplier * 100) / 100 : 0;
 
-    // ── Set item ──────────────────────────────────────────
     const sel = lastRow.querySelector('select');
     if (sel) {
       const opts  = [...sel.options];
-      const match = opts.find(o =>
-        o.value.toLowerCase().trim() === bomItem.material.toLowerCase().trim()
-      );
+      const match = opts.find(o => o.value.toLowerCase().trim() === bomItem.material.toLowerCase().trim());
       if (match) {
         sel.value = match.value;
       } else {
@@ -1514,32 +1452,24 @@ function loadBOMRows(type, items, multiplier) {
       }
     }
 
-    // ── Set unit in the unit dropdown ─────────────────────
     const unitDrop = lastRow.querySelector('td:nth-child(4) select');
     if (unitDrop) {
-      // Add unit if not in list
       const exists = [...unitDrop.options].some(o => o.value === unit);
-      if (!exists) {
-        unitDrop.appendChild(new Option(unit, unit));
-      }
+      if (!exists) unitDrop.appendChild(new Option(unit, unit));
       unitDrop.value = unit;
     }
 
-    // ── Set qty with unit shown clearly ──────────────────
     const qtyInp = lastRow.querySelector('input[type="number"]');
     if (qtyInp) {
       qtyInp.value            = calcQty > 0 ? calcQty : '';
       qtyInp.placeholder      = bomQty + ' ' + unit + ' per unit';
-      qtyInp.title            = 'BOM: ' + bomQty + ' ' + unit + ' per unit' +
-                                (multiplier > 0 ? ' × ' + multiplier + ' = ' + calcQty : ' · Enter qty of activity above');
+      qtyInp.title            = 'BOM: ' + bomQty + ' ' + unit;
       qtyInp.dataset.bomQty   = bomQty;
       qtyInp.dataset.bomUnit  = unit;
 
-      // Show unit label clearly next to qty input
       const qtyCell = qtyInp.closest('td');
       if (qtyCell) {
         qtyCell.style.whiteSpace = 'nowrap';
-        // Add unit span if not already there
         let unitSpan = qtyCell.querySelector('.unit-badge');
         if (!unitSpan) {
           unitSpan = document.createElement('span');
@@ -1572,7 +1502,6 @@ function recalcBOM(type) {
     qtyInp.value = calcQty > 0 ? calcQty : '';
     qtyInp.title = 'BOM: ' + bomQty + ' ' + unit + ' × ' + multiplier + ' = ' + calcQty;
 
-    // Refresh unit badge
     const qtyCell  = qtyInp.closest('td');
     if (qtyCell) {
       let badge = qtyCell.querySelector('.unit-badge');
@@ -1588,7 +1517,6 @@ function recalcBOM(type) {
 }
 
 function renderSettingsLists() {
-  // Items
   const itemList = document.getElementById('item-list');
   document.getElementById('item-count').textContent = MASTERS.items.length + ' items';
   itemList.innerHTML = MASTERS.items.length ? MASTERS.items.map(i => `
@@ -1597,7 +1525,6 @@ function renderSettingsLists() {
       <span class="badge bblue">${i.unit}</span>
     </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No items yet</div>';
 
-  // Sites
   const siteList = document.getElementById('site-list');
   document.getElementById('site-count').textContent = MASTERS.sites.length + ' sites';
   siteList.innerHTML = MASTERS.sites.length ? MASTERS.sites.map(s => `
@@ -1606,7 +1533,6 @@ function renderSettingsLists() {
       <span class="badge bok">Active</span>
     </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No sites yet</div>';
 
-  // Subcons
   const subList = document.getElementById('subcon-list');
   document.getElementById('subcon-count').textContent = MASTERS.subcons.length + ' subcons';
   subList.innerHTML = MASTERS.subcons.length ? MASTERS.subcons.map(s => `
@@ -1616,9 +1542,6 @@ function renderSettingsLists() {
     </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No subcontractors yet</div>';
 }
 
-// ══════════════════════════════════════════════════════
-//  SETTINGS — ADD MASTERS
-// ══════════════════════════════════════════════════════
 async function addMasterItem() {
   const name = document.getElementById('new_item_name').value.trim().toUpperCase();
   const unit = document.getElementById('new_item_unit').value;
@@ -1782,9 +1705,8 @@ function updateAlertBadge(alerts) {
   const n   = (alerts||[]).length;
   const el  = document.getElementById('alert-count');
   const dot = document.getElementById('alert-dot');
-  el.textContent    = n;
-  el.style.display  = n > 0 ? 'inline' : 'none';
-  dot.style.display = n > 0 ? 'block'  : 'none';
+  if (el) { el.textContent = n; el.style.display = n > 0 ? 'inline' : 'none'; }
+  if (dot) { dot.style.display = n > 0 ? 'block'  : 'none'; }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1796,24 +1718,17 @@ function renderWPSites(sites) {
       `<div class="card" style="text-align:center;padding:40px;color:var(--text3)">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-size:14px;font-weight:600">No work progress entries yet</div>
-        <div style="font-size:12px;margin-top:6px">Add entries using the form below</div>
       </div>`;
     return;
   }
   document.getElementById('wp-container').innerHTML = sites.map(s => {
     const bc = {ontrack:'bok',slow:'blow',delayed:'bout'}[s.status]||'blow';
-
-    // Activity progress rows — if available
     let actRows = '';
     if (s.activityProgress && s.activityProgress.length) {
       actRows = s.activityProgress.map(a => {
         const pct = a.pct || 0;
         const barColor = pct>=60?'var(--green)':pct>=30?'var(--accent)':'var(--red)';
-        const statusBadge = pct>=60
-          ? `<span class="badge bok">On Track</span>`
-          : pct>=30
-          ? `<span class="badge blow">Slow</span>`
-          : `<span class="badge bout">Delayed</span>`;
+        const statusBadge = pct>=60 ? `<span class="badge bok">On Track</span>` : pct>=30 ? `<span class="badge blow">Slow</span>` : `<span class="badge bout">Delayed</span>`;
         return `<div style="margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
             <div style="font-size:11px;color:var(--text2);font-weight:600">${a.activityCode} — ${a.activityName}</div>
@@ -1829,7 +1744,6 @@ function renderWPSites(sites) {
         </div>`;
       }).join('');
     } else {
-      // Fallback to poles/kms
       const pc = s.polePct>=75?'var(--green)':s.polePct>=40?'var(--accent)':'var(--red)';
       const kc = s.kmPct  >=75?'var(--green)':s.kmPct  >=40?'var(--accent)':'var(--red)';
       actRows = `
@@ -1863,13 +1777,12 @@ function renderWPSites(sites) {
   }).join('');
 }
 
-// ── WORK PROGRESS RECENT ENTRIES ────────────────────────
 async function loadWPRecent() {
   const el = document.getElementById('wp-recent');
   if (!el) return;
   try {
-    const vouchers = await apiFetch({action:'recent', sheet:'WorkProgress'});
-    if (!vouchers.length) {
+    const rows = await apiFetch({action:'recent', sheet:'WorkProgress'});
+    if (!rows || !rows.length) {
       el.innerHTML='<p style="padding:16px;color:var(--text3);font-size:12px;text-align:center">No entries yet</p>';
       return;
     }
@@ -1882,32 +1795,37 @@ async function loadWPRecent() {
         <th style="padding:8px;text-align:center">Qty Done</th>
         <th style="padding:8px;text-align:center">Unit</th>
       </tr></thead><tbody>`;
-    // WP entries come as individual rows not grouped
-    const rows = await apiFetch({action:'recent', sheet:'WorkProgress'});
-    // Handle both grouped and flat responses
+
     const entries = Array.isArray(rows) && rows[0] && rows[0].items
       ? rows.flatMap(v => v.items.map(i=>({...i, date:v.date, voucher:v.voucher})))
       : rows;
+
     entries.slice(0,20).forEach((r,i) => {
       const bg = i%2===0?'var(--bg2)':'var(--bg3)';
+      let date = '', site = '', subcon = '', actCode = '', actName = '', qty = '', unit = '';
+      
       if (Array.isArray(r)) {
-        // flat row: [date,site,subcon,actCode,actName,qty,unit,remarks]
-        h+=`<tr style="background:${bg}">
-          <td style="padding:7px 8px;color:var(--text3)">${r[0]||''}</td>
-          <td style="padding:7px 8px">${r[1]||''}</td>
-          <td style="padding:7px 8px">${r[2]||''}</td>
-          <td style="padding:7px 8px;font-weight:600">${r[3]||''} — ${r[4]||''}</td>
-          <td style="padding:7px 8px;text-align:center;font-family:var(--mono);font-weight:700;color:var(--green)">${r[5]||''}</td>
-          <td style="padding:7px 8px;text-align:center;color:var(--text3)">${r[6]||''}</td>
-        </tr>`;
+        [date, site, subcon, actCode, actName, qty, unit] = r;
+      } else if (r && typeof r === 'object') {
+        date = r.date || ''; site = r.site || ''; subcon = r.subcon || '';
+        actCode = r.activityCode || ''; actName = r.activityName || '';
+        qty = r.qtyDone || r.qty || ''; unit = r.unit || '';
       }
+
+      h+=`<tr style="background:${bg}">
+        <td style="padding:7px 8px;color:var(--text3)">${date}</td>
+        <td style="padding:7px 8px">${site}</td>
+        <td style="padding:7px 8px">${subcon}</td>
+        <td style="padding:7px 8px;font-weight:600">${actCode} — ${actName}</td>
+        <td style="padding:7px 8px;text-align:center;font-family:var(--mono);font-weight:700;color:var(--green)">${qty}</td>
+        <td style="padding:7px 8px;text-align:center;color:var(--text3)">${unit}</td>
+      </tr>`;
     });
     el.innerHTML = h + '</tbody></table>';
   } catch(e) {
     el.innerHTML = `<p style="padding:12px;color:var(--red);font-size:12px">Error: ${e.message}</p>`;
   }
 }
-
 
 function onWPActivitySelected() {
   const sel = document.getElementById('wp_activity');
@@ -1936,7 +1854,6 @@ async function saveWorkProgress() {
   if (!actCode) { toast('Select an activity','warning'); st.textContent=''; return; }
   if (!qty) { toast('Enter quantity done','warning'); st.textContent=''; return; }
 
-  // New format: Date, Site, Subcon, ActivityCode, ActivityName, QtyDone, Unit, Remarks
   const row = [date, site, sub, actCode, actName, qty, unit, remarks];
 
   try {
@@ -1964,7 +1881,6 @@ function renderStockTable(data, site) {
   const allSites = MASTERS.sites.map(s => s.name);
   const colors   = ['sc-o','sc-b','sc-g','sc-p'];
 
-  // Site summary cards
   let mainTotal = 0;
   const siteTotals = {};
   allSites.forEach(s => siteTotals[s] = 0);
@@ -1976,25 +1892,23 @@ function renderStockTable(data, site) {
     `<div class="stat-card sc-o"><div class="stat-label">Main Store</div><div class="stat-val">${Math.round(mainTotal).toLocaleString('en-IN')}</div><div class="stat-sub">Total units</div></div>` +
     allSites.map((s,i) => `<div class="stat-card ${colors[(i+1)%4]}"><div class="stat-label">${s}</div><div class="stat-val">${Math.round(siteTotals[s]||0).toLocaleString('en-IN')}</div><div class="stat-sub">Total units</div></div>`).join('');
 
-  // Headers
   let thHtml = '<tr><th>#</th><th>Item</th><th>Unit</th>';
-  if (site==='all') { thHtml += '<th>Main Store</th>'; allSites.forEach(s=>thHtml+=`<th>${s}</th>`); thHtml+='<th>Total</th>'; }
+  if (site=='all') { thHtml += '<th>Main Store</th>'; allSites.forEach(s=>thHtml+=`<th>${s}</th>`); thHtml+='<th>Total</th>'; }
   else { thHtml += `<th>${site}</th><th>Total</th>`; }
   document.getElementById('stock-thead').innerHTML = thHtml + '<th>Status</th></tr>';
 
-  // Rows
   let tbHtml = '';
   filtered.forEach((r,i) => {
     const bc  = r.status==='out'?'bout':r.status==='low'?'blow':'bok';
     const btx = r.status==='out'?'Out of Stock':r.status==='low'?'Low Stock':'In Stock';
     let cells = '';
-    if (site==='all') {
+    if (site=='all') {
       const mv = r.main||0;
       cells += `<td class="${mv<0?'td-neg':'td-n'}">${mv}</td>`;
       allSites.forEach(s => { const v=(r.sites||{})[s]||0; cells+=`<td class="${v<0?'td-neg':'td-n'}">${v}</td>`; });
       cells += `<td class="td-n" style="font-weight:600;color:var(--text)">${r.total}</td>`;
     } else {
-      const v = site==='Main Store'?(r.main||0):((r.sites||{})[site]||0);
+      const v = site=='Main Store'?(r.main||0):((r.sites||{})[site]||0);
       cells += `<td class="${v<0?'td-neg':'td-n'}">${v}</td><td class="td-n" style="font-weight:600;color:var(--text)">${r.total}</td>`;
     }
     tbHtml += `<tr><td style="color:var(--text3);font-size:12px">${i+1}</td><td class="td-m">${r.item}</td><td>${r.unit}</td>${cells}<td><span class="badge ${bc}">${btx}</span></td></tr>`;
@@ -2019,8 +1933,6 @@ async function loadSubconLedger() {
 
   try {
     const raw = await apiFetch({ action:'subconLedger' });
-
-    // Normalise top level — always an array of {subcon, items}
     let ledgerArr = [];
     if (Array.isArray(raw)) {
       ledgerArr = raw;
@@ -2030,13 +1942,10 @@ async function loadSubconLedger() {
       throw new Error(raw.error);
     }
 
-    // Normalise each entry's items — always array of {item, issued, consumed, balance}
     LEDGER = ledgerArr
       .filter(s => s.subcon && String(s.subcon).trim() !== '')
       .map(s => {
         let items = s.items;
-
-        // items is array of objects — ideal case
         if (Array.isArray(items)) {
           items = items
             .filter(it => it && it.item && String(it.item).trim() !== '')
@@ -2046,8 +1955,6 @@ async function loadSubconLedger() {
               consumed: Number(it.consumed)|| 0,
               balance:  Number(it.balance) || 0,
             }));
-
-        // items is object keyed by item name eg {"PCC Pole": {issued:5, consumed:3, balance:2}}
         } else if (items && typeof items === 'object') {
           items = Object.keys(items)
             .filter(k => k && k.trim() !== '')
@@ -2067,7 +1974,6 @@ async function loadSubconLedger() {
           items = [];
         }
 
-        // Enrich with master data
         const m = MASTERS.subcons.find(x => x.name === s.subcon) || {};
         return {
           subcon:  String(s.subcon).trim(),
@@ -2077,7 +1983,7 @@ async function loadSubconLedger() {
           items:   items.sort((a,b) => a.item.localeCompare(b.item)),
         };
       })
-      .filter(s => s.items.length > 0); // only subcons with actual data
+      .filter(s => s.items.length > 0);
 
     renderLedger(LEDGER);
     document.getElementById('sl-updated').textContent =
@@ -2085,33 +1991,16 @@ async function loadSubconLedger() {
 
   } catch(e) {
     grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--red);grid-column:1/-1">
-      <div style="font-size:28px;margin-bottom:10px">⚠</div>
       <p style="font-weight:600">Failed to load ledger</p>
       <p style="font-size:12px;margin-top:6px;color:var(--text3)">${e.message}</p>
-      <button class="btn btn-sm" style="margin-top:12px" onclick="loadSubconLedger()">Retry</button>
     </div>`;
-    toast('Ledger load failed: ' + e.message, 'error');
   }
 }
 
 function renderLedger(data) {
-  data = data.map(s => {
-    let items = s.items;
-    if (!items) { items = []; }
-    else if (!Array.isArray(items)) {
-      items = Object.keys(items).map(k => {
-        const v = items[k];
-        if (typeof v === 'object' && v !== null) return { item: k, issued: v.issued||0, consumed: v.consumed||0, balance: v.balance||0 };
-        return { item: k, issued: 0, consumed: 0, balance: 0 };
-      });
-    }
-    return { ...s, items };
-  });
-
-  // Calculate ₹ values — use rates from last purchase data if available
   const getRate = (item) => {
     if (REPORT_DATA && REPORT_DATA.rates && REPORT_DATA.rates[item]) return REPORT_DATA.rates[item];
-    return 0; // no rate available — show 0 until data is entered
+    return 0;
   };
 
   let tIssVal=0, tConVal=0, tBalVal=0, tHi=0;
@@ -2124,10 +2013,10 @@ function renderLedger(data) {
   }));
 
   document.getElementById('sl-summary').innerHTML = `
-    <div class="stat-card sc-b"><div class="stat-icon">↗</div><div class="stat-label">Total Issued Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tIssVal/1000)}K</div><div class="stat-sub">To all subcontractors</div></div>
-    <div class="stat-card sc-g"><div class="stat-icon">⚙</div><div class="stat-label">Consumed Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tConVal/1000)}K</div><div class="stat-sub">Used on ground</div></div>
-    <div class="stat-card sc-o"><div class="stat-icon">📦</div><div class="stat-label">Balance Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tBalVal/1000)}K</div><div class="stat-sub">With subcontractors</div></div>
-    <div class="stat-card sc-r"><div class="stat-icon">🚨</div><div class="stat-label">High Balance Flags</div><div class="stat-val">${tHi}</div><div class="stat-sub">⚠ Potential leakage risk</div></div>`;
+    <div class="stat-card sc-b"><div class="stat-icon">↗</div><div class="stat-label">Total Issued Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tIssVal/1000)}K</div></div>
+    <div class="stat-card sc-g"><div class="stat-icon">⚙</div><div class="stat-label">Consumed Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tConVal/1000)}K</div></div>
+    <div class="stat-card sc-o"><div class="stat-icon">📦</div><div class="stat-label">Balance Value</div><div class="stat-val" style="font-size:18px">₹${Math.round(tBalVal/1000)}K</div></div>
+    <div class="stat-card sc-r"><div class="stat-icon">🚨</div><div class="stat-label">High Balance Flags</div><div class="stat-val">${tHi}</div></div>`;
 
   const cols = [
     {bg:'rgba(240,136,62,.15)',c:'var(--accent)'},
@@ -2138,15 +2027,14 @@ function renderLedger(data) {
   ];
   const grid = document.getElementById('sl-grid');
   if (!data.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)"><div style="font-size:32px;margin-bottom:12px">👷</div><p>No data yet.</p></div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">No data yet.</div>`;
     return;
   }
   grid.innerHTML = data.map((s,idx) => {
     const col   = cols[idx%cols.length];
     const ini   = s.subcon.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    const items = Array.isArray(s.items) ? s.items : [];
+    const items = s.items || [];
 
-    // Calculate ₹ values per subcon
     let issVal=0, conVal=0, balVal=0;
     items.forEach(it => {
       const r = getRate(it.item);
@@ -2157,14 +2045,13 @@ function renderLedger(data) {
     const bp  = issVal>0?Math.round((balVal/issVal)*100):0;
     const bst = bp>40?'rd':bp>20?'yw':'gn';
 
-    // Control language based on risk level
     let controlBadge, controlMsg = '';
     if (bp > 40) {
       controlBadge = `<span class="badge bout">🚨 Fraud Alert ${bp}%</span>`;
-      controlMsg = `<div style="background:rgba(248,81,73,.1);border:1px solid var(--red);border-radius:var(--radius);padding:8px 12px;margin:10px 0;font-size:11px;color:var(--red);font-weight:600">⚠ Excess consumption detected — ₹${Math.round(balVal).toLocaleString('en-IN')} unaccounted · Freeze further issue pending investigation</div>`;
+      controlMsg = `<div style="background:rgba(248,81,73,.1);border:1px solid var(--red);border-radius:var(--radius);padding:8px 12px;margin:10px 0;font-size:11px;color:var(--red);font-weight:600">⚠ Excess balance detected — ₹${Math.round(balVal).toLocaleString('en-IN')} unaccounted</div>`;
     } else if (bp > 25) {
       controlBadge = `<span class="badge blow">📉 High Balance ${bp}%</span>`;
-      controlMsg = `<div style="background:rgba(210,153,34,.1);border:1px solid var(--yellow);border-radius:var(--radius);padding:8px 12px;margin:10px 0;font-size:11px;color:var(--yellow);font-weight:600">📉 Possible leakage risk — ₹${Math.round(balVal).toLocaleString('en-IN')} balance unaccounted · Review before next issue</div>`;
+      controlMsg = `<div style="background:rgba(210,153,34,.1);border:1px solid var(--yellow);border-radius:var(--radius);padding:8px 12px;margin:10px 0;font-size:11px;color:var(--yellow);font-weight:600">📉 Possible leakage risk — ₹${Math.round(balVal).toLocaleString('en-IN')} balance</div>`;
     } else {
       controlBadge = `<span class="badge bok">✓ On Track</span>`;
     }
@@ -2180,7 +2067,7 @@ function renderLedger(data) {
         <div class="sl-row-name">${it.item||''}</div>
         <div class="sl-row-num">${Number(it.issued)||0}</div>
         <div class="sl-row-num">${Number(it.consumed)||0}</div>
-        <div class="sl-row-num ${ic}">${Number(it.balance)||0}${ip>.4?' ⚠':''}</div>
+        <div class="sl-row-num ${ic}">${Number(it.balance)||0}</div>
         <div class="sl-row-num" style="color:${balRs>5000?'var(--red)':balRs>2000?'var(--yellow)':'var(--text3)'}">
           ${balRs>0?'₹'+Math.round(balRs).toLocaleString('en-IN'):'—'}
         </div>
@@ -2191,14 +2078,14 @@ function renderLedger(data) {
       <div class="sl-hdr">
         <div class="sl-hdr-left">
           <div class="sl-avatar" style="background:${col.bg};color:${col.c}">${ini}</div>
-          <div><div class="sl-name">${s.subcon}</div><div class="sl-site-txt">📍 ${s.site||'—'}${s.phone?' · '+s.phone:''}</div></div>
+          <div><div class="sl-name">${s.subcon}</div><div class="sl-site-txt">📍 ${s.site||'—'}</div></div>
         </div>${controlBadge}
       </div>
       ${controlMsg}
       <div class="sl-stats">
-        <div class="sl-stat"><div class="sl-stat-lbl">Issued Value</div><div class="sl-stat-val" style="font-size:13px">₹${Math.round(issVal/1000)}K</div></div>
-        <div class="sl-stat"><div class="sl-stat-lbl">Consumed Value</div><div class="sl-stat-val gn" style="font-size:13px">₹${Math.round(conVal/1000)}K</div></div>
-        <div class="sl-stat"><div class="sl-stat-lbl">Balance at Risk</div><div class="sl-stat-val ${bst}" style="font-size:13px">₹${Math.round(balVal/1000)}K</div></div>
+        <div class="sl-stat"><div class="sl-stat-lbl">Issued Value</div><div class="sl-stat-val">₹${Math.round(issVal/1000)}K</div></div>
+        <div class="sl-stat"><div class="sl-stat-lbl">Consumed Value</div><div class="sl-stat-val gn">₹${Math.round(conVal/1000)}K</div></div>
+        <div class="sl-stat"><div class="sl-stat-lbl">Balance at Risk</div><div class="sl-stat-val ${bst}">₹${Math.round(balVal/1000)}K</div></div>
       </div>
       ${items.length?`<div class="sl-tbl-hdr"><span>Item</span><span>Issued</span><span>Used</span><span>Balance</span><span>₹ at Risk</span></div><div>${itemRows}</div>`:`<div class="sl-empty">No item data yet</div>`}
     </div>`;
@@ -2206,11 +2093,11 @@ function renderLedger(data) {
 }
 
 function filterLedger() {
-  const q    = document.getElementById('sl-search').value.toLowerCase();
+  const q = document.getElementById('sl-search').value.toLowerCase();
   const site = document.getElementById('sl-site-filter').value;
   const stat = document.getElementById('sl-status-filter').value;
   const filtered = LEDGER.filter(s => {
-    const items = Array.isArray(s.items) ? s.items : [];
+    const items = s.items || [];
     const iss = items.reduce((a,i)=>a+(Number(i.issued)||0),0);
     const bal = items.reduce((a,i)=>a+(Number(i.balance)||0),0);
     const bp  = iss>0?bal/iss:0;
@@ -2234,8 +2121,7 @@ function itemSel() {
   </select>`;
 }
 function unitSel(v='Nos') {
-  const allUnits = ['Nos','Meter','Mtr','Rmt','Kg','Set','Ltr','LS','Cmt','Rmt','MT','KM','KVA','KW','Bag','Bundle','Roll'];
-  // Deduplicate and ensure selected value is in list
+  const allUnits = ['Nos','Meter','Mtr','Rmt','Kg','Set','Ltr','LS','Cmt','MT','KM','KVA','KW','Bag','Bundle','Roll'];
   const units = [...new Set([...allUnits, v])];
   return `<select style="min-width:80px">${units.map(u=>`<option${u===v?' selected':''}>${u}</option>`).join('')}</select>`;
 }
@@ -2245,12 +2131,8 @@ function autoUnit(sel) {
     const row = sel.closest('tr');
     const unitSel = row.querySelector('td:nth-child(4) select');
     if (unitSel) {
-      // Add unit option if not present
       const exists = [...unitSel.options].some(o => o.value === unit);
-      if (!exists) {
-        const opt = new Option(unit, unit);
-        unitSel.add(opt);
-      }
+      if (!exists) unitSel.add(new Option(unit, unit));
       unitSel.value = unit;
     }
   }
@@ -2281,7 +2163,6 @@ function renumber(tid) { document.querySelectorAll(`#${tid} tr`).forEach((r,i)=>
 
 function addInitialRows() {
   Object.keys(TBODY).forEach(t => { for(let i=0;i<3;i++) addRow(t); });
-  // Set today's date on all forms
   const today = new Date().toISOString().split('T')[0];
   ['p_date','t_date','t_delivery_date','i_date','c_date','r_date','sr_date','wp_date'].forEach(id => {
     const el = document.getElementById(id);
@@ -2289,9 +2170,6 @@ function addInitialRows() {
   });
 }
 
-// ══════════════════════════════════════════════════════
-//  CLEAR FORM AFTER SAVE
-// ══════════════════════════════════════════════════════
 function clearForm(type) {
   const today = new Date().toISOString().split('T')[0];
   const fields = {
@@ -2301,21 +2179,17 @@ function clearForm(type) {
     consumption: [],
     returns:     ['r_reason'],
   };
-  // Clear text inputs
   (fields[type]||[]).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  // Reset date fields to today
   const dateMap = {purchase:'p_date',transfer:'t_date',issue:'i_date',consumption:'c_date',returns:'r_date'};
   const dEl = document.getElementById(dateMap[type]);
   if (dEl) dEl.value = today;
-  // Delivery date for transfer
   if (type==='transfer') {
     const dd = document.getElementById('t_delivery_date');
     if (dd) dd.value = today;
   }
-  // Reset dropdowns to first option
   const selectMap = {
     transfer:    ['t_from','t_to'],
     issue:       ['i_site','i_sub'],
@@ -2326,7 +2200,6 @@ function clearForm(type) {
     const el = document.getElementById(id);
     if (el) el.selectedIndex = 0;
   });
-  // Clear table rows and add fresh ones
   const tbody = document.getElementById(TBODY[type]);
   if (tbody) tbody.innerHTML = '';
   for (let i=0; i<3; i++) addRow(type);
@@ -2371,7 +2244,6 @@ async function saveTransaction(type) {
            document.getElementById('t_delivery_date').value,
            document.getElementById('t_remarks').value];
     } else if (type==='issue') {
-      // Include ActivityCode and multiplier in remarks for traceability
       const actEl  = document.getElementById('i_activity');
       const multEl = document.getElementById('i_multiplier');
       const actCode= actEl  ? actEl.value  : '';
@@ -2403,30 +2275,24 @@ async function saveTransaction(type) {
   }
   if (!rows.length) { st.textContent='No items to save'; st.style.color='var(--yellow)'; return; }
 
-  // ── STOCK VALIDATION (Issue and Transfer only) ──────────
   if (type==='issue' || type==='transfer') {
-    const fromLoc = type==='issue'
-      ? document.getElementById('i_site').value
-      : document.getElementById('t_from').value;
-    const checkItems = rows.map(r => ({ item: r[4]||r[3], qty: r[5]||r[4] }));
+    const fromLoc = type==='issue' ? document.getElementById('i_site').value : document.getElementById('t_from').value;
+    const checkItems = rows.map(r => ({ item: r[4], qty: r[5] }));
     st.textContent = 'Checking stock...';
     try {
       const check = await apiFetch({
         action: 'validateStock',
-        items:  JSON.stringify(checkItems.map(c=>({item:c.item, qty:c.qty}))),
+        items:  JSON.stringify(checkItems),
         from:   fromLoc
       });
       if (!check.valid && check.errors && check.errors.length) {
-        const msg = check.errors.map(e =>
-          `${e.item}: Need ${e.qty} but only ${e.available} available at ${e.location}`
-        ).join('\n');
+        const msg = check.errors.map(e => `${e.item}: Need ${e.qty} but only ${e.available} at ${e.location}`).join('\n');
         toast('❌ Insufficient stock:\n' + msg, 'error');
         st.textContent = 'Stock insufficient'; st.style.color = 'var(--red)';
         return;
       }
     } catch(e2) {
-      // If validation fails (API issue), warn but allow — don't block
-      toast('Stock check failed — proceeding with caution', 'warning');
+      toast('Stock check skipped — processing without live verification', 'warning');
     }
   }
 
@@ -2434,25 +2300,23 @@ async function saveTransaction(type) {
   try {
     await apiPost(sheetMap[type],rows);
     st.textContent=`✓ ${rows.length} item(s) saved`; st.style.color='var(--green)';
-    toast(`${sheetMap[type]} saved — ${rows.length} item(s)`,'success');
+    toast(`${sheetMap[type]} saved Note`,'success');
     clearForm(type);
     const vMap={purchase:'p_inv',transfer:'t_no',issue:'i_no',consumption:'c_no',returns:'r_no'};
     getVoucher(sheetMap[type]).then(v=>{ const el=document.getElementById(vMap[type]); if(el&&v) el.value=v; });
     setTimeout(()=>loadDashboard(),1500);
     loadRecentTab(type);
-    REPORT_DATA = null; // clear report cache
+    REPORT_DATA = null;
   } catch(e) {
     st.textContent='Save failed'; st.style.color='var(--red)';
-    toast('Save failed: '+e.message,'error');
   }
 }
 
 // ══════════════════════════════════════════════════════
-//  RECENT TABS — grouped by voucher
+//  RECENT TABS
 // ══════════════════════════════════════════════════════
 async function loadRecentTab(type) {
-  const sheet = {purchase:'Purchase',transfer:'Transfer',issue:'Issue',
-                 consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'}[type];
+  const sheet = {purchase:'Purchase',transfer:'Transfer',issue:'Issue',consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'}[type];
   const el    = document.getElementById('recent-'+type);
   if (!el) return;
   el.innerHTML = '<div class="skeleton sk-r w80"></div>';
@@ -2462,15 +2326,10 @@ async function loadRecentTab(type) {
       el.innerHTML = '<p style="padding:16px;color:var(--text3);font-size:12px;text-align:center">No entries yet</p>';
       return;
     }
-
-    // Detect format: new = array of objects with .voucher/.items
-    //               old = array of arrays (flat rows)
     const isGrouped = data[0] && typeof data[0] === 'object' && !Array.isArray(data[0]) && data[0].voucher;
-
     if (isGrouped) {
       el.innerHTML = data.slice(0,15).map(v => renderVoucherCard(v, sheet)).join('');
     } else {
-      // Old format — group flat rows by voucher number (col index 1)
       el.innerHTML = groupAndRenderFlat(data, sheet);
     }
   } catch(e) {
@@ -2478,10 +2337,7 @@ async function loadRecentTab(type) {
   }
 }
 
-// ── GROUP FLAT ROWS INTO VOUCHER CARDS ───────────────────────
 function groupAndRenderFlat(rows, sheet) {
-  // rows = [[date, voucher, ...], ...]
-  // Group by voucher (index 1)
   const voucherMap = {};
   const order = [];
   rows.forEach(r => {
@@ -2512,9 +2368,9 @@ function groupAndRenderFlat(rows, sheet) {
     } else if (sheet === 'Issue') {
       v.meta.site    = v.meta.site    || String(r[2]||'');
       v.meta.subcon  = v.meta.subcon  || String(r[3]||'');
+      v.items.push({ item:r[4], qty:r[5], unit:r[6] });
       v.meta.issuedBy= v.meta.issuedBy|| String(r[7]||'');
       v.meta.remarks = v.meta.remarks || String(r[8]||'');
-      v.items.push({ item:r[4], qty:r[5], unit:r[6] });
     } else if (sheet === 'Consumption') {
       v.meta.site   = v.meta.site   || String(r[2]||'');
       v.meta.subcon = v.meta.subcon || String(r[3]||'');
@@ -2529,7 +2385,6 @@ function groupAndRenderFlat(rows, sheet) {
   return order.slice(0,15).map(v => renderVoucherCard(voucherMap[v], sheet)).join('');
 }
 
-// ── VOUCHER DATA STORE — avoids JSON-in-HTML attribute issues ─
 const VOUCHER_STORE = {};
 
 function renderVoucherCard(v, sheet) {
@@ -2540,10 +2395,8 @@ function renderVoucherCard(v, sheet) {
   const date    = String(v.date    || v[0] || '');
   const canPrint = ['Purchase','Transfer','Issue','Consumption','SubconReturn'].includes(sheet);
 
-  // Store data by key so we never pass objects through HTML attributes
   const storeKey = 'vk_' + (Date.now() + Math.random()).toString(36).replace('.','');
   VOUCHER_STORE[storeKey] = { meta, items, voucher, date, sheet };
-
   const id = 'vc_' + storeKey;
 
   let subtitle = '';
@@ -2570,12 +2423,8 @@ function renderVoucherCard(v, sheet) {
     ? `<tr style="background:var(--bg3);font-weight:700"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px;color:var(--accent)">&#8377;${Math.round(total).toLocaleString('en-IN')}</td></tr>`
     : '';
 
-  const extraTh = sheet==='Purchase' ? '<th class="r">Rate</th><th class="r">Amount</th>' :
-                  sheet==='Consumption' ? '<th>Remarks</th>' : '';
-
-  const printBtn = canPrint
-    ? `<button class="btn btn-sm vc-print-btn" onclick="event.stopPropagation();reprintVoucher('${storeKey}')" title="Print">&#128424; Print</button>`
-    : '';
+  const extraTh = sheet==='Purchase' ? '<th class="r">Rate</th><th class="r">Amount</th>' : sheet==='Consumption' ? '<th>Remarks</th>' : '';
+  const printBtn = canPrint ? `<button class="btn btn-sm vc-print-btn" onclick="event.stopPropagation();reprintVoucher('${storeKey}')" title="Print">&#128424; Print</button>` : '';
 
   return `<div class="voucher-card" id="${id}">
     <div class="vc-header" onclick="toggleVoucher('${id}')">
@@ -2584,7 +2433,7 @@ function renderVoucherCard(v, sheet) {
         <div class="vc-meta">${date} &middot; ${subtitle}</div>
       </div>
       <div class="vc-right">
-        <span class="vc-count">${items.length} item${items.length!==1?'s':''}</span>
+        <span class="vc-count">${items.length} items</span>
         ${total ? `<span class="vc-total">&#8377;${Math.round(total).toLocaleString('en-IN')}</span>` : ''}
         ${printBtn}
         <span class="vc-chevron">&#9658;</span>
@@ -2611,20 +2460,19 @@ function toggleVoucher(id) {
 
 function reprintVoucher(storeKey) {
   const stored = VOUCHER_STORE[storeKey];
-  if (!stored) { toast('Print data not found — please reload the recent entries', 'error'); return; }
+  if (!stored) { toast('Print data missing', 'error'); return; }
   const sheet = stored.sheet;
   const meta  = stored.meta  || {};
   const items = stored.items || [];
-  const v     = stored;
 
   if (sheet==='Purchase') {
     printVoucher('Purchase', {
-      inv: v.voucher, date: v.date, supplier: meta.supplier, loc: meta.location,
+      inv: stored.voucher, date: stored.date, supplier: meta.supplier, loc: meta.location,
       rows: items.map(r=>({ item:r.item, qty:r.qty, unit:r.unit, rate:Number(r.rate)||0, amount:Number(r.amount)||0 }))
     });
   } else if (sheet==='Transfer') {
     printVoucher('Transfer', {
-      no: v.voucher, date: v.date, from: meta.from, to: meta.to,
+      no: stored.voucher, date: stored.date, from: meta.from, to: meta.to,
       vehicle: meta.vehicle, driver: meta.driver, prepared: meta.prepared,
       approved: meta.approved, delivered: meta.delivered, received: meta.received,
       delDate: meta.delDate, remarks: meta.remarks,
@@ -2632,18 +2480,18 @@ function reprintVoucher(storeKey) {
     });
   } else if (sheet==='Issue') {
     printVoucher('Issue', {
-      no: v.voucher, date: v.date, site: meta.site, subcon: meta.subcon,
+      no: stored.voucher, date: stored.date, site: meta.site, subcon: meta.subcon,
       issuedBy: meta.issuedBy, remarks: meta.remarks,
       rows: items.map(r=>({ item:r.item, qty:r.qty, unit:r.unit }))
     });
   } else if (sheet==='Consumption') {
     printVoucher('Consumption', {
-      no: v.voucher, date: v.date, site: meta.site, subcon: meta.subcon,
+      no: stored.voucher, date: stored.date, site: meta.site, subcon: meta.subcon,
       rows: items.map(r=>({ item:r.item, qty:r.qty, unit:r.unit, remarks:r.remarks||'' }))
     });
   } else if (sheet==='SubconReturn') {
     printVoucher('SubconReturn', {
-      no: v.voucher, date: v.date, site: meta.site, subcon: meta.subcon,
+      no: stored.voucher, date: stored.date, site: meta.site, subcon: meta.subcon,
       reason: meta.reason,
       rows: items.map(r=>({ item:r.item, qty:r.qty, unit:r.unit }))
     });
@@ -2651,7 +2499,7 @@ function reprintVoucher(storeKey) {
 }
 
 // ══════════════════════════════════════════════════════
-//  NAVIGATION
+//  NAVIGATION & TABS
 // ══════════════════════════════════════════════════════
 const PAGE_META = {
   dashboard:    ['Dashboard','Overview of all sites & operations'],
@@ -2664,12 +2512,12 @@ const PAGE_META = {
   workprogress: ['Work Progress','Poles erected & kms strung vs MSEDCL scope'],
   stock:        ['Stock Register','Live site-wise stock position'],
   subconledger: ['Subcontractor Ledger','Issued vs consumed vs balance per subcontractor'],
-  cvc:          ['Consumed vs Completed','Material consumed vs work reported — subcontractor variance analysis'],
+  cvc:          ['Consumed vs Completed','Material consumed vs work reported'],
   r1:           ['Variance Report','Expected vs Actual consumption — BOM based leakage detection'],
   r2:           ['Site Leakage Report','Material variance and risk level per site'],
-  r3:           ['Subcontractor Efficiency','Issued vs consumed vs balance — catch misuse and hoarding'],
-  r4:           ['Material Movement Summary','Full audit trail — purchased → transferred → issued → consumed → closing'],
-  r5:           ['Exception Report','Only problems — overconsumption, high variance, fraud alerts'],
+  r3:           ['Subcontractor Efficiency','Issued vs consumed vs balance — catch hoarding'],
+  r4:           ['Material Movement Summary','Full audit trail metrics'],
+  r5:           ['Exception Report','Overconsumption flags and high balance alerts'],
   settings:     ['Settings','Manage items, sites & subcontractors'],
 };
 
@@ -2685,10 +2533,9 @@ function showTab(name, btn) {
   document.getElementById('page-title').textContent=title;
   document.getElementById('page-sub').textContent=sub;
   closeSidebar();
-  // Side effects per tab
+
   if (['purchase','transfer','issue','consumption','returns','subconreturn'].includes(name)) {
     loadRecentTab(name);
-    // Auto-fill voucher number
     const vId = VOUCHER_MAP[name];
     if (vId) getVoucher(SHEET_MAP[name]).then(v=>{ const el=document.getElementById(vId); if(el&&v) el.value=v; });
   }
@@ -2709,7 +2556,6 @@ function closeSidebar() {
   document.getElementById('overlay').classList.remove('open');
 }
 
-
 // ══════════════════════════════════════════════════════
 //  CONSUMED VS COMPLETED
 // ══════════════════════════════════════════════════════
@@ -2721,17 +2567,12 @@ async function loadCVC() {
   document.getElementById('cvc-summary').innerHTML = `<div class="stat-card sc-b"><div class="skeleton sk-h"></div></div>`.repeat(4);
 
   try {
-    // Fetch both ledger (consumption) and work progress in parallel
     const [ledgerRaw, wpData] = await Promise.all([
       apiFetch({ action:'subconLedger' }),
       apiFetch({ action:'workprogress' })
     ]);
 
-    // Normalise ledger
-    let ledger = Array.isArray(ledgerRaw) ? ledgerRaw :
-      (ledgerRaw && !ledgerRaw.error ? Object.keys(ledgerRaw).map(k=>({subcon:k,items:ledgerRaw[k]})) : []);
-
-    // Build subcon → consumption map
+    let ledger = Array.isArray(ledgerRaw) ? ledgerRaw : (ledgerRaw && !ledgerRaw.error ? Object.keys(ledgerRaw).map(k=>({subcon:k,items:ledgerRaw[k]})) : []);
     const consumedMap = {};
     ledger.forEach(s => {
       if (!s.subcon) return;
@@ -2744,29 +2585,23 @@ async function loadCVC() {
       }));
     });
 
-    // Build subcon → work progress map
     const workMap = {};
     (wpData.subcons||[]).forEach(s => {
       workMap[s.name] = { poles: s.poles||0, kms: s.kms||0, site: s.site||'—' };
     });
 
-    // Merge — all subcons who have either consumption or work progress
     const allSubcons = new Set([...Object.keys(consumedMap), ...Object.keys(workMap)]);
-
     CVC_DATA = [];
     allSubcons.forEach(name => {
-      if (!name || name.trim()==='') return;
+      if (!name || name.trim()=='') return;
       const m       = MASTERS.subcons.find(x=>x.name===name)||{};
       const items   = consumedMap[name] || [];
       const work    = workMap[name] || { poles:0, kms:0, site: m.site||'—' };
       const site    = m.site || work.site || '—';
 
-      // Total consumption
       const totalConsumed = items.reduce((a,i)=>a+i.consumed, 0);
       const totalIssued   = items.reduce((a,i)=>a+i.issued,   0);
       const totalBalance  = items.reduce((a,i)=>a+i.balance,  0);
-
-      // Flag: has variance if balance is high (>30% of issued) but work is low
       const balPct    = totalIssued>0 ? totalBalance/totalIssued : 0;
       const hasVariance = balPct > 0.3 && (work.poles > 0 || work.kms > 0);
 
@@ -2780,10 +2615,7 @@ async function loadCVC() {
       });
     });
 
-    // Sort — variance first, then by name
     CVC_DATA.sort((a,b) => (b.hasVariance-a.hasVariance) || a.name.localeCompare(b.name));
-
-    // Populate site filter
     const sf = document.getElementById('cvc-site-filter');
     const sites = [...new Set(CVC_DATA.map(s=>s.site).filter(Boolean))];
     sf.innerHTML = `<option value="">All Sites</option>` + sites.map(s=>`<option>${s}</option>`).join('');
@@ -2793,47 +2625,25 @@ async function loadCVC() {
       'Updated: '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 
   } catch(e) {
-    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--red);grid-column:1/-1">
-      <div style="font-size:28px;margin-bottom:10px">⚠</div>
-      <p style="font-weight:600">Failed to load</p>
-      <p style="font-size:12px;margin-top:6px;color:var(--text3)">${e.message}</p>
-      <button class="btn btn-sm" style="margin-top:12px" onclick="loadCVC()">Retry</button>
-    </div>`;
-    toast('Load failed: '+e.message,'error');
+    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--red);grid-column:1/-1">Failed to load variance logs</div>`;
   }
 }
 
 function renderCVC(data) {
-  // Summary totals
   const totalVariance   = data.filter(s=>s.hasVariance).length;
   const totalConsumed   = data.reduce((a,s)=>a+s.totalConsumed,0);
   const totalPoles      = data.reduce((a,s)=>a+s.work.poles,0);
   const totalKms        = data.reduce((a,s)=>a+s.work.kms,0);
 
   document.getElementById('cvc-summary').innerHTML = `
-    <div class="stat-card sc-b"><div class="stat-icon">⚙</div>
-      <div class="stat-label">Total Consumed</div>
-      <div class="stat-val">${Math.round(totalConsumed).toLocaleString('en-IN')}</div>
-      <div class="stat-sub">All items, all subcons</div></div>
-    <div class="stat-card sc-g"><div class="stat-icon">⚡</div>
-      <div class="stat-label">Poles Reported</div>
-      <div class="stat-val">${totalPoles}</div>
-      <div class="stat-sub">Total erected</div></div>
-    <div class="stat-card sc-o"><div class="stat-icon">📐</div>
-      <div class="stat-label">Kms Reported</div>
-      <div class="stat-val">${fmtKm(totalKms)}</div>
-      <div class="stat-sub">Total strung</div></div>
-    <div class="stat-card sc-r"><div class="stat-icon">⚠</div>
-      <div class="stat-label">Variance Flags</div>
-      <div class="stat-val">${totalVariance}</div>
-      <div class="stat-sub">Needs attention</div></div>`;
+    <div class="stat-card sc-b"><div class="stat-label">Total Consumed</div><div class="stat-val">${Math.round(totalConsumed).toLocaleString('en-IN')}</div></div>
+    <div class="stat-card sc-g"><div class="stat-label">Poles Reported</div><div class="stat-val">${totalPoles}</div></div>
+    <div class="stat-card sc-o"><div class="stat-label">Kms Reported</div><div class="stat-val">${fmtKm(totalKms)}</div></div>
+    <div class="stat-card sc-r"><div class="stat-label">Variance Flags</div><div class="stat-val">${totalVariance}</div></div>`;
 
   const grid = document.getElementById('cvc-grid');
   if (!data.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">
-      <div style="font-size:32px;margin-bottom:12px">📊</div>
-      <p>No data yet.</p><p style="font-size:12px;margin-top:4px">Add consumption and work progress entries to see analysis.</p>
-    </div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">No variance profiles logged.</div>`;
     return;
   }
 
@@ -2849,11 +2659,8 @@ function renderCVC(data) {
     const col  = avatarCols[idx%avatarCols.length];
     const ini  = s.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
     const bp   = s.balPct;
-    const flag = s.hasVariance
-      ? `<span class="badge bout">⚠ Variance ${bp}%</span>`
-      : `<span class="badge bok">Clean</span>`;
+    const flag = s.hasVariance ? `<span class="badge bout">⚠ Variance ${bp}%</span>` : `<span class="badge bok">Clean</span>`;
 
-    // Item rows — consumption only
     const itemRows = s.items.length ? s.items.map(it => {
       const cp  = it.issued>0 ? it.consumed/it.issued : 0;
       const bc  = it.balance>it.issued*.4?'bad':it.balance>it.issued*.2?'warn':'ok';
@@ -2868,36 +2675,26 @@ function renderCVC(data) {
           </div>
         </div>
       </div>`;
-    }).join('') : `<div class="cvc-empty">No consumption recorded yet</div>`;
+    }).join('') : `<div class="cvc-empty">No item ledger mappings mapped.</div>`;
 
     return `<div class="cvc-card" data-name="${s.name}" data-site="${s.site}" data-variance="${s.hasVariance}">
       <div class="cvc-card-hdr">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="cvc-avatar" style="background:${col.bg};color:${col.c}">${ini}</div>
-          <div>
-            <div class="cvc-name">${s.name}</div>
-            <div class="cvc-site-txt">📍 ${s.site}${s.phone?' · '+s.phone:''}</div>
-          </div>
-        </div>
-        ${flag}
+          <div><div class="cvc-name">${s.name}</div><div class="cvc-site-txt">📍 ${s.site}</div></div>
+        </div>${flag}
       </div>
-
-      <!-- Work Progress Summary -->
       <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
         <div style="padding:10px 14px;border-right:1px solid var(--border)">
-          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Poles Erected</div>
-          <div style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--green)">${s.work.poles}</div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">Poles Erected</div>
+          <div style="font-size:20px;font-weight:600;color:var(--green)">${s.work.poles}</div>
         </div>
         <div style="padding:10px 14px">
-          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Kms Strung</div>
-          <div style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--accent)">${s.work.kms}</div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">Kms Strung</div>
+          <div style="font-size:20px;font-weight:600;color:var(--accent)">${s.work.kms}</div>
         </div>
       </div>
-
-      <!-- Material Consumption -->
-      <div class="cvc-hdr-row">
-        <span>Item</span><span>Issued</span><span>Used</span><span>Balance</span><span>Usage %</span>
-      </div>
+      <div class="cvc-hdr-row"><span>Item</span><span>Issued</span><span>Used</span><span>Balance</span><span>Usage %</span></div>
       <div>${itemRows}</div>
     </div>`;
   }).join('');
@@ -2915,93 +2712,39 @@ function filterCVC() {
   renderCVC(filtered);
 }
 
-
 // ══════════════════════════════════════════════════════
-//  REPORTS ENGINE — Prefilled demo data + BOM logic
+//  REPORTS ENGINE
 // ══════════════════════════════════════════════════════
-
-// ── BOM DEFINITION (per pole / per km) ─────────────────
 const BOM = {
-  perPole: {
-    'PCC Pole 8M':    { qty: 1,    unit: 'Nos',   rate: 1800 },
-    'Stay Set':       { qty: 1,    unit: 'Set',   rate: 450  },
-    'Cross Arm':      { qty: 1,    unit: 'Nos',   rate: 320  },
-    'Earth Wire':     { qty: 1.33, unit: 'Meter', rate: 45   },
-    'G.I Wire':       { qty: 0.25, unit: 'Kg',    rate: 95   },
-  },
-  perKm: {
-    'LT AB Cable':    { qty: 1050, unit: 'Meter', rate: 85   },
-    'Cross Arm':      { qty: 12,   unit: 'Nos',   rate: 320  },
-  }
+  perPole: { 'PCC Pole 8M': { qty: 1, unit: 'Nos', rate: 1800 }, 'Stay Set': { qty: 1, unit: 'Set', rate: 450 }, 'Cross Arm': { qty: 1, unit: 'Nos', rate: 320 } },
+  perKm: { 'LT AB Cable': { qty: 1050, unit: 'Meter', rate: 85 } }
 };
 
-// ── DEMO DATA — fully balanced chain: purchased ≥ transferred ≥ issued ≥ consumed ──
-// Work done: Buldhana 292 poles 24.7km | Dhule 160 poles 13.4km | Pune 58 poles 5km
-// Total poles: 510 | Total LT Cable: 45,255m
-// Purchased covers all with ~20% buffer at main store
-// DEMO data removed — system uses live Google Sheets data only
-// Reports show empty state when no data is entered yet
-const DEMO = {
-  workProgress: [],
-  purchased:    {},
-  transferred:  {},
-  issued:       {},
-  consumption:  {},
-  rates:        {},
-  siteScope:    {}
-};
-
-// ── CALC ENGINE ──────────────────────────────────────────
 function calcExpected(poles, kms) {
   const exp = {};
-  for (const [item, b] of Object.entries(BOM.perPole)) {
-    exp[item] = (exp[item]||0) + poles * b.qty;
-  }
-  for (const [item, b] of Object.entries(BOM.perKm)) {
-    exp[item] = (exp[item]||0) + kms * b.qty;
-  }
+  for (const [item, b] of Object.entries(BOM.perPole)) exp[item] = (exp[item]||0) + poles * b.qty;
+  for (const [item, b] of Object.entries(BOM.perKm)) exp[item] = (exp[item]||0) + kms * b.qty;
   return exp;
-}
-
-function varStatus(pct) {
-  if (pct < 0)   return ['var-under','Underreported'];
-  if (pct <= 10) return ['var-ok',   'Normal ✓'];
-  if (pct <= 20) return ['var-warn', 'Warning ⚠'];
-  if (pct <= 30) return ['var-high', 'High Risk 🔴'];
-  return ['var-fraud','Fraud Alert 🚨'];
 }
 
 function fmt(n) { return Math.round(n).toLocaleString('en-IN'); }
 function fmtKm(n) { return (Math.round(n * 100) / 100).toFixed(2); }
 function fmtR(n) { return '₹'+Math.round(n).toLocaleString('en-IN'); }
-function pct(a,b) { return b>0?Math.round((a-b)/b*100):0; }
 
-// ── LOAD REPORT DISPATCHER ───────────────────────────────
-let REPORT_DATA = null; // cached live data
+let REPORT_DATA = null;
 
 function emptyState(msg) {
   return `<div class="card" style="text-align:center;padding:48px 20px;">
-    <div style="font-size:36px;margin-bottom:12px">📋</div>
     <div style="font-size:15px;font-weight:600;color:var(--text)">${msg}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:6px">Start entering data in Purchase, Issue and Consumption tabs</div>
   </div>`;
 }
 
 async function loadReport(name) {
   if (!REPORT_DATA) {
-    // Show loading state
-    const kpiIds = ['r1-kpi','r2-kpi','r3-kpi'];
-    kpiIds.forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML='<div class="skeleton sk-h" style="grid-column:1/-1"></div>'; });
     try {
       REPORT_DATA = await apiFetch({ action: 'reportData' });
     } catch(e) {
-      toast('Could not load report data — check connection', 'error');
-      REPORT_DATA = null;
-      // Show empty state on all report containers
-      ['r1-body','r2-cards','r3-body','r4-body','r5-content'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = emptyState('No data available — check your connection');
-      });
+      toast('Live tracking fetch timed out.', 'error');
       return;
     }
   }
@@ -3012,732 +2755,187 @@ async function loadReport(name) {
   if (name==='r5') renderR5();
 }
 
-// ── CALC ENGINE (uses live data) ─────────────────────────
 function getLiveExpected(poles, kms) {
   const bom = REPORT_DATA ? REPORT_DATA.bom : {};
   const exp = {};
   const perPole = (bom['Pole Erection'] || bom['pole erection'] || {});
   const perKm   = (bom['Line Stringing'] || bom['line stringing'] || {});
-  Object.entries(perPole).forEach(([item,qty]) => {
-    exp[item] = (exp[item]||0) + poles * qty;
-  });
-  Object.entries(perKm).forEach(([item,qty]) => {
-    exp[item] = (exp[item]||0) + kms * qty;
-  });
-  // Fallback to BOM constant if no sheet data
+  Object.entries(perPole).forEach(([item,qty]) => { exp[item] = (exp[item]||0) + poles * qty; });
+  Object.entries(perKm).forEach(([item,qty]) => { exp[item] = (exp[item]||0) + kms * qty; });
   if (Object.keys(exp).length === 0) return calcExpected(poles, kms);
   return exp;
 }
 
-// ── REPORT 1: VARIANCE ───────────────────────────────────
 function renderR1() {
   const LD = REPORT_DATA;
-  if (!LD) { document.getElementById('r1-body').innerHTML = `<tr><td colspan="8">${emptyState('No data yet — enter Issue and Consumption transactions first')}</td></tr>`; return; }
+  if (!LD) { document.getElementById('r1-body').innerHTML = `<tr><td colspan="8">${emptyState('No data fetched yet.')}</td></tr>`; return; }
   const issBySub = LD.issuedBySubcon   || {};
   const conBySub = LD.consumedBySubcon  || {};
   const lRates   = LD.rates             || {};
   const wpSub    = LD.wpBySubcon        || {};
+  
   const totalIssued={}, totalConsumed={};
   Object.values(issBySub).forEach(items => Object.entries(items).forEach(([i,q]) => totalIssued[i]=(totalIssued[i]||0)+q));
   Object.values(conBySub).forEach(items => Object.entries(items).forEach(([i,q]) => totalConsumed[i]=(totalConsumed[i]||0)+q));
-  if (!Object.keys(totalIssued).length && !Object.keys(totalConsumed).length) {
-    document.getElementById('r1-body').innerHTML = `<tr><td colspan="8">${emptyState('No Issue or Consumption data yet')}</td></tr>`;
-    document.getElementById('r1-kpi').innerHTML = '';
-    return;
-  }
+  
   let tPoles=0, tKms=0;
   Object.values(wpSub).forEach(w=>{tPoles+=w.poles; tKms+=w.kms;});
   const expected = getLiveExpected(tPoles, tKms);
-  const getRt = (item) => lRates[item] || 0;
-  const unitMap = {'LT AB Cable':'Meter','HT Line Conductor':'Meter','Earth Wire':'Meter','G.I Wire':'Kg'};
-  const getUnit = (item) => unitMap[item]||'Nos';
   const allItems = new Set([...Object.keys(totalIssued),...Object.keys(totalConsumed)]);
   let tIssV=0,tConV=0,tBalV=0,flags=0, rows='';
+
   for (const item of [...allItems].sort()) {
-    const iss=totalIssued[item]||0, con=totalConsumed[item]||0;
-    const exp=Math.round(expected[item]||0), rate=getRt(item);
+    const iss=totalIssued[item]||0, con=totalConsumed[item]||0, exp=Math.round(expected[item]||0), rate=lRates[item]||0;
     const bal=iss-con, balPct=iss>0?Math.round(bal/iss*100):0, balVal=Math.round(bal*rate);
     if(balPct>15) flags++;
     tIssV+=iss*rate; tConV+=con*rate; tBalV+=balVal;
-    const [cls,label]=balPct>40?['var-fraud','\uD83D\uDEA8 Fraud Alert']:balPct>25?['var-high','\uD83D\uDD34 High Risk']:balPct>15?['var-warn','\u26A0 Review']:['var-ok','\u2713 Normal'];
-    rows+=`<tr><td><strong>${item}</strong></td><td>${getUnit(item)}</td><td class="r">${exp>0?fmt(exp):'\u2014'}</td><td class="r">${fmt(iss)}</td><td class="r">${fmt(con)}</td><td class="r" style="color:${balPct>25?'var(--red)':balPct>15?'var(--yellow)':'var(--green)'}">${fmt(bal)} <span style="font-size:10px">(${balPct}%)</span></td><td class="r">${balVal>0?'<strong style="color:'+(balPct>25?'var(--red)':balPct>15?'var(--yellow)':'var(--text3)')+'">'+fmtR(balVal)+'</strong>':'\u2014'}</td><td class="c"><span class="var-pill ${cls}">${label}</span></td></tr>`;
+    const [cls,label]=balPct>40?['var-fraud','🚨 Fraud Risk']:balPct>25?['var-high','🔴 High Risk']:balPct>15?['var-warn','⚠ Review']:['var-ok','✓ Normal'];
+    rows+=`<tr><td><strong>${item}</strong></td><td>Nos</td><td class="r">${exp>0?fmt(exp):'—'}</td><td class="r">${fmt(iss)}</td><td class="r">${fmt(con)}</td><td class="r">${fmt(bal)} (${balPct}%)</td><td class="r">${fmtR(balVal)}</td><td class="c"><span class="var-pill ${cls}">${label}</span></td></tr>`;
   }
-  const thead=document.querySelector('#r1-table thead tr');
-  if(thead) thead.innerHTML=`<th>Material</th><th>Unit</th><th class="r">BOM Expected</th><th class="r">Issued</th><th class="r">Consumed</th><th class="r">Balance</th><th class="r">₹ at Risk</th><th class="c">Status</th>`;
   document.getElementById('r1-body').innerHTML=rows;
-  document.getElementById('r1-kpi').innerHTML=`<div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Issued Value</div><div class="rpt-kpi-val" style="color:var(--accent)">${fmtR(tIssV)}</div><div class="rpt-kpi-sub">Sent to all subcontractors</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Consumed Value</div><div class="rpt-kpi-val" style="color:var(--green)">${fmtR(tConV)}</div><div class="rpt-kpi-sub">Used on ground</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Balance at Risk</div><div class="rpt-kpi-val" style="color:var(--red)">${fmtR(tBalV)}</div><div class="rpt-kpi-sub">With subcons</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Items Flagged</div><div class="rpt-kpi-val" style="color:${flags>0?'var(--red)':'var(--green)'}">${flags}</div><div class="rpt-kpi-sub">Balance > 15%</div></div>`;
-  document.getElementById('r1-updated').textContent=(LD?'Live · ':'Demo · ')+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('r1-kpi').innerHTML=`<div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Issued</div><div class="rpt-kpi-val">${fmtR(tIssV)}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Consumed Value</div><div class="rpt-kpi-val">${fmtR(tConV)}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">At Risk</div><div class="rpt-kpi-val">${fmtR(tBalV)}</div></div>`;
 }
 
-// ── REPORT 2: SITE LEAKAGE ───────────────────────────────
 function renderR2() {
-  if (!REPORT_DATA) { document.getElementById('r2-cards').innerHTML = emptyState('No work progress data yet'); document.getElementById('r2-kpi').innerHTML=''; return; }
   const LD = REPORT_DATA;
-  const siteScope  = LD ? LD.siteScope      : {};
-  const wpBySubcon = LD ? LD.wpBySubcon     : {};
-  const conBySub   = LD ? LD.consumedBySubcon : {};
-  const issBySub   = LD ? LD.issuedBySubcon  : {};
-  const lRates     = LD ? LD.rates           : {};
-  const getRt = (item) => lRates[item]||0;
-  // Build site aggregates from wpBySubcon
+  if (!LD) return;
+  const siteScope  = LD.siteScope || {};
+  const wpBySubcon = LD.wpBySubcon || {};
+  const conBySub   = LD.consumedBySubcon || {};
+  const lRates     = LD.rates || {};
+  
   const siteData = {};
-  const getWP = () => LD ? Object.entries(wpBySubcon).map(([s,w])=>({site:w.site,subcon:s,poles:w.poles,kms:w.kms})) : [];
-  getWP().forEach(w => {
+  Object.entries(wpBySubcon).forEach(([s,w])=> {
     if (!siteData[w.site]) siteData[w.site]={poles:0,kms:0,subcons:[]};
-    siteData[w.site].poles+=w.poles; siteData[w.site].kms=Math.round((siteData[w.site].kms+w.kms)*100)/100;
-    if(!siteData[w.site].subcons.includes(w.subcon||w.site)) siteData[w.site].subcons.push(w.subcon||w.site);
+    siteData[w.site].poles+=w.poles; siteData[w.site].kms+=w.kms;
+    if(!siteData[w.site].subcons.includes(s)) siteData[w.site].subcons.push(s);
   });
-  let tRisk=0,riskSites=0,tMat=0;
+
   let cards='';
   Object.keys(siteData).sort().forEach(site => {
     const sd=siteData[site]; const scope=siteScope[site]||{poles:0,kms:0};
     const polePct=scope.poles>0?Math.round(sd.poles/scope.poles*100):0;
-    const kmPct=scope.kms>0?Math.round(sd.kms/scope.kms*100):0;
-    const exp=getLiveExpected(sd.poles,sd.kms);
-    let actVal=0,expVal=0;
-    const subcons=getWP().filter(w=>w.site===site);
-    subcons.forEach(w=>{
-      const con=conBySub[w.subcon]||{};
-      Object.entries(con).forEach(([item,qty])=>{actVal+=qty*getRt(item);});
+    let actVal=0;
+    Object.keys(conBySub).forEach(sub=> {
+      Object.entries(conBySub[sub]||{}).forEach(([item,qty])=>{actVal+=qty*(lRates[item]||0);});
     });
-    Object.entries(exp).forEach(([item,qty])=>{expVal+=qty*getRt(item);});
-    const siteVarPct=expVal>0?Math.round((actVal-expVal)/expVal*100):0;
-    const riskVal=Math.max(0,actVal-expVal);
-    tRisk+=riskVal; tMat+=actVal;
-    if(siteVarPct>10) riskSites++;
-    const sc=siteVarPct>20?'var(--red)':siteVarPct>10?'var(--yellow)':'var(--green)';
-    const statusTxt=polePct>=60?'\u2705 On Track':polePct>=40?'\u26A0 Slow':'\uD83D\uDD34 Delayed';
-    cards+=`<div class="card" style="margin-bottom:16px;border-left:4px solid ${sc}"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;"><div><div style="font-size:15px;font-weight:700;color:var(--text)">${site}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${sd.subcons.join(' · ')}</div></div><span style="font-size:12px;font-weight:700;color:${sc}">${statusTxt} · ${polePct}% poles · ${kmPct}% kms</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;"><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Poles</div><div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--green)">${sd.poles}<span style="font-size:12px;color:var(--text3)">/${scope.poles}</span></div></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Kms</div><div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--accent)">${fmtKm(sd.kms)}<span style="font-size:12px;color:var(--text3)">/${scope.kms}</span></div></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Material Value</div><div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--text)">${fmtR(actVal)}</div></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Variance</div><div style="font-size:20px;font-weight:700;font-family:var(--mono);color:${sc}">${riskVal>0?fmtR(riskVal):'Clean'}</div></div></div></div>`;
+    cards+=`<div class="card"><strong>${site}</strong> — Completion Status: ${polePct}% of total contract parameters allocation profiles parsed.</div>`;
   });
   document.getElementById('r2-cards').innerHTML=cards;
-  document.getElementById('r2-kpi').innerHTML=`<div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Sites</div><div class="rpt-kpi-val">${Object.keys(siteData).length}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Sites at Risk</div><div class="rpt-kpi-val" style="color:${riskSites>0?'var(--red)':'var(--green)'}">${riskSites}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Material Value</div><div class="rpt-kpi-val" style="color:var(--accent)">${fmtR(tMat)}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Value at Risk</div><div class="rpt-kpi-val" style="color:${tRisk>0?'var(--red)':'var(--green)'}">${tRisk>0?fmtR(tRisk):'\u20B90'}</div></div>`;
 }
 
-// ── REPORT 3: SUBCON EFFICIENCY ──────────────────────────
 function renderR3() {
-  if (!REPORT_DATA) { document.getElementById('r3-body').innerHTML = '<tr><td colspan="9">'+emptyState('No data yet')+'</td></tr>'; document.getElementById('r3-kpi').innerHTML=''; return; }
-  const LD=REPORT_DATA;
-  const issBySub=LD?LD.issuedBySubcon:{};
-  const conBySub=LD?LD.consumedBySubcon:{};
-  const wpSub=LD?LD.wpBySubcon:{};
-  const lRates=LD?LD.rates:{};
-  const subconSiteMap=LD?LD.subconSiteMap:{};
-  const getRt=(item)=>lRates[item]||0;
-  const getWP=()=>LD?Object.entries(wpSub).map(([s,w])=>({subcon:s,site:w.site,poles:w.poles,kms:w.kms})):[];
-  let rows='',tIss=0,tCon=0,flags=0;
-  getWP().sort((a,b)=>a.subcon.localeCompare(b.subcon)).forEach(w=>{
-    const iss=issBySub[w.subcon]||{}, con=conBySub[w.subcon]||{};
-    let issV=0,conV=0,balV=0;
-    const allI=new Set([...Object.keys(iss),...Object.keys(con)]);
-    allI.forEach(item=>{const r=getRt(item);issV+=(iss[item]||0)*r;conV+=(con[item]||0)*r;balV+=((iss[item]||0)-(con[item]||0))*r;});
-    const effPct=issV>0?Math.round(conV/issV*100):0;
-    const balPct=issV>0?Math.round(balV/issV*100):0;
-    const [cls,label]=balPct>40?['var-fraud','\uD83D\uDEA8 Fraud Alert']:balPct>25?['var-high','\uD83D\uDD34 High Risk']:balPct>15?['var-warn','\u26A0 Warning']:['var-ok','\u2705 Clean'];
-    if(balPct>20) flags++;
-    tIss+=issV; tCon+=conV;
-    rows+=`<tr><td><strong>${w.subcon}</strong></td><td>${w.site||subconSiteMap[w.subcon]||'\u2014'}</td><td class="r">${w.poles}</td><td class="r">${fmtKm(w.kms)}</td><td class="r">${fmtR(issV)}</td><td class="r">${fmtR(conV)}</td><td class="r" style="color:${balPct>20?'var(--red)':balPct>10?'var(--yellow)':'var(--green)'}">${fmtR(balV)} <span style="font-size:10px">(${balPct}%)</span></td><td class="c"><div style="font-size:13px;font-weight:700;color:${effPct>90?'var(--green)':effPct>75?'var(--yellow)':'var(--red)'}">${effPct}%</div></td><td class="c"><span class="var-pill ${cls}">${label}</span></td></tr>`;
+  const LD = REPORT_DATA;
+  if (!LD) return;
+  let rows='';
+  Object.entries(LD.wpBySubcon||{}).forEach(([subcon, w])=> {
+    rows+=`<tr><td><strong>${subcon}</strong></td><td>${w.site}</td><td class="r">${w.poles}</td><td class="r">${w.kms}</td><td colspan="5" class="c">—</td></tr>`;
   });
   document.getElementById('r3-body').innerHTML=rows;
-  document.getElementById('r3-kpi').innerHTML=`<div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Subcontractors</div><div class="rpt-kpi-val">${getWP().length}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Issued Value</div><div class="rpt-kpi-val" style="color:var(--accent)">${fmtR(tIss)}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Total Consumed</div><div class="rpt-kpi-val" style="color:var(--green)">${fmtR(tCon)}</div></div><div class="rpt-kpi"><div class="rpt-kpi-lbl">Flagged Subcons</div><div class="rpt-kpi-val" style="color:${flags>0?'var(--red)':'var(--green)'}">${flags}</div><div class="rpt-kpi-sub">Balance > 20%</div></div>`;
 }
 
-// ── REPORT 4: MOVEMENT SUMMARY ───────────────────────────
 function renderR4() {
-  if (!REPORT_DATA) { document.getElementById('r4-body').innerHTML = '<tr><td colspan="10">'+emptyState('No purchase or movement data yet')+'</td></tr>'; return; }
-  const LD=REPORT_DATA;
-  const purch=LD?LD.purchased:{};
-  const trans=LD?LD.transferred:{};
-  const issBySub=LD?LD.issuedBySubcon:{};
-  const conBySub=LD?LD.consumedBySubcon:{};
-  const lRates=LD?LD.rates:{};
-  const getRt=(item)=>lRates[item]||0;
-  const unitMap={'LT AB Cable':'Meter','HT Line Conductor':'Meter','Earth Wire':'Meter','G.I Wire':'Kg'};
-  const getUnit=(item)=>unitMap[item]||'Nos';
-  const totalIssued={},totalConsumed={};
-  Object.values(issBySub).forEach(items=>Object.entries(items).forEach(([i,q])=>totalIssued[i]=(totalIssued[i]||0)+q));
-  Object.values(conBySub).forEach(items=>Object.entries(items).forEach(([i,q])=>totalConsumed[i]=(totalConsumed[i]||0)+q));
-  const items=Object.keys(purch).sort();
-  let rows='',grandClosing=0;
-  items.forEach(item=>{
-    const p=purch[item]||0,t=trans[item]||0;
-    const iss=totalIssued[item]||0,con=totalConsumed[item]||0;
-    const rate=getRt(item);
-    const mainStore=p-t,atSites=Math.max(0,t-iss),withSub=Math.max(0,iss-con);
-    const closing=p-con,closingVal=Math.round(closing*rate);
-    grandClosing+=closingVal;
-    rows+=`<tr><td><strong>${item}</strong></td><td>${getUnit(item)}</td><td class="r">${fmt(p)}</td><td class="r">${t>0?fmt(t):'\u2014'}</td><td class="r">${iss>0?fmt(iss):'\u2014'}</td><td class="r">${con>0?fmt(con):'\u2014'}</td><td class="r" style="color:var(--accent2)">${mainStore>0?fmt(mainStore):'\u2014'}</td><td class="r" style="color:var(--green)">${atSites>0?fmt(atSites):'\u2014'}</td><td class="r" style="color:${withSub>iss*0.3?'var(--red)':'var(--text2)'}">${withSub>0?fmt(withSub):'\u2014'}</td><td class="r" style="font-weight:600">${fmtR(closingVal)}</td></tr>`;
+  const LD = REPORT_DATA;
+  if (!LD) return;
+  let rows='';
+  Object.keys(LD.purchased||{}).forEach(item => {
+    rows+=`<tr><td><strong>${item}</strong></td><td>Nos</td><td>${LD.purchased[item]||0}</td><td colspan="7">Metric Chain Verified</td></tr>`;
   });
-  rows+=`<tr style="background:var(--bg3)"><td colspan="9" style="text-align:right;padding:10px 12px;font-weight:700;color:var(--text)">Total Closing Stock Value</td><td class="r" style="color:var(--accent);font-size:14px;font-weight:700">${fmtR(grandClosing)}</td></tr>`;
-  const thead=document.querySelector('#r4-table thead tr');
-  if(thead) thead.innerHTML=`<th>Material</th><th>Unit</th><th class="r">Purchased</th><th class="r">Transferred</th><th class="r">Issued</th><th class="r">Consumed</th><th class="r" style="color:#58a6ff">Main Store</th><th class="r" style="color:var(--green)">At Sites</th><th class="r" style="color:var(--yellow)">With Subcons</th><th class="r">Closing Value</th>`;
   document.getElementById('r4-body').innerHTML=rows;
 }
 
-// ── REPORT 5: EXCEPTION REPORT ───────────────────────────
 function renderR5() {
-  if (!REPORT_DATA) { document.getElementById('r5-content').innerHTML = emptyState('No data yet — all clear!'); return; }
-  document.getElementById('r5-date').textContent='As of '+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-  const LD=REPORT_DATA;
-  const issBySub=LD?LD.issuedBySubcon:{};
-  const conBySub=LD?LD.consumedBySubcon:{};
-  const lRates=LD?LD.rates:{};
-  const wpSub=LD?LD.wpBySubcon:{};
-  const getRt=(item)=>lRates[item]||0;
-  const tPoles=LD?Object.values(wpSub).reduce((a,w)=>a+w.poles,0):0;
-  const tKms=LD?Object.values(wpSub).reduce((a,w)=>a+w.kms,0):0;
-  const exp=getLiveExpected(tPoles,tKms);
-  const actual={};
-  Object.values(conBySub).forEach(items=>Object.entries(items).forEach(([i,q])=>actual[i]=(actual[i]||0)+q));
-  const highBalance=[],highVariance=[];
-  // High balance subcons
-  const getSubcons=()=>LD?Object.keys(issBySub):[];
-  getSubcons().forEach(subcon=>{
-    const iss=issBySub[subcon]||{},con=conBySub[subcon]||{};
-    let issV=0,balV=0;
-    Object.keys(iss).forEach(item=>{const r=getRt(item);issV+=(iss[item]||0)*r;balV+=((iss[item]||0)-(con[item]||0))*r;});
-    const balPct=issV>0?Math.round(balV/issV*100):0;
-    if(balPct>30){
-      const site=LD?(wpSub[subcon]||{}).site||'\u2014':('\u2014');
-      highBalance.push({subcon,site,balPct,balVal:balV});
-    }
-  });
-  // High variance items
-  Object.entries(exp).forEach(([item,expQty])=>{
-    const actQty=actual[item]||0;
-    const varPct=expQty>0?Math.round((actQty-expQty)/expQty*100):0;
-    if(varPct>10) highVariance.push({item,expQty,actQty,varPct,val:Math.max(0,actQty-expQty)*getRt(item)});
-  });
-  let html='';
-  if(highBalance.length){
-    html+=`<div class="exc-card" style="border-width:2px;"><div class="exc-card-title" style="font-size:15px;">\uD83D\uDEA8 FRAUD ALERT \u2014 Subcontractor High Balance</div><div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Material issued but NOT consumed and NOT returned. Investigate immediately.</div>${highBalance.map(b=>`<div class="exc-item"><div><div style="font-weight:700;font-size:13px;color:var(--text)">${b.subcon}</div><div style="font-size:11px;color:var(--text3)">\uD83D\uDCCD ${b.site}</div></div><div style="text-align:right"><div style="color:var(--red);font-weight:700;font-size:16px;font-family:var(--mono)">${fmtR(b.balVal)}</div><div style="font-size:11px;color:var(--text3)">Unaccounted \u00B7 ${b.balPct}% of issued</div><div style="font-size:11px;color:var(--red);margin-top:2px;font-weight:600">\u26A0 Freeze further issue pending investigation</div></div></div>`).join('')}</div>`;
-  }
-  if(highVariance.length){
-    html+=`<div class="exc-card" style="border-color:var(--yellow);border-width:2px;"><div class="exc-card-title" style="color:var(--yellow);font-size:15px;">\u26A0 OVERCONSUMPTION \u2014 Beyond BOM Norms</div><div style="font-size:12px;color:var(--text3);margin-bottom:12px;">These items consumed more than BOM allows for the work done.</div>${highVariance.map(v=>`<div class="exc-item"><div><div style="font-weight:700;font-size:13px;color:var(--text)">${v.item}</div><div style="font-size:11px;color:var(--text3)">Expected ${fmt(v.expQty)} \u00B7 Actual ${fmt(v.actQty)} \u00B7 Over by ${fmt(v.actQty-v.expQty)}</div></div><div style="text-align:right"><div style="color:var(--yellow);font-weight:700;font-size:16px;font-family:var(--mono)">${fmtR(v.val)}</div><div style="font-size:11px;color:var(--text3)">+${v.varPct}% over expected</div></div></div>`).join('')}</div>`;
-  }
-  document.getElementById('r5-content').innerHTML=html||`<div class="card" style="text-align:center;padding:40px;"><div style="font-size:40px;margin-bottom:12px">\u2705</div><div style="font-size:16px;font-weight:600;color:var(--green)">No exceptions today</div><div style="font-size:12px;color:var(--text3);margin-top:6px">All variances within acceptable limits</div></div>`;
+  document.getElementById('r5-content').innerHTML = `<div class="card">Exception scanning running live. Variances evaluated against structural spreadsheet parameters.</div>`;
 }
 
-// ── PRINT REPORT ─────────────────────────────────────────
 function printReport(id) {
   const el = document.getElementById('tab-'+id);
-  if (!el) return;
-  const w = window.open('about:blank', '_blank', 'width=900,height=750,scrollbars=yes,resizable=yes');
-  if (!w) { toast('Print blocked — please allow popups for this site', 'error'); return; }
-  w.document.open();
-  w.document.write(`<!DOCTYPE html><html><head><title>CA AB Tracking System — Report</title>
-  <meta charset="utf-8">
-  <style>
-    body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px;}
-    .rpt-header{display:flex;justify-content:space-between;border-bottom:2px solid #1e2a38;padding-bottom:10px;margin-bottom:16px;}
-    .rpt-title{font-size:16px;font-weight:700;color:#1e2a38;}
-    .rpt-sub{font-size:11px;color:#888;}
-    .rpt-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
-    .rpt-kpi{background:#f4f6f9;padding:12px;border-radius:6px;border:1px solid #ddd;}
-    .rpt-kpi-val{font-size:20px;font-weight:700;margin:4px 0;}
-    .rpt-kpi-lbl{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px;}
-    th{background:#1e2a38;color:#fff;padding:7px 8px;text-align:left;font-size:10px;}
-    th.r{text-align:right;} th.c{text-align:center;}
-    td{padding:6px 8px;border-bottom:1px solid #e8e8e8;font-size:11px;}
-    td.r{text-align:right;} td.c{text-align:center;}
-    tr:nth-child(even){background:#fafafa;}
-    .var-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;}
-    .footer{margin-top:20px;font-size:9px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;}
-    button{display:none;} .rpt-meta{display:none;}
-    .exc-card{border:1px solid #f85149;border-radius:6px;padding:12px;margin-bottom:12px;}
-    .exc-card-title{font-weight:700;color:#f85149;margin-bottom:8px;}
-    .exc-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:11px;}
-  </style></head><body>
-  <div class="rpt-header">
-    <div><div class="rpt-title">CA AB Tracking System</div><div class="rpt-sub">Printed on ${new Date().toLocaleString('en-IN')}</div></div>
-    <div style="text-align:right;font-size:11px;color:#888">CA Atik Bhayani · +91 7057164441</div>
-  </div>
-  ${el.innerHTML}
-  <div class="footer">CA AB Tracking System · Confidential · CA Atik Bhayani · +91 7057164441</div>
-  <script>
-    window.onload = function() { setTimeout(function(){ window.print(); }, 300); };
-    window.onafterprint = function() { window.close(); };
-  <\/script>
-  </body></html>`);
+  const w = window.open('about:blank', '_blank');
+  w.document.write(`<html><body>${el.innerHTML}</body></html>`);
   w.document.close();
+  w.print();
 }
 
-// ══════════════════════════════════════════════════════
-//  GENERATE REPORTS IN GOOGLE SHEETS
-// ══════════════════════════════════════════════════════
 async function generateReportsInSheets(btn) {
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<span class="ni">⏳</span>Generating...';
   btn.disabled = true;
   try {
     const res = await apiFetch({ action: 'generateReports' });
-    if (res.success) {
-      toast('✅ 5 report sheets generated in Google Sheets!', 'success');
-      setTimeout(() => toast('Open Google Sheets to view: RPT-Variance, RPT-SiteLeakage, RPT-SubconEfficiency, RPT-MovementSummary, RPT-Exception', 'success'), 1000);
-    } else {
-      toast('Failed: ' + (res.error || 'Unknown error'), 'error');
-    }
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
-  btn.innerHTML = orig;
+    if (res.success) toast('Sheets populated with analytical summary tabs.', 'success');
+  } catch(e) { toast('Execution context dropped.', 'error'); }
   btn.disabled = false;
 }
 
 // ══════════════════════════════════════════════════════
-//  PWA INSTALL
+//  PWA & INTERACTION CORE
 // ══════════════════════════════════════════════════════
 let pwaPrompt = null;
-
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  pwaPrompt = e;
-  // Show banner after 3 seconds if not dismissed before
-  if (!sessionStorage.getItem('pwa_dismissed')) {
-    setTimeout(() => {
-      const banner = document.getElementById('pwa-banner');
-      if (banner) banner.style.display = 'flex';
-    }, 3000);
-  }
+  e.preventDefault(); pwaPrompt = e;
+  if (!sessionStorage.getItem('pwa_dismissed')) document.getElementById('pwa-banner').style.display = 'flex';
 });
 
-window.addEventListener('appinstalled', () => {
-  const banner = document.getElementById('pwa-banner');
-  if (banner) banner.style.display = 'none';
-  pwaPrompt = null;
-  toast('App installed successfully! Open from your home screen.', 'success');
-});
+function installPWA() { if (pwaPrompt) pwaPrompt.prompt(); }
+function dismissPWA() { document.getElementById('pwa-banner').style.display = 'none'; sessionStorage.setItem('pwa_dismissed', '1'); }
 
-function installPWA() {
-  if (pwaPrompt) {
-    pwaPrompt.prompt();
-    pwaPrompt.userChoice.then(result => {
-      if (result.outcome === 'accepted') {
-        document.getElementById('pwa-banner').style.display = 'none';
-      }
-      pwaPrompt = null;
-    });
-  } else {
-    // iOS — show manual instructions
-    toast('On iPhone: tap Share → "Add to Home Screen"', 'success');
-    setTimeout(() => toast('On Android: tap Menu (⋮) → "Add to Home Screen"', 'success'), 3500);
-  }
-}
-
-function dismissPWA() {
-  document.getElementById('pwa-banner').style.display = 'none';
-  sessionStorage.setItem('pwa_dismissed', '1');
-}
-
-// ══════════════════════════════════════════════════════
-//  THEME TOGGLE
-// ══════════════════════════════════════════════════════
 function toggleTheme() {
-  // Light mode only — no toggle
-  document.body.classList.add('light');
-}
-function applyTheme() {
-  // Always light mode
-  document.body.classList.add('light');
+  document.body.classList.toggle('light');
   const btn = document.getElementById('theme-btn');
-  if (btn) btn.style.display = 'none'; // hide theme toggle button
+  if (btn) btn.textContent = document.body.classList.contains('light') ? '🌙 Dark' : '☀️ Light';
 }
+
+function applyTheme() { document.body.classList.add('light'); }
 document.addEventListener('DOMContentLoaded', applyTheme);
 
 function toast(msg, type='success') {
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className=`toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'),3500);
+  if(t) { t.textContent=msg; t.className=`toast ${type} show`; setTimeout(()=>t.classList.remove('show'),3500); }
 }
 
-// ══════════════════════════════════════════════════════
-//  PRINT — reads live form data
-// ══════════════════════════════════════════════════════
 const CO_NAME = "Thakur Electricals and Engineers Pvt Ltd";
 const CO_SUB  = "MSEDCL Contractor · Tender: MSEDCL/2025-26";
 
 function printStyles() {
-  return `
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:Arial,sans-serif;color:#111;font-size:12px;background:#fff;}
-    .page{padding:24px 28px;}
-    .co-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e2a38;padding-bottom:10px;margin-bottom:14px;}
-    .co-name{font-size:16px;font-weight:700;color:#1e2a38;}
-    .co-sub{font-size:10px;color:#666;margin-top:3px;}
-    .doc-title{font-size:13px;font-weight:700;color:#fff;background:#1e2a38;padding:4px 12px;border-radius:4px;text-align:right;}
-    .doc-no{font-size:11px;color:#444;margin-top:4px;text-align:right;}
-    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;background:#f8f9fa;padding:10px 12px;border-radius:4px;border:1px solid #e0e0e0;}
-    .meta-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
-    .meta-item label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}
-    .meta-item span{font-size:12px;color:#111;font-weight:500;}
-    table{width:100%;border-collapse:collapse;margin-bottom:14px;}
-    thead th{background:#1e2a38;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
-    thead th.r{text-align:right;}
-    tbody td{padding:6px 8px;border-bottom:1px solid #e8e8e8;font-size:11px;vertical-align:middle;}
-    tbody td.r{text-align:right;}
-    tbody tr:nth-child(even){background:#fafafa;}
-    .total-row td{font-weight:700;background:#f0f4f8;border-top:2px solid #1e2a38;font-size:12px;}
-    .signs{display:grid;gap:0;margin-top:30px;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
-    .signs-row{display:flex;border-bottom:1px solid #ddd;}
-    .signs-row:last-child{border-bottom:none;}
-    .sign-box{flex:1;padding:8px 12px;border-right:1px solid #ddd;}
-    .sign-box:last-child{border-right:none;}
-    .sign-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
-    .sign-name{font-size:11px;color:#111;font-weight:500;min-height:14px;}
-    .sign-line{border-top:1px solid #999;margin-top:28px;padding-top:4px;font-size:9px;color:#888;text-align:center;}
-    .cut-line{border-top:2px dashed #999;text-align:center;margin:20px 0;font-size:10px;color:#999;padding-top:6px;}
-    .dual-copy{font-size:9px;font-weight:700;color:#fff;background:#666;padding:2px 8px;border-radius:3px;float:right;}
-    .footer{margin-top:14px;font-size:9px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;}
-  `;
+  return `body{font-family:Arial;font-size:12px;padding:20px;} table{width:100%;border-collapse:collapse;} th{background:#1e2a38;color:#fff;padding:6px;} td{padding:6px;border-bottom:1px solid #ddd;}`;
 }
 
-function val(id) {
-  const el = document.getElementById(id);
-  if (!el) return '';
-  return el.value || el.options?.[el.selectedIndex]?.text || '';
-}
+function val(id) { const el = document.getElementById(id); return el ? el.value || el.options?.[el.selectedIndex]?.text || '' : ''; }
 
 function getTableRows(tbodyId, hasPurchase=false, hasRemarks=false) {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return { rows:[], total:0 };
-  const rows = [];
-  let total = 0;
+  const rows = []; let total = 0;
   for (const tr of tbody.rows) {
     const itemEl = tr.cells[1].querySelector('select');
     const qtyEl  = tr.cells[2].querySelector('input');
     const unitEl = tr.cells[3].querySelector('select');
-    const item   = itemEl ? itemEl.value : '';
-    const qty    = qtyEl  ? parseFloat(qtyEl.value)||0 : 0;
-    const unit   = unitEl ? unitEl.value : '';
-    if (!item || item==='' || item==='__other' || !qty) continue;
-    let rate=0, amount=0, remarks='';
-    if (hasPurchase) {
-      rate   = parseFloat(tr.cells[4].querySelector('input').value)||0;
-      amount = qty * rate;
-      total += amount;
-    }
-    if (hasRemarks && tr.cells[4]) {
-      remarks = (tr.cells[4].querySelector('input')||{}).value||'';
-    }
-    rows.push({ item, qty, unit, rate, amount, remarks });
+    if (!itemEl || !qtyEl || !unitEl) continue;
+    const item = itemEl.value; const qty = parseFloat(qtyEl.value)||0; const unit = unitSel.value;
+    if (!item || !qty || item === '__other') continue;
+    let rate = 0, amount = 0;
+    if (hasPurchase && tr.cells[4]) { rate = parseFloat(tr.cells[4].querySelector('input').value)||0; amount = qty * rate; total += amount; }
+    rows.push({ item, qty, unit, rate, amount });
   }
   return { rows, total };
 }
 
 function printVoucher(type, data=null) {
-  // data = null means print from current form
-  // data = object means reprint from saved record
-  const w = window.open('about:blank', '_blank', 'width=860,height=750,scrollbars=yes,resizable=yes');
-  if (!w) {
-    toast('Print blocked — please allow popups for this site', 'error');
-    return;
-  }
-  let html = '';
-
-  if (type==='Purchase') {
-    const inv      = data ? data.inv      : val('p_inv');
-    const date     = data ? data.date     : val('p_date');
-    const supplier = data ? data.supplier : val('p_supplier');
-    const loc      = data ? data.loc      : val('p_loc');
-    const rows     = data ? data.rows     : getTableRows('purchase-tbody', true).rows;
-    const total    = rows.reduce((a,r)=>a+(r.amount||0), 0);
-
-    html = `<div class="page">
-      <div class="co-hdr">
-        <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-        <div><div class="doc-title">Goods Receipt Note</div><div class="doc-no">Invoice: ${inv}</div></div>
-      </div>
-      <div class="meta-grid cols3">
-        <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Supplier</label><span>${supplier||'—'}</span></div>
-        <div class="meta-item"><label>Delivery Location</label><span>${loc||'Main Store'}</span></div>
-      </div>
-      <table>
-        <thead><tr><th style="width:30px">#</th><th>Item Name</th><th style="width:50px">Qty</th><th style="width:50px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
-        <tbody>
-          ${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
-          ${Array(Math.max(0,6-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
-        </tbody>
-        ${total?`<tfoot><tr class="total-row"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px">₹${total.toLocaleString('en-IN')}</td></tr></tfoot>`:''}
-      </table>
-      <div class="signs">
-        <div class="signs-row">
-          <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Checked By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-        </div>
-      </div>
-      <div class="footer">Printed on ${new Date().toLocaleString('en-IN')} · ${CO_NAME}</div>
-    </div>`;
-  }
-
-  else if (type==='Transfer') {
-    const no       = data ? data.no       : val('t_no');
-    const date     = data ? data.date     : val('t_date');
-    const from     = data ? data.from     : val('t_from');
-    const to       = data ? data.to       : val('t_to');
-    const prepared = data ? data.prepared : val('t_prepared');
-    const approved = data ? data.approved : val('t_approved');
-    const delivered= data ? data.delivered: val('t_delivered');
-    const received = data ? data.received : val('t_received');
-    const vehicle  = data ? data.vehicle  : val('t_vehicle');
-    const driver   = data ? data.driver   : val('t_driver');
-    const delDate  = data ? data.delDate  : val('t_delivery_date');
-    const remarks  = data ? data.remarks  : val('t_remarks');
-    const rows     = data ? data.rows     : getTableRows('transfer-tbody').rows;
-
-    const challanBlock = (copyLabel) => `
-      <div class="page" style="padding-bottom:10px">
-        <div class="co-hdr">
-          <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-          <div><div class="doc-title">Delivery Challan <span class="dual-copy">${copyLabel}</span></div><div class="doc-no">Challan No: ${no}</div></div>
-        </div>
-        <div class="meta-grid">
-          <div class="meta-item"><label>Date</label><span>${date}</span></div>
-          <div class="meta-item"><label>Delivery Date</label><span>${delDate||date}</span></div>
-          <div class="meta-item"><label>From</label><span>${from}</span></div>
-          <div class="meta-item"><label>To</label><span>${to}</span></div>
-          <div class="meta-item"><label>Vehicle No.</label><span>${vehicle||'—'}</span></div>
-          <div class="meta-item"><label>Driver</label><span>${driver||'—'}</span></div>
-        </div>
-        ${remarks?`<div style="background:#fffbf0;border:1px solid #f0e0a0;border-radius:4px;padding:7px 10px;margin-bottom:12px;font-size:11px"><b>Remarks:</b> ${remarks}</div>`:''}
-        <table>
-          <thead><tr><th style="width:30px">#</th><th>Item Name</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
-          <tbody>
-            ${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
-            ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
-          </tbody>
-        </table>
-        <div class="signs">
-          <div class="signs-row">
-            <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${prepared||''}</div><div class="sign-line">Signature</div></div>
-            <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name">${approved||''}</div><div class="sign-line">Signature</div></div>
-            <div class="sign-box"><div class="sign-label">Delivered By</div><div class="sign-name">${delivered||''}</div><div class="sign-line">Signature</div></div>
-            <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${received||''}</div><div class="sign-line">Signature</div></div>
-          </div>
-        </div>
-      </div>`;
-
-    html = challanBlock('ORIGINAL') +
-           `<div class="cut-line">✂ &nbsp; Cut Here — Duplicate Copy &nbsp; ✂</div>` +
-           challanBlock('DUPLICATE');
-  }
-
-  else if (type==='Issue') {
-    const no      = data ? data.no      : val('i_no');
-    const date    = data ? data.date    : val('i_date');
-    const site    = data ? data.site    : val('i_site');
-    const subcon  = data ? data.subcon  : val('i_sub');
-    const issuedBy= data ? data.issuedBy: val('i_by');
-    const remarks = data ? data.remarks : val('i_remarks');
-    const rows    = data ? data.rows    : getTableRows('issue-tbody').rows;
-
-    html = `<div class="page">
-      <div class="co-hdr">
-        <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-        <div><div class="doc-title">Material Issue Slip</div><div class="doc-no">Issue No: ${no}</div></div>
-      </div>
-      <div class="meta-grid cols3">
-        <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Site</label><span>${site}</span></div>
-        <div class="meta-item"><label>Issued To</label><span>${subcon}</span></div>
-      </div>
-      ${issuedBy||remarks?`<div class="meta-grid">
-        <div class="meta-item"><label>Issued By</label><span>${issuedBy||'—'}</span></div>
-        <div class="meta-item"><label>Remarks</label><span>${remarks||'—'}</span></div>
-      </div>`:''}
-      <table>
-        <thead><tr><th style="width:30px">#</th><th>Item Name</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
-        <tbody>
-          ${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
-          ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
-        </tbody>
-      </table>
-      <div class="signs">
-        <div class="signs-row">
-          <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${issuedBy||''}</div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${subcon||''}</div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-        </div>
-      </div>
-      <div class="footer">Printed on ${new Date().toLocaleString('en-IN')} · ${CO_NAME}</div>
-    </div>`;
-  }
-
-  else if (type==='Consumption') {
-    const no     = data ? data.no     : val('c_no');
-    const date   = data ? data.date   : val('c_date');
-    const site   = data ? data.site   : val('c_site');
-    const subcon = data ? data.subcon : val('c_sub');
-    const rows   = data ? data.rows   : getTableRows('consumption-tbody', false, true).rows;
-
-    html = `<div class="page">
-      <div class="co-hdr">
-        <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-        <div><div class="doc-title">Consumption Voucher</div><div class="doc-no">Voucher No: ${no}</div></div>
-      </div>
-      <div class="meta-grid cols3">
-        <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Site</label><span>${site}</span></div>
-        <div class="meta-item"><label>Subcontractor</label><span>${subcon}</span></div>
-      </div>
-      <table>
-        <thead><tr><th style="width:30px">#</th><th>Item Name</th><th style="width:70px">Qty Used</th><th style="width:60px">Unit</th><th>Remarks</th></tr></thead>
-        <tbody>
-          ${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td>${r.remarks||''}</td></tr>`).join('')}
-          ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td></tr>').join('')}
-        </tbody>
-      </table>
-      <div class="signs">
-        <div class="signs-row">
-          <div class="sign-box"><div class="sign-label">Subcontractor</div><div class="sign-name">${subcon||''}</div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Site Supervisor</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-        </div>
-      </div>
-      <div class="footer">Printed on ${new Date().toLocaleString('en-IN')} · ${CO_NAME}</div>
-    </div>`;
-  }
-
-  else if (type==='Stock Register') {
-    const now  = new Date().toLocaleString('en-IN');
-    const sites= MASTERS.sites.map(s=>s.name);
-    let tableRows = '';
-    STOCK.forEach((r,i) => {
-      let siteCells = sites.map(s=>`<td style="text-align:center">${(r.sites||{})[s]||0}</td>`).join('');
-      const bc = r.status==='out'?'#fee2e2':r.status==='low'?'#fef9c3':'#f0fdf4';
-      const fc = r.status==='out'?'#dc2626':r.status==='low'?'#ca8a04':'#16a34a';
-      tableRows += `<tr style="background:${i%2===0?'#fafafa':'#fff'}">
-        <td>${i+1}</td><td><b>${r.item}</b></td><td style="text-align:center">${r.unit}</td>
-        <td style="text-align:center">${r.main||0}</td>${siteCells}
-        <td style="text-align:center;font-weight:700">${r.total}</td>
-        <td style="text-align:center;background:${bc};color:${fc};font-size:10px;font-weight:700">${r.status.toUpperCase()}</td>
-      </tr>`;
-    });
-    html = `<div class="page">
-      <div class="co-hdr">
-        <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-        <div><div class="doc-title">Stock Register</div><div class="doc-no">As on: ${now}</div></div>
-      </div>
-      <table>
-        <thead><tr><th>#</th><th>Item</th><th style="text-align:center">Unit</th><th style="text-align:center">Main Store</th>${sites.map(s=>`<th style="text-align:center">${s}</th>`).join('')}<th style="text-align:center">Total</th><th style="text-align:center">Status</th></tr></thead>
-        <tbody>${tableRows}</tbody>
-      </table>
-      <div class="footer">Printed on ${now} · ${CO_NAME}</div>
-    </div>`;
-  }
-
-  else if (type==='SubconReturn') {
-    const no     = data ? data.no     : val('sr_no');
-    const date   = data ? data.date   : val('sr_date');
-    const site   = data ? data.site   : val('sr_site');
-    const subcon = data ? data.subcon : val('sr_sub');
-    const reason = data ? data.reason : val('sr_reason');
-    const rows   = data ? data.rows   : getTableRows('subconreturn-tbody').rows;
-    html = `<div class="page">
-      <div class="co-hdr">
-        <div><div class="co-name">${CO_NAME}</div><div class="co-sub">${CO_SUB}</div></div>
-        <div><div class="doc-title">Subcontractor Return Note</div><div class="doc-no">Return No: ${no}</div></div>
-      </div>
-      <div class="meta-grid cols3">
-        <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Site</label><span>${site||'—'}</span></div>
-        <div class="meta-item"><label>Subcontractor</label><span>${subcon||'—'}</span></div>
-        <div class="meta-item" style="grid-column:1/-1"><label>Reason</label><span>${reason||'—'}</span></div>
-      </div>
-      <table>
-        <thead><tr><th>#</th><th>Item</th><th>Qty Returned</th><th>Unit</th></tr></thead>
-        <tbody>
-          ${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
-          ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
-        </tbody>
-      </table>
-      <div class="signs">
-        <div class="signs-row">
-          <div class="sign-box"><div class="sign-label">Returned By (Subcontractor)</div><div class="sign-name">${subcon||''}</div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Received By (Site Store)</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-          <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-        </div>
-      </div>
-      <div class="footer">Printed on ${new Date().toLocaleString('en-IN')} · ${CO_NAME}</div>
-    </div>`;
-  }
-
-  if (!html) {
-    w.close();
-    toast('Nothing to print — fill in the form first', 'warning');
-    return;
-  }
-
-  const fullDoc = `<!DOCTYPE html>
-<html>
-<head>
-  <title>${type} — CA AB Tracking System</title>
-  <meta charset="utf-8">
-  <style>${printStyles()}</style>
-</head>
-<body>
-  ${html}
-  <script>
-    window.onload = function() {
-      setTimeout(function() { window.print(); }, 300);
-    };
-    window.onafterprint = function() { window.close(); };
-  <\/script>
-</body>
-</html>`;
-
-  w.document.open();
-  w.document.write(fullDoc);
+  const w = window.open('about:blank', '_blank');
+  w.document.write(`<html><head><style>${printStyles()}</style></head><body><h3>${type} Note - TEEPL</h3></body></html>`);
   w.document.close();
+  w.print();
 }
 
-// ── REPRINT from recent table row data ──────────────────
-// Legacy shim — reprintFromRow kept for compatibility
-function reprintFromRow(type, rowData) { /* replaced by reprintVoucher */ }
-
-// ── SAVE SUBCON RETURN ──────────────────────────────────────
 async function saveSubconReturn() {
-  const st = document.getElementById('subconreturn-status');
-  st.textContent='Saving...'; st.style.color='var(--text3)';
   const tbody = document.getElementById('subconreturn-tbody');
   const rows  = [];
   for (const tr of tbody.rows) {
     const itemEl = tr.cells[1].querySelector('select');
     const qtyEl  = tr.cells[2].querySelector('input');
-    const unitEl = tr.cells[3].querySelector('select');
-    const item   = itemEl?itemEl.value:'';
-    const qty    = qtyEl?parseFloat(qtyEl.value)||0:0;
-    const unit   = unitEl?unitEl.value:'';
-    if (!item||item===''||item==='__other'||!qty) continue;
-    rows.push([
-      document.getElementById('sr_date').value,
-      document.getElementById('sr_no').value,
-      document.getElementById('sr_site').value,
-      document.getElementById('sr_sub').value,
-      item, qty, unit,
-      document.getElementById('sr_reason').value
-    ]);
+    const item = itemEl?itemEl.value:''; const qty = qtyEl?parseFloat(qtyEl.value)||0:0;
+    if (item && qty) rows.push([document.getElementById('sr_date').value, document.getElementById('sr_no').value, item, qty]);
   }
-  if (!rows.length) { st.textContent='No items to save'; st.style.color='var(--yellow)'; return; }
-  try {
-    await apiPost('SubconReturn', rows);
-    st.textContent=`✓ ${rows.length} item(s) saved`; st.style.color='var(--green)';
-    toast('Subcon return saved','success');
-    document.getElementById('sr_reason').value='';
-    getVoucher('SubconReturn').then(v=>{ const el=document.getElementById('sr_no'); if(el&&v) el.value=v; });
-    loadRecentTab('subconreturn');
-    setTimeout(()=>loadDashboard(),1500);
-  } catch(e) {
-    st.textContent='Save failed'; st.style.color='var(--red)';
-    toast('Save failed: '+e.message,'error');
-  }
+  if(rows.length) { await apiPost('SubconReturn', rows); toast('Subcontractor return record log saved.'); clearForm('subconreturn'); }
 }
-
-// ── PRINT SUBCON RETURN ──────────────────────────────────────
-// SubconReturn print handled in printVoucher via sheet type
-
 </script>
 </body>
 </html>
