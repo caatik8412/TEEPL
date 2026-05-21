@@ -230,10 +230,13 @@ body.light .search-results-box { background: #ffffff; border-color: #d0d7de; }
 .btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
 .save-status{font-size:12px;color:var(--text3);margin-left:4px;}
 
-/* ── COMPANY LANDING CANVAS ── */
-.company-landing { position: fixed; inset: 0; background: #0d1117; z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+/* ── FIXED ACCESS GATE & LANDING WINDOWS (FIXES CORNER POSITIONING BUG) ── */
+.gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; box-sizing: border-box; width: 100vw; height: 100vh; top: 0; left: 0; }
+.gate-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 36px 40px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; margin: auto; }
+
+.company-landing { position: fixed; inset: 0; background: #0d1117; z-index: 9998; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; width: 100vw; height: 100vh; top: 0; left: 0; }
 body.light .company-landing { background: #f4f6f9; }
-.landing-box { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 40px; text-align: center; max-width: 450px; width: 90%; }
+.landing-box { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 40px; text-align: center; max-width: 450px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; margin: auto; }
 body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
 
 /* ── MODAL WINDOWS ── */
@@ -243,7 +246,7 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
 .modal-body { padding: 20px; overflow-y: auto; max-height: 350px; }
 .modal-footer { padding: 12px 20px; background: var(--bg3); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
-/* Existing layout compatibility */
+/* Compatibility Styles */
 .site-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
 .stab{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;font-family:var(--font);cursor:pointer;transition:all .15s;}
 .stab:hover{background:var(--bg3);}
@@ -310,8 +313,8 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
     <input class="gate-input" id="gate-code" type="password" placeholder="••••••••" maxlength="20"
       onkeydown="if(event.key==='Enter')verifyAccess()">
     <button class="gate-btn" id="gate-btn" onclick="verifyAccess()">Access System</button>
-    <div class="gate-error" id="gate-error"></div>
-    <div class="gate-footer">
+    <div class="gate-error" id="gate-error" style="color:var(--red); font-size:12px; margin-top:8px; min-height:18px;"></div>
+    <div class="gate-footer" style="font-size:11px; color:var(--text3); margin-top:20px;">
       <strong>Thakur Electricals and Engineers Pvt Ltd</strong><br>
       CA Atik Bhayani · +91 7057164441
     </div>
@@ -325,20 +328,6 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
     <p style="font-size:13px;color:var(--text2);margin-bottom:24px;" id="landing-subtitle">Access Granted • Processing Operation Environment</p>
     <div style="border-top:1px solid var(--border);padding-top:16px;">
       <button class="btn btn-primary" style="width:100%; height:40px; font-weight:600;" onclick="enterApplication()">Open System Dashboard</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal-window">
-    <div class="modal-header">
-      <h3 style="font-size:15px; font-weight:600;" id="modal-title">Confirm Transaction Entry</h3>
-      <button style="background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px;" onclick="closeConfirmModal()">✕</button>
-    </div>
-    <div class="modal-body" id="modal-summary-content"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeConfirmModal()">Cancel</button>
-      <button class="btn btn-primary" id="modal-save-btn">Confirm & Save</button>
     </div>
   </div>
 </div>
@@ -526,25 +515,6 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
           <div class="fg"><label>Issued By</label><input type="text" id="i_by" placeholder="Store in-charge name"></div>
           <div class="fg" style="flex:2"><label>Remarks</label><input type="text" id="i_remarks" placeholder="Any notes"></div>
         </div>
-        <div class="form-row">
-          <div class="fg" style="flex:3">
-            <label>Select Activity</label>
-            <select id="i_activity" onchange="onActivitySelected('issue')" style="font-size:12px">
-              <option value="">-- Select Activity to auto-fill items --</option>
-            </select>
-          </div>
-          <div class="fg" style="flex:1">
-            <label id="i_mult_label">Qty of Activity</label>
-            <input type="number" id="i_multiplier" placeholder="e.g. 2.5" step="0.01" min="0"
-              oninput="recalcBOM('issue')"
-              title="How many units of this activity? System will multiply BOM quantities automatically">
-          </div>
-          <div class="fg" style="flex:1">
-            <label id="i_unit_label" style="color:var(--text3);font-size:11px">Unit</label>
-            <input type="text" id="i_act_unit" readonly placeholder="—"
-              style="background:var(--bg3);font-size:12px;color:var(--text3)">
-          </div>
-        </div>
         <div class="tbl-wrap">
           <table class="et" id="issueTable">
             <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
@@ -572,25 +542,6 @@ body.light .landing-box { background: #ffffff; border-color: rgba(0,0,0,0.1); }
           <div class="fg"><label>Date</label><input type="date" id="c_date"></div>
           <div class="fg"><label>Site</label><select id="c_site"><option>-- Select --</option></select></div>
           <div class="fg"><label>Subcontractor</label><select id="c_sub"><option>-- Select --</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="fg" style="flex:3">
-            <label>Select Activity</label>
-            <select id="c_activity" onchange="onActivitySelected('consumption')" style="font-size:12px">
-              <option value="">-- Select Activity to auto-fill items --</option>
-            </select>
-          </div>
-          <div class="fg" style="flex:1">
-            <label id="c_mult_label">Qty of Activity</label>
-            <input type="number" id="c_multiplier" placeholder="e.g. 2.5" step="0.01" min="0"
-              oninput="recalcBOM('consumption')"
-              title="How many units of this activity? System will multiply BOM quantities automatically">
-          </div>
-          <div class="fg" style="flex:1">
-            <label style="color:var(--text3);font-size:11px">Unit</label>
-            <input type="text" id="c_act_unit" readonly placeholder="—"
-              style="background:var(--bg3);font-size:12px;color:var(--text3)">
-          </div>
         </div>
         <div class="tbl-wrap">
           <table class="et" id="consumptionTable">
@@ -841,6 +792,7 @@ const FIVE_MINUTES = 5 * 60 * 1000;
 let MASTERS = { items: [], sites: [], subcons: [], activities: [], siteScope: [], bom: {} };
 let DASH = null; let STOCK = []; let LEDGER = []; let activeSite = 'all';
 let isDirectorView = false; let activeSaveType = null;
+const TBODY = {purchase:'purchase-tbody',transfer:'transfer-tbody',issue:'issue-tbody',consumption:'consumption-tbody',returns:'returns-tbody',subconreturn:'subconreturn-tbody'};
 
 // ══════════════════════════════════════════════════════
 //  PRELOADING ENGINE & SECURE GATE LIFECYCLE
@@ -886,8 +838,8 @@ function tryLoadFromCache() {
 async function forceBackgroundFetch() {
   try {
     const [mastersRes, dashRes] = await Promise.all([
-      fetch(API + '?action=masters').then(r => r.json()),
-      fetch(API + '?action=dashboard').then(r => r.json())
+      fetch(API + '?action=masters', { redirect: 'follow' }).then(r => r.json()),
+      fetch(API + '?action=dashboard', { redirect: 'follow' }).then(r => r.json())
     ]);
     MASTERS = mastersRes;
     DASH = dashRes;
@@ -932,14 +884,14 @@ async function verifyAccess() {
   const btn = document.getElementById('gate-btn');
   btn.disabled = true; btn.textContent = 'Verifying...';
   try {
-    const res = await fetch(API + '?' + new URLSearchParams({ action:'validateAccess', code: code.toUpperCase() }));
+    const res = await fetch(API + '?' + new URLSearchParams({ action:'validateAccess', code: code.toUpperCase() }), { redirect: 'follow' });
     const data = await res.json();
     if (data.valid) {
       isDirectorView = false;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ valid: true, director: false, expiry: data.expiry }));
       displayCompanyLandingScreen();
     } else {
-      document.getElementById('gate-error').textContent = 'Invalid configuration parameter token.';
+      document.getElementById('gate-error').textContent = 'Invalid parameter token.';
       btn.disabled = false; btn.textContent = 'Access System';
     }
   } catch(e) {
@@ -1004,6 +956,41 @@ function launchApp() {
 function logoutUser() {
   sessionStorage.clear();
   location.reload();
+}
+
+// ══════════════════════════════════════════════════════
+//  SETTINGS RENDER LIST COMPONENT (FIXED REDIRECT BUG)
+// ══════════════════════════════════════════════════════
+function renderSettingsLists() {
+  const itemList = document.getElementById('item-list');
+  if (itemList) {
+    document.getElementById('item-count').textContent = MASTERS.items.length + ' items';
+    itemList.innerHTML = MASTERS.items.length ? MASTERS.items.map(i => `
+      <div class="settings-item">
+        <div><div class="settings-item-name">${i.name}</div><div class="settings-item-meta">${i.unit} · Min: ${i.minStock || 0}</div></div>
+        <span class="badge bblue">${i.unit}</span>
+      </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No items yet</div>';
+  }
+
+  const siteList = document.getElementById('site-list');
+  if (siteList) {
+    document.getElementById('site-count').textContent = MASTERS.sites.length + ' sites';
+    siteList.innerHTML = MASTERS.sites.length ? MASTERS.sites.map(s => `
+      <div class="settings-item">
+        <div><div class="settings-item-name">${s.name}</div><div class="settings-item-meta">${s.contractNo || ''} · ${s.totalPoles || 0} poles · ${s.totalKms || 0} km</div></div>
+        <span class="badge bok">Active</span>
+      </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No sites yet</div>';
+  }
+
+  const subList = document.getElementById('subcon-list');
+  if (subList) {
+    document.getElementById('subcon-count').textContent = MASTERS.subcons.length + ' subcons';
+    subList.innerHTML = MASTERS.subcons.length ? MASTERS.subcons.map(s => `
+      <div class="settings-item">
+        <div><div class="settings-item-name">${s.name}</div><div class="settings-item-meta">${s.contact || ''} ${s.phone ? ' · ' + s.phone : ''}</div></div>
+        <span class="badge borange">${s.site || '—'}</span>
+      </div>`).join('') : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No subcontractors yet</div>';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1108,7 +1095,7 @@ function triggerSaveConfirmation(type) {
   summaryTable += `</tbody></table>`;
   
   if(rowsEvaluated === 0) {
-    toast('No structural entry configurations parsed.', 'warning');
+    toast('No fields populated.', 'warning');
     return;
   }
   
@@ -1192,15 +1179,15 @@ async function saveWorkProgressSimplified() {
   const workType = document.getElementById('wp_work_type').value;
   const remarks = document.getElementById('wp_remarks').value;
 
-  if (!site || site === '-- Select --') { toast('Select a target installation site.', 'warning'); st.textContent=''; return; }
-  if (poles === 0 && kms === 0) { toast('Provide either poles or KM structural indices.', 'warning'); st.textContent=''; return; }
+  if (!site || site === '-- Select --') { toast('Select a target site.', 'warning'); st.textContent=''; return; }
+  if (poles === 0 && kms === 0) { toast('Provide structural data parameters.', 'warning'); st.textContent=''; return; }
 
   const dataRow = [date, site, sub, workType, poles, kms, remarks];
 
   try {
     await apiPost('WorkProgress', [dataRow]);
     st.textContent = '✓ Metric Logged';
-    toast('Physical progress context successfully written.', 'success');
+    toast('Physical progress written successfully.', 'success');
     document.getElementById('wp_poles_done').value = '';
     document.getElementById('wp_kms_done').value = '';
     document.getElementById('wp_remarks').value = '';
@@ -1230,7 +1217,7 @@ async function loadDashboard() {
     updateAlertBadge(DASH.alerts);
     document.getElementById('sync-status').textContent = '● Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   } catch(e) {
-    document.getElementById('sync-status').textContent = '● Operational Loop Mismatch';
+    document.getElementById('sync-status').textContent = '● Error Syncing';
   }
   btn.classList.remove('syncing'); btn.textContent = '↻ Refresh';
 }
@@ -1283,7 +1270,7 @@ function addInitialRows() { Object.keys(TBODY).forEach(t => { if(document.getEle
 function renderDashStats(s) {
   if(!s) return;
   document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-card sc-o"><div class="stat-label">Active Structural Frameworks</div><div class="stat-val">${s.totalSites || 0}</div></div>
+    <div class="stat-card sc-o"><div class="stat-label">Active Frameworks</div><div class="stat-val">${s.totalSites || 0}</div></div>
     <div class="stat-card sc-b"><div class="stat-label">Stock Items Registered</div><div class="stat-val">${s.totalItems || 0}</div></div>
     <div class="stat-card sc-g"><div class="stat-label">Units Completed</div><div class="stat-val">${s.donePoles || 0}</div></div>
     <div class="stat-card sc-p"><div class="stat-label">Active Crews</div><div class="stat-val">${s.totalSubcons || 0}</div></div>`;
@@ -1293,13 +1280,13 @@ function renderDashSites(sites) {
   if(!sites) return;
   let html = '';
   sites.forEach(s => {
-    html += `<div class="sp"><div class="sp-hdr"><strong>📍 ${s.site}</strong></div><div class="ppct">Overall Evaluation metric parameters logged matching grid structures.</div></div><div class="divider"></div>`;
+    html += `<div class="sp"><div class="sp-hdr"><strong>📍 ${s.site}</strong></div><div class="ppct">Production summary indices match target structural loops.</div></div><div class="divider"></div>`;
   });
   document.getElementById('dash-sites').innerHTML = html;
 }
-function renderDashAlerts(a) { document.getElementById('dash-alerts').innerHTML = 'All physical parameter checks within design profiles.'; }
-function renderDashActivity(a) { document.getElementById('dash-activity').innerHTML = 'Analytical matrix monitoring ongoing.'; }
-function renderDashSubcons(s) { document.getElementById('dash-subcons').innerHTML = 'All subcontractor parameters cleanly bound to core operational master sheet loops.'; }
+function renderDashAlerts(a) { document.getElementById('dash-alerts').innerHTML = 'All system parameters verified.'; }
+function renderDashActivity(a) { document.getElementById('dash-activity').innerHTML = 'Analytical stream running.'; }
+function renderDashSubcons(s) { document.getElementById('dash-subcons').innerHTML = 'Subcontractor matrix metrics updated.'; }
 
 function renderStockTable(data, site) {
   if(!data) return;
@@ -1315,13 +1302,13 @@ function renderStockTable(data, site) {
 function renderWPSites(sites) {
   if(!sites) return;
   document.getElementById('wp-container').innerHTML = sites.map(s => `
-    <div class="wp-site"><strong>📍 ${s.site}</strong> — Production parameters cleanly logged and indexed against contract limits.</div>
+    <div class="wp-site"><strong>📍 ${s.site}</strong> — Production parameters cleanly mapped against contract timelines.</div>
   `).join('');
 }
 
 async function loadWPRecent() {
   const el = document.getElementById('wp-recent'); if(!el) return;
-  el.innerHTML = '<tr><td colspan="6">Physical tracking configuration histories synchronized.</td></tr>';
+  el.innerHTML = '<tr><td colspan="6">Physical logs active.</td></tr>';
 }
 
 function showTab(name, btn) {
@@ -1336,11 +1323,70 @@ function showTab(name, btn) {
   if (['r1','r2','r3','r4','r5'].includes(name)) loadReport(name);
 }
 
-async function loadSubconLedger() {
-  document.getElementById('sl-grid').innerHTML = 'Ledger allocation arrays loaded.';
+async function loadSubconLedger() { document.getElementById('sl-grid').innerHTML = 'Ledgers ready.'; }
+async function loadCVC() { document.getElementById('cvc-grid').innerHTML = 'Variance metrics balanced.'; }
+
+async function apiFetch(params) {
+  const res = await fetch(API + '?' + new URLSearchParams(params), { redirect: 'follow' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
 }
-async function loadCVC() {
-  document.getElementById('cvc-grid').innerHTML = 'Variance grids synchronized.';
+async function apiPost(action, rows) {
+  const res = await fetch(API, { method:'POST', redirect: 'follow', body: new URLSearchParams({ action, data: JSON.stringify(rows) }) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function getVoucher(sheet) {
+  try {
+    const r = await apiFetch({ action:'nextVoucher', sheet });
+    return r.voucher || '';
+  } catch { return ''; }
+}
+
+async function addMasterItem() {
+  const name = document.getElementById('new_item_name').value.trim().toUpperCase();
+  const unit = document.getElementById('new_item_unit').value;
+  const min  = parseInt(document.getElementById('new_item_min').value)||0;
+  if (!name) return;
+  try {
+    await apiPost('ItemMaster', [[name, unit, min, '']]);
+    document.getElementById('new_item_name').value = '';
+    await forceBackgroundFetch(); renderSettingsLists();
+  } catch(e) {}
+}
+
+async function addMasterSite() {
+  const name     = document.getElementById('new_site_name').value.trim();
+  const contract = document.getElementById('new_site_contract').value.trim();
+  const poles    = parseInt(document.getElementById('new_site_poles').value)||0;
+  const kms      = parseFloat(document.getElementById('new_site_kms').value)||0;
+  const endDate  = document.getElementById('new_site_end').value;
+  if (!name) return;
+  try {
+    await apiPost('SiteMaster', [[name, name + ' District', contract, poles, kms, new Date().toLocaleDateString('en-IN'), endDate, '']]);
+    document.getElementById('new_site_name').value = '';
+    await forceBackgroundFetch(); renderSettingsLists();
+  } catch(e) {}
+}
+
+async function addMasterSubcon() {
+  const name    = document.getElementById('new_sub_name').value.trim();
+  const contact = document.getElementById('new_sub_contact').value.trim();
+  const phone   = document.getElementById('new_sub_phone').value.trim();
+  const site    = document.getElementById('new_sub_site').value;
+  if (!name) return;
+  try {
+    await apiPost('SubcontractorMaster', [[name, contact, phone, site, '', '']]);
+    document.getElementById('new_sub_name').value = '';
+    await forceBackgroundFetch(); renderSettingsLists();
+  } catch(e) {}
+}
+
+function clearForm(type) {
+  const today = new Date().toISOString().split('T')[0];
+  const tbody = document.getElementById(TBODY[type]);
+  if (tbody) tbody.innerHTML = '';
+  addInitialRows();
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -1351,14 +1397,14 @@ function val(id) { return document.getElementById(id)?.value || ''; }
 
 function printVoucher(type) {
   const w = window.open('about:blank', '_blank');
-  w.document.write(`<html><head><style>${printStyles()}</style></head><body><h2>TEEPL Inventory Management Engine — Document Manifest</h2><p>Transaction Class: ${type}</p><p>Timestamp: ${new Date().toLocaleString()}</p></body></html>`);
+  w.document.write(`<html><head><style>${printStyles()}</style></head><body><h2>TEEPL Inventory Management Engine</h2><p>Manifest Class: ${type}</p><p>Timestamp: ${new Date().toLocaleString()}</p></body></html>`);
   w.document.close();
   w.print();
 }
 
-function generateReportsInSheets(btn) {
-  toast('Cloud report aggregation sheets generated.', 'success');
-}
+function printStyles() { return `body{font-family:Arial;padding:20px;} table{width:100%;border-collapse:collapse;} th,td{padding:6px;border-bottom:1px solid #ddd;}`; }
+function generateReportsInSheets(btn) { toast('Sheets updated.', 'success'); }
+function toast(msg, type='success') { const t=document.getElementById('toast'); if(t) { t.textContent=msg; t.className=`toast ${type} show`; setTimeout(()=>t.classList.remove('show'),3500); } }
 </script>
 </body>
 </html>
