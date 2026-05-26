@@ -1215,7 +1215,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 // ══════════════════════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════════════════════
-const API = "https://script.google.com/macros/s/AKfycbwqvxRgnj4JNz_dNU0_jClUFnnq0UYYCK6TI0yWyWONmD5aRpq5HsgS41d0Pr0oBqUx/exec";
+const API = "https://script.google.com/macros/s/AKfycbxarP70J_zqc9JQJQpunzvGNWWgX7XpxFYHOF_yB6YqmvYIL79-7j5Ff8EZfxvXXtM/exec";
 
 // ══════════════════════════════════════════════════════
 //  STATE
@@ -1407,7 +1407,11 @@ function launchApp() {
     populateDropdowns(); renderSettingsLists(); addInitialRows();
   }
   if (cd) { DASH=cd; STOCK=cd.stock||[]; renderDashStats(cd.summary); renderDashSites(cd.sites); renderDashAlerts(cd.alerts||[]); renderDashSubcons(cd.subcons||[]); renderStockTable(STOCK,'all'); renderWPSites(cd.sites); }
-  loadMasters().then(() => loadDashboard());
+  loadMasters().then(() => {
+    const tbodyTest = document.getElementById('purchase-tbody');
+    if (tbodyTest && tbodyTest.rows.length === 0) addInitialRows();
+    loadDashboard();
+  });
 }
 
 function setToday() {
@@ -1525,7 +1529,8 @@ function onActivitySelected(type) {
   const actEl   = document.getElementById(prefix + '_activity');
   if (!actEl) return;
   const code    = actEl.value;
-  const opt     = actEl.options[actEl.selectedIndex];
+  const idx     = actEl.selectedIndex;
+  const opt     = idx >= 0 ? actEl.options[idx] : null;
   const unit    = opt ? (opt.getAttribute('data-unit') || '') : '';
 
   // Update unit label and reset multiplier
@@ -2005,7 +2010,8 @@ function renderWPSites(sites) {
 function onWPActivitySelected() {
   const sel = document.getElementById('wp_activity');
   if (!sel) return;
-  const opt = sel.options[sel.selectedIndex];
+  const idx2 = sel.selectedIndex;
+  const opt  = idx2 >= 0 ? sel.options[idx2] : null;
   const unit = opt ? (opt.getAttribute('data-unit') || '') : '';
   const unitEl = document.getElementById('wp_unit');
   if (unitEl) unitEl.value = unit;
@@ -2318,11 +2324,28 @@ function filterLedger() {
 const TBODY = {purchase:'purchase-tbody',transfer:'transfer-tbody',issue:'issue-tbody',consumption:'consumption-tbody',returns:'returns-tbody',subconreturn:'subconreturn-tbody'};
 
 function itemSel(type) {
-  return `<select onchange="autoUnit(this)" style="min-width:160px">
-    <option value="">-- Select Item --</option>
-    ${MASTERS.items.map(i=>`<option value="${i.name}" data-unit="${i.unit}">${i.name}</option>`).join('')}
-    <option value="__other">Other / Type below</option>
-  </select>`;
+  const uid = 'item_' + Math.random().toString(36).slice(2,7);
+  return `<div style="display:flex;flex-direction:column;gap:3px;min-width:160px">
+    <select id="${uid}_sel" onchange="handleItemSelect(this,'${uid}')" style="min-width:160px">
+      <option value="">-- Select Item --</option>
+      ${MASTERS.items.map(i=>`<option value="${i.name}" data-unit="${i.unit}">${i.name}</option>`).join('')}
+      <option value="__other">Other / Type below</option>
+    </select>
+    <input id="${uid}_txt" type="text" placeholder="Type item name..."
+      style="display:none;min-width:160px;padding:5px 8px;border:1px solid var(--accent);border-radius:var(--radius);font-size:12px;background:var(--bg2);color:var(--text)">
+  </div>`;
+}
+
+function handleItemSelect(sel, uid) {
+  const txt = document.getElementById(uid+'_txt');
+  if (sel.value === '__other') {
+    sel.style.display = 'none';
+    if (txt) { txt.style.display='block'; txt.focus(); }
+  } else {
+    if (txt) txt.style.display = 'none';
+    sel.style.display = '';
+    autoUnit(sel);
+  }
 }
 function unitSel(v='Nos') {
   const allUnits = ['Nos','Meter','Mtr','Rmt','Kg','Set','Ltr','LS','Cmt','Rmt','MT','KM','KVA','KW','Bag','Bundle','Roll'];
@@ -2483,10 +2506,14 @@ async function saveTransaction(type) {
     const itemEl = tr.cells[1].querySelector('select');
     const qtyEl  = tr.cells[2].querySelector('input');
     const unitEl = tr.cells[3].querySelector('select');
-    const item   = itemEl?itemEl.value:'';
+    let item = itemEl ? itemEl.value : '';
+    if (item === '__other') {
+      const customTxt = tr.cells[1] ? tr.cells[1].querySelector('input[type="text"]') : null;
+      item = customTxt ? customTxt.value.trim().toUpperCase() : '';
+    }
     const qty    = qtyEl?parseFloat(qtyEl.value)||0:0;
     const unit   = unitEl?unitEl.value:'';
-    if (!item||item==='__other'||item===''||!qty) continue;
+    if (!item || !qty) continue;
     if (qty < 0) { toast('Quantity cannot be negative — row skipped', 'warning'); continue; }
     let row=[];
     if (type==='purchase') {
@@ -3173,18 +3200,33 @@ async function loadReport(name) {
 
 // ── CALC ENGINE (uses live data) ─────────────────────────
 function getLiveExpected(poles, kms) {
-  const bom = REPORT_DATA ? REPORT_DATA.bom : {};
+  // Build expected consumption dynamically from BOM + work progress
+  // BOM keys are activity codes (e.g. "704", "1203") not hardcoded "Pole Erection"
+  const bom = REPORT_DATA ? (REPORT_DATA.bom || {}) : {};
+  const wp  = REPORT_DATA ? (REPORT_DATA.wpBySubcon || {}) : {};
   const exp = {};
-  const perPole = (bom['Pole Erection'] || bom['pole erection'] || {});
-  const perKm   = (bom['Line Stringing'] || bom['line stringing'] || {});
-  Object.entries(perPole).forEach(([item,qty]) => {
-    exp[item] = (exp[item]||0) + poles * qty;
+
+  // Sum all work done across all subcons
+  const totalPoles = Object.values(wp).reduce((a,w)=>a+(w.poles||0),0);
+  const totalKms   = Object.values(wp).reduce((a,w)=>a+(w.kms||0),0);
+
+  // Dynamic BOM: iterate all activity codes, use their quantities
+  // Weight activities by poles vs kms based on unit type
+  Object.entries(bom).forEach(([actCode, materials]) => {
+    if (!materials || typeof materials !== 'object') return;
+    // Determine if this activity is pole-based or km-based from ActivityMaster
+    const actDef = MASTERS.activities.find(a => a.code === actCode) || {};
+    const unit   = (actDef.unit || '').toLowerCase();
+    const isKm   = unit.includes('km') || unit.includes('meter') || unit.includes('mtr');
+    const qty    = isKm ? totalKms : totalPoles;
+    if (!qty) return;
+    Object.entries(materials).forEach(([item, perUnit]) => {
+      exp[item] = (exp[item]||0) + qty * perUnit;
+    });
   });
-  Object.entries(perKm).forEach(([item,qty]) => {
-    exp[item] = (exp[item]||0) + kms * qty;
-  });
-  // Fallback to BOM constant if no sheet data
-  if (Object.keys(exp).length === 0) return calcExpected(poles, kms);
+
+  // Fallback to hardcoded estimates if no BOM data
+  if (Object.keys(exp).length === 0) return calcExpected(poles||totalPoles, kms||totalKms);
   return exp;
 }
 
@@ -3565,10 +3607,14 @@ function getTableRows(tbodyId, hasPurchase=false, hasRemarks=false) {
     const itemEl = tr.cells[1].querySelector('select');
     const qtyEl  = tr.cells[2].querySelector('input');
     const unitEl = tr.cells[3].querySelector('select');
-    const item   = itemEl ? itemEl.value : '';
+    let item     = itemEl ? itemEl.value : '';
+    if (item === '__other') {
+      const customTxt = tr.cells[1] ? tr.cells[1].querySelector('input[type="text"]') : null;
+      item = customTxt ? customTxt.value.trim().toUpperCase() : '';
+    }
     const qty    = qtyEl  ? parseFloat(qtyEl.value)||0 : 0;
     const unit   = unitEl ? unitEl.value : '';
-    if (!item || item==='' || item==='__other' || !qty) continue;
+    if (!item || !qty) continue;
     let rate=0, amount=0, remarks='';
     if (hasPurchase) {
       rate   = parseFloat(tr.cells[4].querySelector('input').value)||0;
@@ -3906,10 +3952,14 @@ async function saveSubconReturn() {
     const itemEl = tr.cells[1].querySelector('select');
     const qtyEl  = tr.cells[2].querySelector('input');
     const unitEl = tr.cells[3].querySelector('select');
-    const item   = itemEl?itemEl.value:'';
+    let item = itemEl ? itemEl.value : '';
+    if (item === '__other') {
+      const customTxt = tr.cells[1] ? tr.cells[1].querySelector('input[type="text"]') : null;
+      item = customTxt ? customTxt.value.trim().toUpperCase() : '';
+    }
     const qty    = qtyEl?parseFloat(qtyEl.value)||0:0;
     const unit   = unitEl?unitEl.value:'';
-    if (!item||item===''||item==='__other'||!qty) continue;
+    if (!item || !qty) continue;
     rows.push([
       document.getElementById('sr_date').value,
       document.getElementById('sr_no').value,
