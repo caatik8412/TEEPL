@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CA AB Tracking">
+<meta name="apple-mobile-web-app-title" content="SiteFlow">
 <meta name="theme-color" content="#0d1117">
-<meta name="description" content="CA AB Tracking System — Inventory & Site Management">
-<title>CA AB Tracking System</title>
+<meta name="description" content="SiteFlow — Inventory & Site Management">
+<title>SiteFlow</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f0883e'/><text y='.9em' font-size='70' x='50%' text-anchor='middle' font-family='Arial' font-weight='bold' fill='white'>T</text></svg>">
 <script>
 // ── INLINE PWA MANIFEST (https only) ──
 if (location.protocol === 'https:') {
   (function(){
     const manifest = {
-      name: "CA AB Tracking System",
-      short_name: "CA AB",
-      description: "CA AB Tracking System — Inventory & Site Management",
+      name: "SiteFlow",
+      short_name: "SiteFlow",
+      description: "SiteFlow — Inventory & Site Management",
       start_url: "./",
       display: "standalone",
       background_color: "#0d1117",
@@ -497,14 +497,14 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
 <div id="splash" style="position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .5s ease;">
   <div style="text-align:center;">
     <div style="width:72px;height:72px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Arial;">T</div>
-    <div style="font-size:28px;font-weight:700;color:#fff;font-family:'DM Sans',Arial;letter-spacing:-0.5px;">CA AB Tracking System</div>
+    <div style="font-size:28px;font-weight:700;color:#fff;font-family:'DM Sans',Arial;letter-spacing:-0.5px;">SiteFlow</div>
     <div style="font-size:13px;color:#6e7681;margin-top:6px;font-family:'DM Sans',Arial;">Inventory & Site Management</div>
     <div style="margin-top:32px;width:180px;height:3px;background:#21262d;border-radius:3px;overflow:hidden;margin-left:auto;margin-right:auto;">
       <div id="splash-bar" style="height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width .1s linear;"></div>
     </div>
     <div style="font-size:11px;color:#444;margin-top:10px;font-family:'DM Sans',Arial;" id="splash-msg">Initialising...</div>
   </div>
-  <div style="position:absolute;bottom:24px;font-size:11px;color:#444;font-family:'DM Sans',Arial;">CA Atik Bhayani · +91 7057164441</div>
+  <div style="position:absolute;bottom:24px;font-size:11px;color:#444;font-family:'DM Sans',Arial;">Bhayani Business Solutions</div>
 </div>
 
 <!-- ═══════════ ACCESS GATE ═══════════ -->
@@ -520,7 +520,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
     <div class="gate-footer">
       <strong>Thakur Electricals and Engineers Pvt Ltd</strong><br>
       
-      CA Atik Bhayani · +91 7057164441
+      Bhayani Business Solutions
     </div>
   </div>
 </div>
@@ -562,6 +562,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
       <div class="nav-label">Admin</div>
       <button class="nb" onclick="showTab('settings',this)"><span class="ni">⚙</span>Settings</button>
       <button class="nb" onclick="generateReportsInSheets(this)" id="gen-reports-btn"><span class="ni">📊</span>Generate Reports</button>
+      <button class="nb" onclick="generateStockRegister(this)" id="gen-stock-btn"><span class="ni">📋</span>Setup Stock Sheet</button>
     </div>
     <div class="nav-section">
       <div class="nav-label">Reports</div>
@@ -575,7 +576,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
   <div class="sid-foot">
     <strong id="sync-status">● Connecting...</strong>
 
-    CA Atik Bhayani · +91 7057164441
+    Bhayani Business Solutions
   </div>
 </aside>
 
@@ -654,8 +655,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Purchases</div><span class="badge bblue">Last 15 entries</span></div>
-        <div class="tbl-wrap" id="recent-purchase"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter purchase history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_purchase_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_purchase_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Voucher / Invoice No.</label><input type="text" id="fr_purchase_voucher" placeholder="e.g. INV-2026-001" oninput="" onkeydown="if(event.key==='Enter')fetchRecords('purchase')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Supplier</label><input type="text" id="fr_purchase_filter" placeholder="Filter by supplier..." onkeydown="if(event.key==='Enter')fetchRecords('purchase')"></div>
+          <button class="btn btn-primary" id="fr_purchase_btn" onclick="fetchRecords('purchase')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-purchase" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -698,8 +708,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Transfers</div></div>
-        <div class="tbl-wrap" id="recent-transfer"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter transfer history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_transfer_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_transfer_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Challan / Voucher No.</label><input type="text" id="fr_transfer_voucher" placeholder="e.g. TR-2026-001" onkeydown="if(event.key==='Enter')fetchRecords('transfer')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>From / To Location</label><input type="text" id="fr_transfer_filter" placeholder="Filter by location..." onkeydown="if(event.key==='Enter')fetchRecords('transfer')"></div>
+          <button class="btn btn-primary" id="fr_transfer_btn" onclick="fetchRecords('transfer')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-transfer" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -748,8 +767,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Issues</div></div>
-        <div class="tbl-wrap" id="recent-issue"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter issue history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_issue_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_issue_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Issue Voucher No.</label><input type="text" id="fr_issue_voucher" placeholder="e.g. ISS-2026-001" onkeydown="if(event.key==='Enter')fetchRecords('issue')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Site / Subcontractor</label><input type="text" id="fr_issue_filter" placeholder="Filter by site or subcon..." onkeydown="if(event.key==='Enter')fetchRecords('issue')"></div>
+          <button class="btn btn-primary" id="fr_issue_btn" onclick="fetchRecords('issue')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-issue" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -796,8 +824,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Consumption</div></div>
-        <div class="tbl-wrap" id="recent-consumption"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter consumption history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_consumption_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_consumption_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Voucher No.</label><input type="text" id="fr_consumption_voucher" placeholder="e.g. CON-2026-001" onkeydown="if(event.key==='Enter')fetchRecords('consumption')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Site / Subcontractor</label><input type="text" id="fr_consumption_filter" placeholder="Filter by site or subcon..." onkeydown="if(event.key==='Enter')fetchRecords('consumption')"></div>
+          <button class="btn btn-primary" id="fr_consumption_btn" onclick="fetchRecords('consumption')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-consumption" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -826,8 +863,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Returns</div></div>
-        <div class="tbl-wrap" id="recent-returns"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter returns history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_returns_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_returns_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Return Voucher No.</label><input type="text" id="fr_returns_voucher" placeholder="e.g. RET-2026-001" onkeydown="if(event.key==='Enter')fetchRecords('returns')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>From / To Location</label><input type="text" id="fr_returns_filter" placeholder="Filter by location..." onkeydown="if(event.key==='Enter')fetchRecords('returns')"></div>
+          <button class="btn btn-primary" id="fr_returns_btn" onclick="fetchRecords('returns')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-returns" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -856,8 +902,17 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-title">Recent Subcon Returns</div></div>
-        <div class="tbl-wrap" id="recent-subconreturn"><div class="skeleton sk-r w80"></div></div>
+        <div class="card-hdr" style="margin-bottom:10px">
+          <div><div class="card-title">Past Records</div><div class="card-sub">Search &amp; filter subcon return history</div></div>
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="fg" style="min-width:120px"><label>From Date</label><input type="date" id="fr_subconreturn_from"></div>
+          <div class="fg" style="min-width:120px"><label>To Date</label><input type="date" id="fr_subconreturn_to"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Return Voucher No.</label><input type="text" id="fr_subconreturn_voucher" placeholder="e.g. SR-2026-001" onkeydown="if(event.key==='Enter')fetchRecords('subconreturn')"></div>
+          <div class="fg" style="flex:2;min-width:160px"><label>Site / Subcontractor</label><input type="text" id="fr_subconreturn_filter" placeholder="Filter by site or subcon..." onkeydown="if(event.key==='Enter')fetchRecords('subconreturn')"></div>
+          <button class="btn btn-primary" id="fr_subconreturn_btn" onclick="fetchRecords('subconreturn')" style="padding:8px 18px;white-space:nowrap">🔍 Fetch Records</button>
+        </div>
+        <div id="recent-subconreturn" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -878,26 +933,12 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
         </div>
         <div class="form-row">
           <div class="fg">
-            <label>Poles Erected</label>
+            <label>Poles Done</label>
             <input type="number" id="wp_poles" placeholder="0" min="0" step="1" style="width:120px" oninput="if(this.value<0)this.value=0;">
           </div>
           <div class="fg">
-            <label>Line Strung (KM)</label>
+            <label>Wire Done (KM)</label>
             <input type="number" id="wp_kms" placeholder="0.00" min="0" step="0.01" style="width:140px" oninput="if(this.value<0)this.value=0;">
-          </div>
-          <div class="fg">
-            <label>Work Type</label>
-            <select id="wp_type" style="min-width:160px">
-              <option>Pole Erection</option>
-              <option>Line Stringing</option>
-              <option>Both</option>
-              <option>Foundation</option>
-              <option>Stay Fixing</option>
-              <option>Termination</option>
-              <option>DT Commissioning</option>
-              <option>Substation Work</option>
-              <option>Other</option>
-            </select>
           </div>
           <div class="fg" style="flex:2">
             <label>Remarks</label>
@@ -1015,7 +1056,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
             </div>
             <div class="form-row">
               <div class="fg"><label>Total Poles</label><input type="number" id="new_site_poles" placeholder="200" min="0" style="width:90px"></div>
-              <div class="fg"><label>Total Kms</label><input type="number" id="new_site_kms" placeholder="18" min="0" step="0.1" style="width:90px"></div>
+              <div class="fg"><label>Wire (KM)</label><input type="number" id="new_site_kms" placeholder="18.5" min="0" step="0.1" style="width:90px"></div>
               <div class="fg"><label>End Date</label><input type="date" id="new_site_end"></div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="addMasterSite()">+ Add Site</button>
@@ -1058,7 +1099,7 @@ input[readonly]{opacity:.6;cursor:not-allowed;}
             </div>
             <div class="form-row">
               <div class="fg"><label>Allocated Poles</label><input type="number" id="new_scope_poles" placeholder="e.g. 200" min="0" style="width:120px"></div>
-              <div class="fg"><label>Allocated KMs</label><input type="number" id="new_scope_kms" placeholder="e.g. 18.5" min="0" step="0.1" style="width:120px"></div>
+              <div class="fg"><label>Wire Allocated (KM)</label><input type="number" id="new_scope_kms" placeholder="e.g. 18.5" min="0" step="0.1" style="width:120px"></div>
               <div class="fg" style="flex:2"><label>Remarks</label><input type="text" id="new_scope_remarks" placeholder="e.g. T-07 Gondia Phase 1"></div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="addSubconScope()">+ Assign Scope</button>
@@ -1376,7 +1417,7 @@ async function verifyAccess() {
           <div style="font-size:11px;color:var(--text3);margin-top:16px">Powered by TEEPL Inventory Management</div>
         </div>`;
     } else {
-      errEl.textContent = 'Invalid access code. Contact CA Atik Bhayani: +91 7057164441';
+      errEl.textContent = 'Invalid access code. Contact Bhayani Business Solutions';
       document.getElementById('gate-code').value = '';
       document.getElementById('gate-code').focus();
       btn.disabled = false;
@@ -1704,11 +1745,11 @@ function renderSettingsLists() {
       <div class="settings-item">
         <div>
           <div class="settings-item-name">${s.subcon}</div>
-          <div class="settings-item-meta">📍 ${s.site} · ${s.poles||0} poles · ${s.kms||0} KM${s.remarks?' · '+s.remarks:''}</div>
+          <div class="settings-item-meta">📍 ${s.site} · ${s.poles||0} poles · ${s.kms||0} KM wire${s.remarks?' · '+s.remarks:''}</div>
         </div>
         <div style="text-align:right">
           <span class="badge bok">${s.poles||0} poles</span>
-          <span class="badge bblue" style="margin-left:4px">${s.kms||0} KM</span>
+          <span class="badge bblue" style="margin-left:4px">${s.kms||0} KM wire</span>
         </div>
       </div>`).join('')
     : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No scope allocated yet</div>';
@@ -1842,7 +1883,8 @@ function renderDashSites(sites) {
     : `FY ${now.getFullYear()-1}-${String(now.getFullYear()).slice(2)}`;
   let html = `<div class="card-hdr"><div><div class="card-title">Site-wise Completion</div><div class="card-sub">vs MSEDCL contract scope</div></div><span class="badge borange">${fyYear}</span></div>`;
   sites.forEach((s, i) => {
-    const bc = {ahead:'bok',ontrack:'bok',slow:'blow',delayed:'bout'}[s.status]||'blow';
+    const bc = {complete:'bok',ahead:'bok',ontrack:'bok',slow:'blow',delayed:'bout'}[s.status]||'blow';
+    const statusLabel = {complete:'✅ Complete',ontrack:'On Track',slow:'Slow',delayed:'Delayed'}[s.status]||s.status;
     html += `${i>0?'<div class="divider"></div>':''}
     <div class="sp">
       <div class="sp-hdr">
@@ -1853,7 +1895,7 @@ function renderDashSites(sites) {
         </div>
       </div>
       <div class="pbar"><div class="pfill" style="width:${Math.min(s.overallPct,100)}%"></div></div>
-      <div class="ppct"><strong>${s.overallPct}%</strong> complete &nbsp;<span class="badge ${bc}" style="font-size:10px">${s.status}</span></div>
+      <div class="ppct"><strong>${s.overallPct}%</strong> complete &nbsp;<span class="badge ${bc}" style="font-size:10px">${statusLabel}</span></div>
     </div>`;
   });
   document.getElementById('dash-sites').innerHTML = html;
@@ -1891,10 +1933,19 @@ function renderDashActivity(activity) {
 
 function renderDashSubcons(subcons) {
   if (!subcons||!subcons.length) return;
-  let html = `<div class="card-hdr"><div class="card-title">Subcontractor Summary</div><div class="card-sub">Work done to date</div></div>
-  <div class="tbl-wrap"><table><thead><tr><th>Subcontractor</th><th>Site</th><th>Poles Erected</th><th>Kms Strung</th></tr></thead><tbody>`;
+  let html = `<div class="card-hdr"><div class="card-title">Subcontractor Summary</div><div class="card-sub">Work done vs scope allocated</div></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Subcontractor</th><th>Site</th><th>Poles Done / Scope</th><th>Wire Done / Scope</th><th>Status</th></tr></thead><tbody>`;
   subcons.forEach(s => {
-    html += `<tr><td class="td-m">${s.name}</td><td>${s.site}</td><td class="td-n">${s.poles}</td><td class="td-n">${fmtKm(s.kms)}</td></tr>`;
+    const poleStr = s.scopePoles > 0 ? `${s.poles} / ${s.scopePoles}` : `${s.poles}`;
+    const kmStr   = s.scopeKms   > 0 ? `${fmtKm(s.kms)} / ${s.scopeKms} KM` : fmtKm(s.kms);
+    const stBadge = s.status === 'complete'
+      ? `<span class="badge bok" style="font-size:10px">✅ Complete</span>`
+      : s.status === 'ontrack'
+        ? `<span class="badge bok" style="font-size:10px">${s.overallPct||0}%</span>`
+        : s.status === 'slow'
+          ? `<span class="badge blow" style="font-size:10px">${s.overallPct||0}%</span>`
+          : `<span class="badge bout" style="font-size:10px">${s.overallPct||0}%</span>`;
+    html += `<tr><td class="td-m">${s.name}</td><td>${s.site||'—'}</td><td class="td-n">${poleStr}</td><td class="td-n">${kmStr}</td><td>${stBadge}</td></tr>`;
   });
   document.getElementById('dash-subcons').innerHTML = html + '</tbody></table></div>';
 }
@@ -1968,12 +2019,14 @@ function renderWPSites(sites) {
   }
 
   container.innerHTML = rows.map(r => {
-    const pc = (r.polePct||0) >= 75 ? 'var(--green)' : (r.polePct||0) >= 40 ? 'var(--accent)' : 'var(--red)';
-    const kc = (r.kmPct||0)   >= 75 ? 'var(--green)' : (r.kmPct||0)   >= 40 ? 'var(--accent)' : 'var(--red)';
-    const oc = (r.overallPct) >= 75 ? 'var(--green)' : (r.overallPct) >= 40 ? 'var(--accent)' : 'var(--red)';
+    const pc = (r.polePct||0) >= 100 ? 'var(--green)' : (r.polePct||0) >= 60 ? 'var(--accent)' : 'var(--red)';
+    const kc = (r.kmPct||0)   >= 100 ? 'var(--green)' : (r.kmPct||0)   >= 60 ? 'var(--accent)' : 'var(--red)';
+    const isComplete = !r.noScope && r.overallPct >= 100;
     const badge = r.noScope
       ? `<span class="badge blow">No Scope Set</span>`
-      : `<span class="badge ${r.overallPct>=75?'bok':r.overallPct>=40?'blow':'bout'}">${r.overallPct}% overall</span>`;
+      : isComplete
+        ? `<span class="badge bok" style="background:rgba(63,185,80,.2);border:1px solid rgba(63,185,80,.4)">✅ Complete</span>`
+        : `<span class="badge ${r.overallPct>=60?'bok':r.overallPct>=30?'blow':'bout'}">${r.overallPct}% done</span>`;
 
     const poleRow = r.poles > 0 ? `
       <div style="margin-bottom:10px">
@@ -1989,13 +2042,13 @@ function renderWPSites(sites) {
     const kmRow = r.kms > 0 ? `
       <div>
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
-          <span style="color:var(--text2);font-weight:600">⚡ Line Strung</span>
-          <span style="color:var(--text3)">${r.done_kms} / ${r.kms} KM &nbsp;<strong style="color:${kc}">${r.kmPct}%</strong></span>
+          <span style="color:var(--text2);font-weight:600">⚡ Wire Done</span>
+          <span style="color:var(--text3)">${r.done_kms} / ${r.kms} KM wire &nbsp;<strong style="color:${kc}">${r.kmPct}%</strong></span>
         </div>
         <div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden">
           <div style="height:100%;width:${Math.min(r.kmPct||0,100)}%;background:${kc};border-radius:4px;transition:width .5s"></div>
         </div>
-      </div>` : r.done_kms ? `<div style="font-size:11px;color:var(--text3)">⚡ ${r.done_kms} KM strung (no scope set)</div>` : '';
+      </div>` : r.done_kms ? `<div style="font-size:11px;color:var(--text3)">⚡ ${r.done_kms} KM wire done (no scope set)</div>` : '';
 
     return `<div class="wp-site">
       <div class="wp-hdr">
@@ -2023,17 +2076,17 @@ async function saveWorkProgress() {
 
   const poles   = parseFloat(document.getElementById('wp_poles')?.value) || 0;
   const kms     = parseFloat(document.getElementById('wp_kms')?.value)   || 0;
-  const wtype   = document.getElementById('wp_type')?.value   || 'Both';
   const site    = document.getElementById('wp_site').value;
   const sub     = document.getElementById('wp_sub').value;
   const date    = document.getElementById('wp_date').value;
   const remarks = document.getElementById('wp_remarks').value;
 
   if (!site || site === '-- Select --') { toast('Select a site','warning'); st.textContent=''; return; }
-  if (!poles && !kms) { toast('Enter poles erected or kms strung','warning'); st.textContent=''; return; }
+  if (!poles && !kms) { toast('Enter poles done or wire done','warning'); st.textContent=''; return; }
 
-  // Format: Date, Site, Subcon, WorkType, PolesErected, KmsStrung, Remarks
-  const row = [date, site, sub, wtype, poles, kms, remarks];
+  // Format: Date, Site, Subcon, WorkType="Both", Poles, WireKM, Remarks
+  // WorkType fixed as "Both" — Apps Script old-format parser reads poles=col[4] kms=col[5]
+  const row = [date, site, sub, 'Both', poles, kms, remarks];
 
   try {
     await apiPost('WorkProgress', [row]);
@@ -2391,12 +2444,61 @@ function updateStockBadge(sel, type) {
   const badge = row.querySelector('.stock-badge');
   if (!badge) return;
   if (!item || item === '__other' || item === '') { badge.textContent = ''; badge.style.display='none'; return; }
-  const qty = getStockQty(item, location);
+  const qty  = getStockQty(item, location);
   if (qty === null) { badge.textContent = ''; badge.style.display='none'; return; }
-  badge.style.display = 'inline';
-  badge.textContent   = 'Stock: ' + qty;
-  badge.style.background = qty <= 0 ? 'rgba(248,81,73,.15)' : qty < 10 ? 'rgba(210,153,34,.15)' : 'rgba(63,185,80,.12)';
-  badge.style.color      = qty <= 0 ? 'var(--red)'          : qty < 10 ? 'var(--yellow)'         : 'var(--green)';
+
+  // Also get unit from ItemMaster for display
+  const stockItem = STOCK.find(r => r.item === item);
+  const unit = (stockItem && stockItem.unit) ? stockItem.unit : '';
+
+  badge.style.display = 'inline-flex';
+  badge.style.alignItems = 'center';
+  badge.style.gap = '4px';
+
+  if (qty <= 0) {
+    badge.innerHTML = `⛔ Out of stock at ${location}`;
+    badge.style.background = 'rgba(248,81,73,.18)';
+    badge.style.color      = 'var(--red)';
+    badge.style.border     = '1px solid rgba(248,81,73,.35)';
+    badge.style.fontSize   = '11px';
+    badge.style.fontWeight = '700';
+  } else if (qty < 10) {
+    badge.innerHTML = `⚠ Low stock: ${qty}${unit ? ' '+unit : ''} at ${location}`;
+    badge.style.background = 'rgba(210,153,34,.18)';
+    badge.style.color      = 'var(--yellow)';
+    badge.style.border     = '1px solid rgba(210,153,34,.35)';
+    badge.style.fontSize   = '11px';
+    badge.style.fontWeight = '600';
+  } else {
+    badge.innerHTML = `✓ ${qty}${unit ? ' '+unit : ''} available at ${location}`;
+    badge.style.background = 'rgba(63,185,80,.12)';
+    badge.style.color      = 'var(--green)';
+    badge.style.border     = '1px solid rgba(63,185,80,.25)';
+    badge.style.fontSize   = '11px';
+    badge.style.fontWeight = '600';
+  }
+}
+
+// Check qty entered vs available — call on qty input change
+function checkQtyVsStock(input, type) {
+  const row  = input.closest('tr');
+  if (!row) return;
+  const sel  = row.querySelector('select');
+  if (!sel || !sel.value || sel.value === '__other') return;
+  const item = sel.value;
+  let location = 'Main Store';
+  if (type === 'issue')    { const el = document.getElementById('i_site'); if(el) location = el.value; }
+  if (type === 'transfer') { const el = document.getElementById('t_from'); if(el) location = el.value; }
+  const avail = getStockQty(item, location);
+  if (avail === null) return;
+  const entered = parseFloat(input.value) || 0;
+  if (entered > avail && avail >= 0) {
+    input.style.borderColor = 'var(--red)';
+    input.title = `Only ${avail} available at ${location}`;
+  } else {
+    input.style.borderColor = '';
+    input.title = '';
+  }
 }
 
 function addRow(type) {
@@ -2412,10 +2514,10 @@ function addRow(type) {
     <td>
       <div style="display:flex;flex-direction:column;gap:3px;">
         ${itemSel(type)}
-        ${showStock ? '<span class="stock-badge" style="display:none;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;width:fit-content;"></span>' : ''}
+        ${showStock ? '<span class="stock-badge" style="display:none;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;width:fit-content;margin-top:3px;cursor:default;transition:all .2s"></span>' : ''}
       </div>
     </td>
-    <td><input type="number" min="0" placeholder="0" style="width:70px" oninput="if(this.value<0)this.value=0;"></td>
+    <td><input type="number" min="0" placeholder="0" style="width:70px" class="qty-input" oninput="if(this.value<0)this.value=0"></td>
     <td>${unitSel()}</td>
     ${isPurchase?`<td><input type="number" min="0" placeholder="0" style="width:80px"></td><td class="amt-cell td-n">—</td>`:''}
     ${isConsumption?`<td><input type="text" placeholder="Remarks" style="min-width:120px"></td>`:''}
@@ -2428,6 +2530,8 @@ function addRow(type) {
   if (showStock) {
     const sel = r.querySelector('select');
     if (sel) sel.addEventListener('change', () => updateStockBadge(sel, type));
+    const qtyInput = r.querySelector('.qty-input');
+    if (qtyInput) qtyInput.addEventListener('input', () => checkQtyVsStock(qtyInput, type));
   }
 }
 function renumber(tid) { document.querySelectorAll(`#${tid} tr`).forEach((r,i)=>r.cells[0].textContent=i+1); }
@@ -2620,7 +2724,7 @@ async function saveTransaction(type) {
     const vMap={purchase:'p_inv',transfer:'t_no',issue:'i_no',consumption:'c_no',returns:'r_no'};
     getVoucher(sheetMap[type]).then(v=>{ const el=document.getElementById(vMap[type]); if(el&&v) el.value=v; });
     setTimeout(()=>loadDashboard(),500);
-    loadRecentTab(type);
+    fetchRecords(type, true); // auto-refresh showing today's records after save
     REPORT_DATA = null; // clear report cache
   } catch(e) {
     st.textContent='Save failed'; st.style.color='var(--red)';
@@ -2629,35 +2733,61 @@ async function saveTransaction(type) {
 }
 
 // ══════════════════════════════════════════════════════
-//  RECENT TABS — grouped by voucher
+//  FETCH RECORDS — on-demand with filters
 // ══════════════════════════════════════════════════════
-async function loadRecentTab(type) {
-  const sheet = {purchase:'Purchase',transfer:'Transfer',issue:'Issue',
-                 consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'}[type];
-  const el    = document.getElementById('recent-'+type);
-  if (!el) return;
-  el.innerHTML = '<div class="skeleton sk-r w80"></div>';
+const SHEET_NAME = {purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+                    consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+
+async function fetchRecords(type, autoRefresh) {
+  const sheet   = SHEET_NAME[type];
+  const el      = document.getElementById('recent-'+type);
+  const btn     = document.getElementById('fr_'+type+'_btn');
+  if (!el || !sheet) return;
+
+  // When autoRefresh (called after save), pre-fill today's date so the new entry shows
+  if (autoRefresh) {
+    const todayStr = new Date().toISOString().slice(0,10);
+    const fromEl = document.getElementById('fr_'+type+'_from');
+    if (fromEl && !fromEl.value) fromEl.value = todayStr;
+    const toEl = document.getElementById('fr_'+type+'_to');
+    if (toEl && !toEl.value)   toEl.value = todayStr;
+  }
+
+  const fromVal    = (document.getElementById('fr_'+type+'_from')   ||{}).value || '';
+  const toVal      = (document.getElementById('fr_'+type+'_to')     ||{}).value || '';
+  const voucherVal = (document.getElementById('fr_'+type+'_voucher')||{}).value || '';
+  const filterVal  = (document.getElementById('fr_'+type+'_filter') ||{}).value || '';
+
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ Fetching…'; }
+  el.innerHTML = '<div class="skeleton sk-r w80"></div><div class="skeleton sk-r w60" style="margin-top:6px"></div>';
+
   try {
-    const data = await apiFetch({action:'recent', sheet});
+    const data = await apiFetch({
+      action:  'getRecordsFiltered',
+      sheet:   sheet,
+      from:    fromVal,
+      to:      toVal,
+      voucher: voucherVal,
+      filter:  filterVal
+    });
+
     if (!data || !data.length) {
-      el.innerHTML = '<p style="padding:16px;color:var(--text3);font-size:12px;text-align:center">No entries yet</p>';
+      el.innerHTML = '<p style="padding:18px;color:var(--text3);font-size:12px;text-align:center">No records found for the selected filters</p>';
       return;
     }
-
-    // Detect format: new = array of objects with .voucher/.items
-    //               old = array of arrays (flat rows)
     const isGrouped = data[0] && typeof data[0] === 'object' && !Array.isArray(data[0]) && data[0].voucher;
-
-    if (isGrouped) {
-      el.innerHTML = data.slice(0,15).map(v => renderVoucherCard(v, sheet)).join('');
-    } else {
-      // Old format — group flat rows by voucher number (col index 1)
-      el.innerHTML = groupAndRenderFlat(data, sheet);
-    }
+    el.innerHTML = isGrouped
+      ? data.map(v => renderVoucherCard(v, sheet)).join('')
+      : groupAndRenderFlat(data, sheet);
   } catch(e) {
-    el.innerHTML = `<p style="padding:12px;color:var(--red);font-size:12px">Error: ${e.message}</p>`;
+    el.innerHTML = `<p style="padding:12px;color:var(--red);font-size:12px">Error loading records: ${e.message}</p>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Fetch Records'; }
   }
 }
+
+// Legacy wrapper — called by subconreturn save path which uses different function name
+async function loadRecentTab(type) { return fetchRecords(type, true); }
 
 // ── GROUP FLAT ROWS INTO VOUCHER CARDS ───────────────────────
 function groupAndRenderFlat(rows, sheet) {
@@ -2873,7 +3003,6 @@ function showTab(name, btn) {
   closeSidebar();
   // Side effects per tab
   if (['purchase','transfer','issue','consumption','returns','subconreturn'].includes(name)) {
-    loadRecentTab(name);
     // Auto-fill voucher number
     const vId = VOUCHER_MAP[name];
     if (vId) getVoucher(SHEET_MAP[name]).then(v=>{ const el=document.getElementById(vId); if(el&&v) el.value=v; });
@@ -3425,7 +3554,7 @@ function printReport(id) {
   const w = window.open('about:blank', '_blank', 'width=900,height=750,scrollbars=yes,resizable=yes');
   if (!w) { toast('Print blocked — please allow popups for this site', 'error'); return; }
   w.document.open();
-  w.document.write(`<!DOCTYPE html><html><head><title>CA AB Tracking System — Report</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>SiteFlow — Report</title>
   <meta charset="utf-8">
   <style>
     body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px;}
@@ -3450,11 +3579,9 @@ function printReport(id) {
     .exc-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:11px;}
   </style></head><body>
   <div class="rpt-header">
-    <div><div class="rpt-title">CA AB Tracking System</div><div class="rpt-sub">Printed on ${new Date().toLocaleString('en-IN')}</div></div>
-    <div style="text-align:right;font-size:11px;color:#888">CA Atik Bhayani · +91 7057164441</div>
+    <div><div class="rpt-title">SiteFlow</div><div class="rpt-sub">Printed on ${new Date().toLocaleString('en-IN')}</div></div>
   </div>
   ${el.innerHTML}
-  <div class="footer">CA AB Tracking System · Confidential · CA Atik Bhayani · +91 7057164441</div>
   <scr'+'ipt>
     window.onload = function() { setTimeout(function(){ window.print(); }, 300); };
     window.onafterprint = function() { window.close(); };
@@ -3477,6 +3604,27 @@ async function generateReportsInSheets(btn) {
       setTimeout(() => toast('Open Google Sheets to view: RPT-Variance, RPT-SiteLeakage, RPT-SubconEfficiency, RPT-MovementSummary, RPT-Exception', 'success'), 1000);
     } else {
       toast('Failed: ' + (res.error || 'Unknown error'), 'error');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+  btn.innerHTML = orig;
+  btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════
+//  SETUP LIVE STOCK REGISTER SHEET
+// ══════════════════════════════════════════════════════
+async function generateStockRegister(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="ni">⏳</span>Setting up...';
+  btn.disabled = true;
+  try {
+    const res = await apiFetch({ action: 'generateStockSheet' });
+    if (res && res.success) {
+      toast(`✅ StockRegister sheet created — ${res.items} items × ${res.locations} locations. Opens in Google Sheets and auto-updates on every entry!`, 'success');
+    } else {
+      toast('Failed: ' + (res && res.error ? res.error : 'Unknown error'), 'error');
     }
   } catch(e) {
     toast('Error: ' + e.message, 'error');
@@ -3878,7 +4026,7 @@ function printVoucher(type, data=null) {
   const fullDoc = `<!DOCTYPE html>
 <html>
 <head>
-  <title>${type} — CA AB Tracking System</title>
+  <title>${type} — SiteFlow</title>
   <meta charset="utf-8">
   <style>${printStyles()}</style>
 </head>
