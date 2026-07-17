@@ -177,14 +177,12 @@ tr:hover td{background:rgba(0,0,0,.025)}
 .toast.info{border-left:3px solid var(--accent)}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* PIN GATE */
+/* LOGIN GATE */
 #gate{position:fixed;inset:0;background:rgba(246,248,250,.96);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.gate-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)}
-.gate-box h2{font-size:20px;font-weight:700;margin-bottom:6px}
-.gate-box p{color:var(--text3);font-size:13px;margin-bottom:20px}
-#pin-input{font-size:20px;letter-spacing:.4em;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:12px;width:100%;outline:none;font-family:var(--mono)}
-#pin-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,235,.1)}
-#pin-error{color:var(--red);font-size:12px;margin-top:8px;height:16px}
+.gate-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.gate-box h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.gate-box .co-name{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px}
+.gate-box .sub{color:var(--text3);font-size:13px;margin-bottom:20px}
 
 /* SKELETON */
 .skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px}
@@ -211,16 +209,26 @@ tr:hover td{background:rgba(0,0,0,.025)}
 </head>
 <body>
 
-<!-- PIN GATE -->
+<!-- LOGIN GATE -->
 <div id="gate">
   <div class="gate-box">
-    <div style="font-size:40px;margin-bottom:12px">🏗️</div>
+    <div style="font-size:40px;margin-bottom:8px">🏗️</div>
     <h2>SiteFlow</h2>
-    <p>Site &amp; Inventory Management</p>
-    <input id="pin-input" type="password" placeholder="Enter PIN" maxlength="8" autocomplete="off">
-    <div id="pin-error"></div>
-    <div style="margin-top:16px">
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="verifyPIN()">Unlock →</button>
+    <div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div>
+    <div class="sub">Sign in to continue</div>
+    <div style="text-align:left;display:flex;flex-direction:column;gap:10px">
+      <div class="form-group">
+        <label>Username</label>
+        <input id="login-user" type="text" placeholder="Enter username" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="login-pass" type="password" placeholder="Enter password" autocomplete="off">
+      </div>
+    </div>
+    <div id="login-error" style="color:var(--red);font-size:12px;margin-top:8px;min-height:16px"></div>
+    <div style="margin-top:12px">
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In →</button>
     </div>
   </div>
 </div>
@@ -228,8 +236,11 @@ tr:hover td{background:rgba(0,0,0,.025)}
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="brand">
-    <div class="logo">S</div>
-    <span>SiteFlow</span>
+    <div class="logo">T</div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.3">SiteFlow</div>
+      <div style="font-size:9px;color:var(--text4);font-weight:400;line-height:1.2">Thakur Electricals &amp; Engrs</div>
+    </div>
   </div>
   <nav>
     <div class="section-label">Overview</div>
@@ -253,7 +264,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a onclick="showTab('reports',this)"><span class="icon">📑</span>Reports</a>
 
     <div class="section-label">Admin</div>
-    <a onclick="showTab('settings',this)"><span class="icon">⚙️</span>Settings</a>
+    <a id="settings-link" onclick="showTab('settings',this)"><span class="icon">⚙️</span>Settings</a>
   </nav>
   <div class="status-bar">
     <div class="dot" id="conn-dot"></div>
@@ -266,7 +277,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
   <div id="topbar">
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     <h1 id="topbar-title">Dashboard</h1>
+    <span id="user-name-tag" style="font-size:12px;color:var(--text3);font-weight:500;margin-right:4px"></span>
     <button class="btn btn-ghost btn-sm" onclick="initApp()">↻ Refresh</button>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:var(--red);border-color:rgba(207,34,46,.25)">⎋ Logout</button>
   </div>
   <div id="page">
 
@@ -621,15 +634,22 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
         <!-- ITEM MASTER -->
         <div class="card">
-          <div class="card-header"><h2>📦 Item Master</h2></div>
+          <div class="card-header">
+            <h2>📦 Item Master</h2>
+            <span id="im-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
           <div class="card-body">
+            <input type="hidden" id="im-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Item Name</label><input type="text" id="im-name" placeholder="Item name"></div>
               <div class="form-group"><label>Unit</label><input type="text" id="im-unit" placeholder="Nos / Mtrs / KM"></div>
               <div class="form-group"><label>Min Stock</label><input type="number" id="im-min" placeholder="0" min="0"></div>
               <div class="form-group"><label>Remarks</label><input type="text" id="im-remarks"></div>
             </div>
-            <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveMaster('ItemMaster')">+ Add Item</button></div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="im-save-btn" onclick="saveMaster('ItemMaster')">+ Add Item</button>
+              <button class="btn btn-ghost btn-sm" id="im-cancel-btn" style="display:none" onclick="cancelItemEdit()">✕ Cancel</button>
+            </div>
             <div id="im-list" style="margin-top:12px"></div>
           </div>
         </div>
@@ -665,8 +685,12 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
         <!-- SUBCON MASTER -->
         <div class="card">
-          <div class="card-header"><h2>👷 Subcontractor Master</h2></div>
+          <div class="card-header">
+            <h2>👷 Subcontractor Master</h2>
+            <span id="sub-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
           <div class="card-body">
+            <input type="hidden" id="sub-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Name</label><input type="text" id="sub-name" placeholder="Subcontractor name"></div>
               <div class="form-group"><label>Contact Person</label><input type="text" id="sub-contact"></div>
@@ -674,15 +698,22 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <div class="form-group"><label>Site</label><select id="sub-site"><option value="">Select Site</option></select></div>
               <div class="form-group"><label>PAN</label><input type="text" id="sub-pan"></div>
             </div>
-            <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveMaster('SubcontractorMaster')">+ Add Subcon</button></div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="sub-save-btn" onclick="saveMaster('SubcontractorMaster')">+ Add Subcon</button>
+              <button class="btn btn-ghost btn-sm" id="sub-cancel-btn" style="display:none" onclick="cancelSubconEdit()">✕ Cancel</button>
+            </div>
             <div id="sub-list" style="margin-top:12px"></div>
           </div>
         </div>
 
         <!-- SUBCON SCOPE -->
         <div class="card">
-          <div class="card-header"><h2>📐 Subcon Scope Allocation</h2></div>
+          <div class="card-header">
+            <h2>📐 Subcon Scope Allocation</h2>
+            <span id="sc-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
           <div class="card-body">
+            <input type="hidden" id="sc-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Subcontractor</label><select id="sc-subcon"><option value="">Select Subcon</option></select></div>
               <div class="form-group"><label>Site</label><select id="sc-site"><option value="">Select Site</option></select></div>
@@ -690,20 +721,11 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <div class="form-group"><label>Wire Allocated (KM)</label><input type="number" id="sc-kms" placeholder="0.00" min="0" step="0.01"></div>
               <div class="form-group"><label>Remarks</label><input type="text" id="sc-remarks"></div>
             </div>
-            <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveMaster('SubconScope')">+ Save Allocation</button></div>
-            <div id="sc-list" style="margin-top:12px"></div>
-          </div>
-        </div>
-
-        <!-- PIN SETTINGS -->
-        <div class="card">
-          <div class="card-header"><h2>🔐 Access PIN</h2></div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group"><label>New PIN</label><input type="password" id="new-pin" placeholder="Enter new PIN" maxlength="8"></div>
-              <div class="form-group"><label>Confirm PIN</label><input type="password" id="confirm-pin" placeholder="Confirm PIN" maxlength="8"></div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="sc-save-btn" onclick="saveMaster('SubconScope')">+ Save Allocation</button>
+              <button class="btn btn-ghost btn-sm" id="sc-cancel-btn" style="display:none" onclick="cancelScopeEdit()">✕ Cancel</button>
             </div>
-            <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="changePIN()">🔐 Change PIN</button></div>
+            <div id="sc-list" style="margin-top:12px"></div>
           </div>
         </div>
 
@@ -720,7 +742,6 @@ tr:hover td{background:rgba(0,0,0,.025)}
 //  CONSTANTS
 // ══════════════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbxarP70J_zqc9JQJQpunzvGNWWgX7XpxFYHOF_yB6YqmvYIL79-7j5Ff8EZfxvXXtM/exec';
-const DEFAULT_PIN = '1234';
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
   consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn'
@@ -759,11 +780,13 @@ async function apiPost(action, data, extraParams) {
 async function initApp() {
   setConn(false);
   try {
-    const [masters, dash] = await Promise.all([
+    const [masters, dash, stockData] = await Promise.all([
       api({action:'masters'}),
-      api({action:'dashboard'})
+      api({action:'dashboard'}),
+      api({action:'stock'})
     ]);
     MASTERS = masters;
+    STOCK   = stockData;
     buildDropdowns();
     renderDashboard(dash);
     setConn(true);
@@ -826,17 +849,109 @@ function buildDropdowns() {
 
   renderItemList();
   renderSiteTable();
-  renderSimpleList('sub-list', subcons, r=>`${esc(r.name)} <small style="color:var(--text3)">${esc(r.site||'')}</small>`);
-  renderSimpleList('sc-list', MASTERS.subconScope||[], r=>`${esc(r.subcon)} @ ${esc(r.site)} <small style="color:var(--text3)">${r.poles||0}P · ${r.kms||0}KM</small>`);
+  renderSubconList();
+  renderScopeList();
 }
 
 function renderItemList() {
   const items = MASTERS.items||[];
   const el = document.getElementById('im-list'); if(!el) return;
   if(!items.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No items.</p>';return;}
-  el.innerHTML='<div style="max-height:140px;overflow-y:auto">'+
-    items.map(r=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">${esc(r.name)} <small style="color:var(--text3)">${esc(r.unit||'')} · Min:${r.minStock||0}</small></div>`).join('')+
+  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
+    items.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="flex:1">${esc(r.name)} <small style="color:var(--text3)">${esc(r.unit||'')} · Min:${r.minStock||0}</small></span>
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editItem(${JSON.stringify(r)})'>✏️</button>
+    </div>`).join('')+
     '</div>';
+}
+
+function editItem(r) {
+  document.getElementById('im-edit-key').value  = r.name;
+  document.getElementById('im-name').value      = r.name;
+  document.getElementById('im-unit').value      = r.unit||'';
+  document.getElementById('im-min').value       = r.minStock||0;
+  document.getElementById('im-remarks').value   = r.remarks||'';
+  document.getElementById('im-save-btn').textContent = '💾 Update Item';
+  document.getElementById('im-cancel-btn').style.display = '';
+  document.getElementById('im-edit-label').textContent = 'Editing: ' + r.name;
+  document.getElementById('im-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelItemEdit() {
+  document.getElementById('im-edit-key').value = '';
+  ['im-name','im-unit','im-min','im-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('im-save-btn').textContent = '+ Add Item';
+  document.getElementById('im-cancel-btn').style.display = 'none';
+  document.getElementById('im-edit-label').textContent = '';
+}
+
+function renderSubconList() {
+  const subcons = MASTERS.subcons||[];
+  const el = document.getElementById('sub-list'); if(!el) return;
+  if(!subcons.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No subcontractors.</p>';return;}
+  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
+    subcons.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="flex:1">${esc(r.name)} <small style="color:var(--text3)">${esc(r.site||'')}</small></span>
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editSubcon(${JSON.stringify(r)})'>✏️</button>
+    </div>`).join('')+
+    '</div>';
+}
+
+function editSubcon(r) {
+  document.getElementById('sub-edit-key').value  = r.name;
+  document.getElementById('sub-name').value      = r.name;
+  document.getElementById('sub-contact').value   = r.contact||'';
+  document.getElementById('sub-phone').value     = r.phone||'';
+  document.getElementById('sub-site').value      = r.site||'';
+  document.getElementById('sub-pan').value       = r.pan||'';
+  document.getElementById('sub-save-btn').textContent = '💾 Update Subcon';
+  document.getElementById('sub-cancel-btn').style.display = '';
+  document.getElementById('sub-edit-label').textContent = 'Editing: ' + r.name;
+  document.getElementById('sub-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelSubconEdit() {
+  document.getElementById('sub-edit-key').value = '';
+  ['sub-name','sub-contact','sub-phone','sub-pan'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const s=document.getElementById('sub-site'); if(s) s.value='';
+  document.getElementById('sub-save-btn').textContent = '+ Add Subcon';
+  document.getElementById('sub-cancel-btn').style.display = 'none';
+  document.getElementById('sub-edit-label').textContent = '';
+}
+
+function renderScopeList() {
+  const scopes = MASTERS.subconScope||[];
+  const el = document.getElementById('sc-list'); if(!el) return;
+  if(!scopes.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No allocations.</p>';return;}
+  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
+    scopes.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="flex:1">${esc(r.subcon)} @ ${esc(r.site)} <small style="color:var(--text3)">${r.poles||0}P · ${r.kms||0}KM</small></span>
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editScope(${JSON.stringify(r)})'>✏️</button>
+    </div>`).join('')+
+    '</div>';
+}
+
+function editScope(r) {
+  document.getElementById('sc-edit-key').value  = r.subcon;
+  document.getElementById('sc-subcon').value    = r.subcon||'';
+  document.getElementById('sc-site').value      = r.site||'';
+  document.getElementById('sc-poles').value     = r.poles||0;
+  document.getElementById('sc-kms').value       = r.kms||0;
+  document.getElementById('sc-remarks').value   = r.remarks||'';
+  document.getElementById('sc-save-btn').textContent = '💾 Update Allocation';
+  document.getElementById('sc-cancel-btn').style.display = '';
+  document.getElementById('sc-edit-label').textContent = 'Editing: '+r.subcon+' @ '+r.site;
+  document.getElementById('sc-subcon').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelScopeEdit() {
+  document.getElementById('sc-edit-key').value = '';
+  ['sc-poles','sc-kms','sc-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const sc=document.getElementById('sc-subcon'); if(sc) sc.value='';
+  const ss=document.getElementById('sc-site');   if(ss) ss.value='';
+  document.getElementById('sc-save-btn').textContent = '+ Save Allocation';
+  document.getElementById('sc-cancel-btn').style.display = 'none';
+  document.getElementById('sc-edit-label').textContent = '';
 }
 
 function renderSiteTable() {
@@ -966,6 +1081,7 @@ function showTab(name, link) {
     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
   if(rMap[name]&&!document.getElementById(rMap[name]).children.length) addRow(name);
 
+  if(name==='issue'||name==='transfer') refreshStock();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
   if(name==='subconledger') loadSubconLedger();
@@ -1071,8 +1187,14 @@ function updateStock(sel,type){
   const item=sel.value; const tr=sel.closest('tr');
   const cell=tr.querySelector('.stock-cell'); if(!cell) return;
   let avail=0;
-  if(type==='transfer'){ const from=v('trn-from')||'Main Store'; avail=getStock(item,from); }
-  else if(type==='issue'){ const site=v('iss-site'); avail=getStock(item,site||'Main Store'); }
+  if(type==='transfer'){
+    const from=v('trn-from')||'Main Store';
+    avail=getStock(item,from);
+  } else if(type==='issue'){
+    const site=v('iss-site');
+    if(!site){ cell.innerHTML='<span class="stock-badge out">Select site first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
+    avail=getStock(item,site);
+  }
   const mi=(MASTERS.items||[]).find(i=>i.name===item);
   const cls=avail<=0?'out':(mi&&avail<=(mi.minStock||0)?'low':'ok');
   cell.innerHTML=`<span class="stock-badge ${cls}">${avail}</span>`;
@@ -1086,9 +1208,12 @@ function getStock(item,loc){
 }
 
 function checkStock(input){
-  const avail=parseFloat(input.dataset.available)||0;
+  // dataset.available is set by updateStock; -1 means "no site selected"
+  const avail=parseFloat(input.dataset.available);
   const qty=parseFloat(input.value)||0;
-  input.classList.toggle('over-stock', qty>avail&&avail>0);
+  // Mark over-stock if: avail not set (NaN/0) and qty>0, OR qty exceeds avail
+  const isOver = (!isNaN(avail)) ? qty > avail : qty > 0;
+  input.classList.toggle('over-stock', isOver);
 }
 
 function onIssSiteChange(){
@@ -1124,12 +1249,23 @@ async function saveTxn(type){
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||0;if(!i||!q)return null;return[h[0],h[1],h[2],i,q,u,rt,a,h[8],h[9],h[10]];}},
     transfer:{sheet:'Transfer',
       hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,v('trn-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const qtyEl=tr.querySelector('.qty-input');
+        const av=parseFloat(qtyEl.dataset.available);
+        if(!isNaN(av)&&q>av){
+          toast(`❌ Cannot transfer ${q} of "${i}" — only ${av} available at ${h[2]}`,'error');
+          return'ABORT';
+        }
+        return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
     issue:{sheet:'Issue',
       hdr:()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
-        const over=tr.querySelector('.qty-input').classList.contains('over-stock');
-        if(over){const av=parseFloat(tr.querySelector('.qty-input').dataset.available)||0;if(!confirm(`Qty(${q}) > available(${av}) for "${i}". Save anyway?`))return'ABORT';}
+        const qtyEl=tr.querySelector('.qty-input');
+        const av=parseFloat(qtyEl.dataset.available);
+        if(!isNaN(av)&&q>av){
+          toast(`❌ Cannot issue ${q} of "${i}" — only ${av} available at site`,'error');
+          return'ABORT';
+        }
         return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
     consumption:{sheet:'Consumption',
       hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
@@ -1434,45 +1570,87 @@ function showReport(key,tab){
 //  SETTINGS — OTHER MASTERS
 // ══════════════════════════════════════════════════════
 async function saveMaster(sheet){
-  let row;
+  let row, editKey='';
   if(sheet==='ItemMaster'){
     const n=v('im-name');if(!n){toast('Name required','error');return;}
     row=[n,v('im-unit'),parseFloat(v('im-min'))||0,v('im-remarks')];
+    editKey=v('im-edit-key');
   } else if(sheet==='SubcontractorMaster'){
     const n=v('sub-name');if(!n){toast('Name required','error');return;}
     row=[n,v('sub-contact'),v('sub-phone'),v('sub-site'),v('sub-pan')];
+    editKey=v('sub-edit-key');
   } else if(sheet==='SubconScope'){
     const s=v('sc-subcon'),si=v('sc-site');
     if(!s||!si){toast('Select subcon + site','error');return;}
     row=[s,si,parseFloat(v('sc-poles'))||0,parseFloat(v('sc-kms'))||0,v('sc-remarks')];
+    editKey=v('sc-edit-key');
   }
   if(!row) return;
   try{
-    const res=await apiPost(sheet,[row]);
-    if(res.success){toast('✅ Saved','success');initApp();}
-    else toast(res.error||'Failed','error');
+    let res;
+    if(editKey){
+      res=await apiPost('updateMasterRow',row,{sheet,key:editKey});
+    } else {
+      res=await apiPost(sheet,[row]);
+    }
+    if(res.success){
+      toast(editKey?'✅ Updated':'✅ Saved','success');
+      if(sheet==='ItemMaster') cancelItemEdit();
+      if(sheet==='SubcontractorMaster') cancelSubconEdit();
+      if(sheet==='SubconScope') cancelScopeEdit();
+      initApp();
+    } else toast(res.error||'Failed','error');
   } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
 // ══════════════════════════════════════════════════════
-//  PIN
+//  USERS & AUTH
 // ══════════════════════════════════════════════════════
-function verifyPIN(){
-  const entered=document.getElementById('pin-input').value;
-  const stored=localStorage.getItem('sf_pin')||DEFAULT_PIN;
-  if(entered===stored){document.getElementById('gate').style.display='none';initApp();}
-  else{document.getElementById('pin-error').textContent='Incorrect PIN.';document.getElementById('pin-input').value='';}
+const USERS = [
+  {id:'Atik',        pass:'Atik@2026',        role:'admin', name:'Atik'},
+  {id:'Sagar',       pass:'Sagar@1992',        role:'admin', name:'Sagar Alwal'},
+  {id:'Naresh',      pass:'Naresh@1991',       role:'user',  name:'Naresh Konda'},
+  {id:'Priyanka',    pass:'Priyanka@1998',     role:'user',  name:'Priyanka Shinde'},
+  {id:'Priya',       pass:'Priya@1997',        role:'user',  name:'Priyanka Agawane'},
+  {id:'Hariprasad',  pass:'Hariprasad@2026',   role:'user',  name:'Hariprasad'},
+  {id:'Amish',       pass:'Amish@1996',        role:'user',  name:'Amish Thakur'},
+];
+let CURRENT_USER = null;
+
+function doLogin() {
+  const uid = document.getElementById('login-user').value.trim();
+  const pwd = document.getElementById('login-pass').value;
+  const user = USERS.find(u => u.id.toLowerCase() === uid.toLowerCase() && u.pass === pwd);
+  if(user) {
+    CURRENT_USER = user;
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('user-name-tag').textContent = '👤 ' + user.name;
+    const sl = document.getElementById('settings-link');
+    if(sl) sl.style.display = user.role === 'admin' ? '' : 'none';
+    initApp();
+  } else {
+    document.getElementById('login-error').textContent = 'Incorrect username or password.';
+    document.getElementById('login-pass').value = '';
+  }
 }
-function changePIN(){
-  const np=v('new-pin'),cp=v('confirm-pin');
-  if(!np){toast('Enter new PIN','error');return;}
-  if(np!==cp){toast('PINs do not match','error');return;}
-  localStorage.setItem('sf_pin',np);
-  toast('✅ PIN changed','success');
-  document.getElementById('new-pin').value='';
-  document.getElementById('confirm-pin').value='';
+
+function doLogout() {
+  CURRENT_USER = null;
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('user-name-tag').textContent = '';
+  // Reset to dashboard
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-dashboard').classList.add('active');
+  document.querySelectorAll('#sidebar nav a').forEach(a=>a.classList.remove('active'));
+  document.querySelector('#sidebar nav a').classList.add('active');
+  document.getElementById('topbar-title').textContent = 'Dashboard';
 }
-document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')verifyPIN();});
+
+document.getElementById('login-user').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-pass').focus(); });
+document.getElementById('login-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 
 // ══════════════════════════════════════════════════════
 //  UTILITY
