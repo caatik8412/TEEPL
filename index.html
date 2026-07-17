@@ -4,213 +4,209 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SiteFlow</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d1117">
+<meta name="theme-color" content="#1f6feb">
+<script>
+if(location.protocol==='https:'){
+  const m={name:"SiteFlow",short_name:"SiteFlow",start_url:"./",display:"standalone",
+    background_color:"#f6f8fa",theme_color:"#1f6feb",
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231f6feb'/><text y='.85em' font-size='340' x='50%' text-anchor='middle' font-family='Arial' font-weight='bold' fill='white'>S</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
+  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);
+  const swCode=`const C='sf-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com'))return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
+  const sb=new Blob([swCode],{type:'text/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(sb)).catch(()=>{});
+}
+</script>
 <style>
-/* ── RESET & VARS ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#2d333b;
-  --border:#30363d;--border2:#444c56;
-  --text:#e6edf3;--text2:#c9d1d9;--text3:#8b949e;--text4:#656d76;
-  --accent:#f0883e;--accent2:#58a6ff;
-  --green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff;
+  --bg:#f6f8fa;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e7eb;
+  --border:#d0d7de;--border2:#8c959f;
+  --text:#1f2328;--text2:#424a53;--text3:#636c76;--text4:#818b98;
+  --accent:#1f6feb;--accent2:#0969da;
+  --green:#1a7f37;--red:#cf222e;--yellow:#9a6700;--purple:#6639ba;
   --mono:'SF Mono','Fira Code',monospace;
   --radius:8px;--sidebar:220px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;height:100dvh;overflow:hidden;display:flex}
 
-/* ── SIDEBAR ── */
+/* SIDEBAR */
 #sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 #sidebar .brand{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-#sidebar .brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+#sidebar .brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
 #sidebar .brand span{font-weight:700;font-size:15px;color:var(--text)}
 #sidebar nav{flex:1;padding:8px 0}
 #sidebar nav .section-label{font-size:10px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 4px}
-#sidebar nav a{display:flex;align-items:center;gap:10px;padding:8px 16px;color:var(--text3);text-decoration:none;border-radius:6px;margin:1px 8px;font-size:13px;transition:all .15s}
+#sidebar nav a{display:flex;align-items:center;gap:10px;padding:8px 14px;color:var(--text3);text-decoration:none;border-radius:6px;margin:1px 8px;font-size:13px;transition:all .15s;cursor:pointer}
 #sidebar nav a:hover{background:var(--bg3);color:var(--text)}
-#sidebar nav a.active{background:rgba(240,136,62,.15);color:var(--accent)}
-#sidebar nav a .icon{width:18px;text-align:center;font-size:15px}
+#sidebar nav a.active{background:rgba(31,111,235,.1);color:var(--accent);font-weight:500}
+#sidebar nav a .icon{width:18px;text-align:center;font-size:14px}
 #sidebar .status-bar{padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text4);display:flex;align-items:center;gap:6px}
 #sidebar .status-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
 #sidebar .status-bar .dot.offline{background:var(--red)}
 
-/* ── MAIN ── */
+/* MAIN */
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
 #topbar h1{font-size:15px;font-weight:600;flex:1}
-#topbar .badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text3)}
 #page{flex:1;overflow-y:auto;padding:20px}
 
-/* ── TABS ── */
+/* TAB PANES */
 .tab-pane{display:none}.tab-pane.active{display:block}
 
-/* ── CARDS ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-header h2{font-size:14px;font-weight:600}
 .card-body{padding:16px}
 
-/* ── DASHBOARD ── */
+/* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .kpi .label{font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
 .kpi .value{font-size:24px;font-weight:700;line-height:1}
 .kpi .sub{font-size:11px;color:var(--text3);margin-top:4px}
-.kpi.warn .value{color:var(--yellow)}
-.kpi.danger .value{color:var(--red)}
-.kpi.ok .value{color:var(--green)}
+.kpi.warn .value{color:var(--yellow)}.kpi.danger .value{color:var(--red)}.kpi.ok .value{color:var(--green)}
 
-/* ── ALERTS ── */
-.alert-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.alert-row:last-child{border-bottom:none}
-.alert-row .item{flex:1;font-weight:500}
-.alert-row .qty{font-size:12px}
-
-/* ── FORMS ── */
+/* FORMS */
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .form-group{display:flex;flex-direction:column;gap:4px}
 .form-group label{font-size:12px;color:var(--text3);font-weight:500}
 .form-group input,.form-group select,.form-group textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 10px;font-size:13px;outline:none;transition:border-color .15s;font-family:inherit}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent2)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,235,.1)}
 .form-group textarea{resize:vertical;min-height:64px}
-.form-group select option{background:var(--bg3)}
 .full-width{grid-column:1/-1}
 
-/* ── TABLE ── */
+/* ACTIVITY BAR */
+.activity-bar{display:flex;gap:8px;align-items:flex-end;padding:10px 0 6px;border-top:1px solid var(--border);margin-top:12px}
+.activity-bar .form-group{flex:1}
+
+/* TABLE */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.02)}
+tr:hover td{background:rgba(0,0,0,.025)}
 
-/* ── ROW TABLE (dynamic items) ── */
+/* ROW TABLE */
 .row-table{width:100%;border-collapse:collapse;font-size:13px}
-.row-table th{background:var(--bg4);color:var(--text3);padding:7px 8px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.row-table th{background:var(--bg3);color:var(--text3);padding:7px 8px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;border-bottom:1px solid var(--border)}
 .row-table td{padding:5px 6px;border-bottom:1px solid var(--border)}
 .row-table tr:last-child td{border-bottom:none}
 .row-table input,.row-table select{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px 7px;font-size:13px;outline:none;width:100%;font-family:inherit}
-.row-table input:focus,.row-table select:focus{border-color:var(--accent2)}
-.row-table input.qty-input.over-stock{border-color:var(--red)!important}
+.row-table input:focus,.row-table select:focus{border-color:var(--accent)}
+.row-table input.qty-input.over-stock{border-color:var(--red)!important;background:rgba(207,34,46,.05)!important}
 .stock-cell{min-width:90px}
 .stock-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.stock-badge.ok{background:rgba(63,185,80,.15);color:var(--green)}
-.stock-badge.low{background:rgba(210,153,34,.15);color:var(--yellow)}
-.stock-badge.out{background:rgba(248,81,73,.15);color:var(--red)}
-.rm-row{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px}
-.rm-row:hover{background:rgba(248,81,73,.15)}
+.stock-badge.ok{background:rgba(26,127,55,.12);color:var(--green)}
+.stock-badge.low{background:rgba(154,103,0,.12);color:var(--yellow)}
+.stock-badge.out{background:rgba(207,34,46,.12);color:var(--red)}
+.rm-row{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px}
+.rm-row:hover{background:rgba(207,34,46,.1);color:var(--red)}
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;font-family:inherit}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{filter:brightness(1.1)}
-.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--border2);background:var(--bg4)}
 .btn-ghost{background:none;color:var(--text3);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
-.btn-danger{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}.btn-danger:hover{background:rgba(248,81,73,.25)}
+.btn-danger{background:rgba(207,34,46,.08);color:var(--red);border:1px solid rgba(207,34,46,.2)}.btn-danger:hover{background:rgba(207,34,46,.15)}
 .btn-sm{padding:5px 10px;font-size:12px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
 
-/* ── VOUCHER CARDS ── */
+/* VOUCHER CARDS */
 .voucher-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
-.voucher-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.voucher-num{font-family:var(--mono);font-size:12px;color:var(--accent2);font-weight:600}
+.voucher-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.voucher-num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
 .voucher-date{font-size:11px;color:var(--text3)}
 .voucher-meta{font-size:12px;color:var(--text3);margin-bottom:8px}
 .voucher-items table{width:100%;border-collapse:collapse;font-size:12px}
-.voucher-items th{color:var(--text4);padding:4px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.voucher-items th{color:var(--text4);padding:4px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:transparent}
 .voucher-items td{padding:4px 6px;border-bottom:1px solid var(--border);color:var(--text2)}
 .voucher-items tr:last-child td{border-bottom:none}
 
-/* ── FETCH FILTER ── */
-.fetch-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:12px 16px;border-bottom:1px solid var(--border)}
-.fetch-bar .form-group{flex:1;min-width:130px}
+/* FETCH BAR */
+.fetch-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.fetch-bar .form-group{flex:1;min-width:120px}
 
-/* ── WP CARDS ── */
-.wp-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px}
-.wp-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.wp-card-title{font-weight:600;font-size:14px}
-.progress-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin:6px 0 2px}
+/* PROGRESS */
+.progress-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin:5px 0 2px}
 .progress-fill{height:100%;border-radius:3px;transition:width .4s}
 .progress-fill.ontrack{background:var(--green)}
 .progress-fill.slow{background:var(--yellow)}
 .progress-fill.delayed{background:var(--red)}
 .progress-fill.complete{background:var(--purple)}
 .pct-label{font-size:12px;color:var(--text3)}
+
+/* WP CARDS */
+.wp-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px}
+.wp-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.wp-card-title{font-weight:600;font-size:14px}
 .wp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .wp-stat{background:var(--bg4);border-radius:6px;padding:8px 10px}
 .wp-stat .s-label{font-size:10px;color:var(--text4);text-transform:uppercase;letter-spacing:.05em}
-.wp-stat .s-val{font-size:16px;font-weight:600;margin-top:2px}
+.wp-stat .s-val{font-size:18px;font-weight:600;margin-top:2px}
 
-/* ── STATUS BADGES ── */
+/* STATUS */
 .status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
-.status.complete{background:rgba(188,140,255,.15);color:var(--purple)}
-.status.ontrack{background:rgba(63,185,80,.15);color:var(--green)}
-.status.slow{background:rgba(210,153,34,.15);color:var(--yellow)}
-.status.delayed{background:rgba(248,81,73,.15);color:var(--red)}
-.status.low{background:rgba(210,153,34,.15);color:var(--yellow)}
-.status.out{background:rgba(248,81,73,.15);color:var(--red)}
+.status.complete{background:rgba(102,57,186,.1);color:var(--purple)}
+.status.ontrack{background:rgba(26,127,55,.1);color:var(--green)}
+.status.slow{background:rgba(154,103,0,.1);color:var(--yellow)}
+.status.delayed{background:rgba(207,34,46,.1);color:var(--red)}
+.status.low{background:rgba(154,103,0,.1);color:var(--yellow)}
+.status.out{background:rgba(207,34,46,.1);color:var(--red)}
+.status.ok{background:rgba(26,127,55,.1);color:var(--green)}
 
-/* ── STOCK VIEW ── */
+/* STOCK TABS */
 .stock-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
-.stock-tab-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;font-size:12px;font-weight:500}
+.stock-tab-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
 .stock-tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-/* ── REPORT TABS ── */
-.report-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:16px}
-.report-tab{padding:8px 14px;border-bottom:2px solid transparent;font-size:13px;cursor:pointer;color:var(--text3)}
-.report-tab.active{border-bottom-color:var(--accent2);color:var(--text)}
+/* REPORT TABS */
+.report-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.report-tab{padding:8px 14px;border-bottom:2px solid transparent;font-size:13px;cursor:pointer;color:var(--text3);transition:all .15s}
+.report-tab:hover{color:var(--text)}
+.report-tab.active{border-bottom-color:var(--accent);color:var(--accent);font-weight:500}
 
-/* ── SETTINGS ── */
-.settings-section{margin-bottom:24px}
-.settings-section h3{font-size:13px;font-weight:600;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
-
-/* ── TOAST ── */
+/* TOAST */
 #toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;min-width:260px;max-width:360px;animation:slideIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;min-width:260px;max-width:360px;animation:slideIn .2s ease;box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .toast.success{border-left:3px solid var(--green)}
 .toast.error{border-left:3px solid var(--red)}
-.toast.info{border-left:3px solid var(--accent2)}
+.toast.info{border-left:3px solid var(--accent)}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ── PIN GATE ── */
-#gate{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;align-items:center;justify-content:center}
-.gate-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;width:320px;text-align:center}
+/* PIN GATE */
+#gate{position:fixed;inset:0;background:rgba(246,248,250,.96);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.gate-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .gate-box h2{font-size:20px;font-weight:700;margin-bottom:6px}
 .gate-box p{color:var(--text3);font-size:13px;margin-bottom:20px}
 #pin-input{font-size:20px;letter-spacing:.4em;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:12px;width:100%;outline:none;font-family:var(--mono)}
-#pin-input:focus{border-color:var(--accent2)}
+#pin-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,235,.1)}
 #pin-error{color:var(--red);font-size:12px;margin-top:8px;height:16px}
 
-/* ── SKELETON ── */
-.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:14px;margin:4px 0}
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* ── PRINT ── */
+/* PRINT */
 @media print{
-  #sidebar,#topbar,#gate,.btn-row,.fetch-bar,.no-print{display:none!important}
-  #main{overflow:visible}#page{overflow:visible}
+  #sidebar,#topbar,#gate,.btn-row,.fetch-bar,.no-print,.activity-bar{display:none!important}
   body{display:block;background:#fff;color:#000}
   .card{border:1px solid #ccc;break-inside:avoid}
 }
 
-/* ── LIGHT MODE ── */
-body.light{
-  --bg:#f6f8fa;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e7eb;
-  --border:#d1d5db;--border2:#b0b7c0;
-  --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
-}
-
-/* ── RESPONSIVE ── */
+/* RESPONSIVE */
 @media(max-width:700px){
   #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .25s}
   #sidebar.open{transform:translateX(0)}
-  #topbar .menu-btn{display:flex}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .form-grid{grid-template-columns:1fr}
   .wp-grid{grid-template-columns:1fr}
 }
 .menu-btn{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;font-size:20px}
+@media(max-width:700px){.menu-btn{display:flex}}
 </style>
 </head>
 <body>
@@ -218,13 +214,13 @@ body.light{
 <!-- PIN GATE -->
 <div id="gate">
   <div class="gate-box">
-    <div style="font-size:36px;margin-bottom:12px">🏗️</div>
+    <div style="font-size:40px;margin-bottom:12px">🏗️</div>
     <h2>SiteFlow</h2>
-    <p>Site & Inventory Management</p>
+    <p>Site &amp; Inventory Management</p>
     <input id="pin-input" type="password" placeholder="Enter PIN" maxlength="8" autocomplete="off">
     <div id="pin-error"></div>
     <div style="margin-top:16px">
-      <button class="btn btn-primary" style="width:100%" onclick="verifyPIN()">Unlock</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="verifyPIN()">Unlock →</button>
     </div>
   </div>
 </div>
@@ -232,32 +228,32 @@ body.light{
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="brand">
-    <div class="logo">🏗️</div>
+    <div class="logo">S</div>
     <span>SiteFlow</span>
   </div>
   <nav>
     <div class="section-label">Overview</div>
-    <a href="#" class="active" onclick="showTab('dashboard',this)"><span class="icon">📊</span>Dashboard</a>
+    <a class="active" onclick="showTab('dashboard',this)"><span class="icon">📊</span>Dashboard</a>
 
     <div class="section-label">Transactions</div>
-    <a href="#" onclick="showTab('purchase',this)"><span class="icon">📦</span>Purchase</a>
-    <a href="#" onclick="showTab('transfer',this)"><span class="icon">↔️</span>Transfer</a>
-    <a href="#" onclick="showTab('issue',this)"><span class="icon">📤</span>Issue</a>
-    <a href="#" onclick="showTab('consumption',this)"><span class="icon">🔧</span>Consumption</a>
-    <a href="#" onclick="showTab('returns',this)"><span class="icon">↩️</span>Returns</a>
-    <a href="#" onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
+    <a onclick="showTab('purchase',this)"><span class="icon">📦</span>Purchase</a>
+    <a onclick="showTab('transfer',this)"><span class="icon">↔️</span>Transfer</a>
+    <a onclick="showTab('issue',this)"><span class="icon">📤</span>Issue</a>
+    <a onclick="showTab('consumption',this)"><span class="icon">🔧</span>Consumption</a>
+    <a onclick="showTab('returns',this)"><span class="icon">↩️</span>Returns</a>
+    <a onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
 
     <div class="section-label">Field</div>
-    <a href="#" onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
-    <a href="#" onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
-    <a href="#" onclick="showTab('subconledger',this)"><span class="icon">📋</span>Subcon Ledger</a>
-    <a href="#" onclick="showTab('cvc',this)"><span class="icon">⚖️</span>CvC</a>
+    <a onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
+    <a onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
+    <a onclick="showTab('subconledger',this)"><span class="icon">📋</span>Subcon Ledger</a>
+    <a onclick="showTab('cvc',this)"><span class="icon">⚖️</span>CvC</a>
 
     <div class="section-label">Reports</div>
-    <a href="#" onclick="showTab('reports',this)"><span class="icon">📑</span>Reports</a>
+    <a onclick="showTab('reports',this)"><span class="icon">📑</span>Reports</a>
 
     <div class="section-label">Admin</div>
-    <a href="#" onclick="showTab('settings',this)"><span class="icon">⚙️</span>Settings</a>
+    <a onclick="showTab('settings',this)"><span class="icon">⚙️</span>Settings</a>
   </nav>
   <div class="status-bar">
     <div class="dot" id="conn-dot"></div>
@@ -270,7 +266,6 @@ body.light{
   <div id="topbar">
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     <h1 id="topbar-title">Dashboard</h1>
-    <button class="btn btn-ghost btn-sm" onclick="toggleLight()">🌙</button>
     <button class="btn btn-ghost btn-sm" onclick="initApp()">↻ Refresh</button>
   </div>
   <div id="page">
@@ -278,11 +273,11 @@ body.light{
     <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-pane active">
       <div class="kpi-grid" id="kpi-grid">
-        <div class="kpi"><div class="label">Sites</div><div class="value skeleton" style="width:40px;height:28px"></div></div>
-        <div class="kpi"><div class="label">Items</div><div class="value skeleton" style="width:40px;height:28px"></div></div>
-        <div class="kpi"><div class="label">Low Stock</div><div class="value skeleton" style="width:40px;height:28px"></div></div>
-        <div class="kpi"><div class="label">Poles Done</div><div class="value skeleton" style="width:60px;height:28px"></div></div>
-        <div class="kpi"><div class="label">KMs Done</div><div class="value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="kpi"><div class="label">Sites</div><div class="value skeleton" style="width:40px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Items</div><div class="value skeleton" style="width:40px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Low / Out</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Poles Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">KMs Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="card">
@@ -306,9 +301,7 @@ body.light{
             <div class="form-group"><label>Voucher #</label><input type="text" id="pur-voucher" placeholder="Auto"></div>
             <div class="form-group"><label>Supplier</label><input type="text" id="pur-supplier" placeholder="Supplier name"></div>
             <div class="form-group"><label>Invoice No</label><input type="text" id="pur-invoice"></div>
-            <div class="form-group"><label>Delivery To</label>
-              <select id="pur-location"><option value="Main Store">Main Store</option></select>
-            </div>
+            <div class="form-group"><label>Delivery To</label><select id="pur-location"><option value="Main Store">Main Store</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="pur-remarks"></div>
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
@@ -325,11 +318,11 @@ body.light{
       </div>
       <div class="card">
         <div class="card-header"><h2>📋 Past Records</h2></div>
-        <div class="fetch-bar" id="pur-filter-bar">
+        <div class="fetch-bar">
           <div class="form-group"><label>From</label><input type="date" id="pur-from"></div>
           <div class="form-group"><label>To</label><input type="date" id="pur-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="pur-search" placeholder="Search…"></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('purchase')">🔍 Fetch</button>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('purchase')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="pur-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -366,7 +359,7 @@ body.light{
           <div class="form-group"><label>To</label><input type="date" id="trn-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="trn-search" placeholder="Search…"></div>
           <div class="form-group"><label>Location</label><select id="trn-filter"><option value="">All</option></select></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('transfer')">🔍 Fetch</button>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('transfer')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="trn-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -384,7 +377,15 @@ body.light{
             <div class="form-group"><label>Subcontractor</label><select id="iss-subcon"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="iss-remarks"></div>
           </div>
-          <div class="tbl-wrap" style="margin-top:14px">
+          <!-- Activity BOM loader -->
+          <div class="activity-bar">
+            <div class="form-group" style="flex:1">
+              <label>Load by Activity (BOM)</label>
+              <select id="iss-activity"><option value="">— Select Activity to auto-fill items —</option></select>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('issue')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
+          </div>
+          <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
               <tbody id="iss-rows"></tbody>
@@ -402,8 +403,8 @@ body.light{
           <div class="form-group"><label>From</label><input type="date" id="iss-from"></div>
           <div class="form-group"><label>To</label><input type="date" id="iss-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="iss-search" placeholder="Search…"></div>
-          <div class="form-group"><label>Site / Subcon</label><select id="iss-filter"><option value="">All</option></select></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('issue')">🔍 Fetch</button>
+          <div class="form-group"><label>Site</label><select id="iss-filter"><option value="">All</option></select></div>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('issue')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="iss-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -421,7 +422,15 @@ body.light{
             <div class="form-group"><label>Subcontractor</label><select id="con-subcon"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="con-remarks"></div>
           </div>
-          <div class="tbl-wrap" style="margin-top:14px">
+          <!-- Activity BOM loader -->
+          <div class="activity-bar">
+            <div class="form-group" style="flex:1">
+              <label>Load by Activity (BOM)</label>
+              <select id="con-activity"><option value="">— Select Activity to auto-fill items —</option></select>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('consumption')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
+          </div>
+          <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Qty Used</th><th>Unit</th><th>Notes</th><th></th></tr></thead>
               <tbody id="con-rows"></tbody>
@@ -440,7 +449,7 @@ body.light{
           <div class="form-group"><label>To</label><input type="date" id="con-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="con-search" placeholder="Search…"></div>
           <div class="form-group"><label>Subcon</label><select id="con-filter"><option value="">All</option></select></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('consumption')">🔍 Fetch</button>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('consumption')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="con-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -476,7 +485,7 @@ body.light{
           <div class="form-group"><label>From</label><input type="date" id="ret-from"></div>
           <div class="form-group"><label>To</label><input type="date" id="ret-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="ret-search" placeholder="Search…"></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('returns')">🔍 Fetch</button>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('returns')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="ret-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -513,7 +522,7 @@ body.light{
           <div class="form-group"><label>To</label><input type="date" id="sr-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="sr-search" placeholder="Search…"></div>
           <div class="form-group"><label>Subcon</label><select id="sr-filter"><option value="">All</option></select></div>
-          <button class="btn btn-secondary btn-sm" style="align-self:flex-end" onclick="fetchRecords('subconreturn')">🔍 Fetch</button>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('subconreturn')">🔍 Fetch</button>
         </div>
         <div class="card-body" id="sr-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -521,8 +530,8 @@ body.light{
 
     <!-- WORK PROGRESS -->
     <div id="tab-workprogress" class="tab-pane">
-      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:14px">
-        <div class="card">
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:14px">
+        <div class="card" style="margin-bottom:0">
           <div class="card-header"><h2>📈 Log Work Progress</h2></div>
           <div class="card-body">
             <div class="form-grid">
@@ -538,11 +547,9 @@ body.light{
             </div>
           </div>
         </div>
-        <div>
-          <div id="wp-site-cards"></div>
-        </div>
+        <div id="wp-site-cards"></div>
       </div>
-      <div class="card" style="margin-top:0">
+      <div class="card" style="margin-top:14px">
         <div class="card-header"><h2>👷 Subcontractor Progress</h2></div>
         <div class="card-body" id="wp-subcon-cards"></div>
       </div>
@@ -596,7 +603,7 @@ body.light{
             <div class="report-tab active" onclick="showReport('variance',this)">Variance</div>
             <div class="report-tab" onclick="showReport('leakage',this)">Site Leakage</div>
             <div class="report-tab" onclick="showReport('efficiency',this)">Subcon Efficiency</div>
-            <div class="report-tab" onclick="showReport('movement',this)">Movement Summary</div>
+            <div class="report-tab" onclick="showReport('movement',this)">Movement</div>
             <div class="report-tab" onclick="showReport('exception',this)">Exception</div>
           </div>
           <div id="report-variance"></div>
@@ -613,7 +620,7 @@ body.light{
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
 
         <!-- ITEM MASTER -->
-        <div class="card settings-section">
+        <div class="card">
           <div class="card-header"><h2>📦 Item Master</h2></div>
           <div class="card-body">
             <div class="form-grid">
@@ -628,25 +635,36 @@ body.light{
         </div>
 
         <!-- SITE MASTER -->
-        <div class="card settings-section">
-          <div class="card-header"><h2>🏗️ Site Master</h2></div>
+        <div class="card">
+          <div class="card-header">
+            <h2>🏗️ Site Master</h2>
+            <span id="sm-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
           <div class="card-body">
+            <input type="hidden" id="sm-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Site Name</label><input type="text" id="sm-name" placeholder="Site name"></div>
               <div class="form-group"><label>Location</label><input type="text" id="sm-location"></div>
               <div class="form-group"><label>Contract No</label><input type="text" id="sm-contract"></div>
-              <div class="form-group"><label>Total Poles</label><input type="number" id="sm-poles" placeholder="0" min="0"></div>
-              <div class="form-group"><label>Wire (KM)</label><input type="number" id="sm-kms" placeholder="0.00" min="0" step="0.01"></div>
+              <div class="form-group"><label>Total Poles (Scope)</label><input type="number" id="sm-poles" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Wire Scope (KM)</label><input type="number" id="sm-kms" placeholder="0.00" min="0" step="0.01"></div>
               <div class="form-group"><label>Start Date</label><input type="date" id="sm-start"></div>
               <div class="form-group"><label>End Date</label><input type="date" id="sm-end"></div>
             </div>
-            <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveMaster('SiteMaster')">+ Add Site</button></div>
-            <div id="sm-list" style="margin-top:12px"></div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="sm-save-btn" onclick="saveSiteMaster()">+ Add Site</button>
+              <button class="btn btn-ghost btn-sm" id="sm-cancel-btn" style="display:none" onclick="cancelSiteEdit()">✕ Cancel</button>
+            </div>
+            <!-- Sites table -->
+            <div style="margin-top:16px">
+              <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">All Sites</div>
+              <div class="tbl-wrap" id="sm-table-wrap"><p style="color:var(--text4);font-size:12px">No sites yet.</p></div>
+            </div>
           </div>
         </div>
 
         <!-- SUBCON MASTER -->
-        <div class="card settings-section">
+        <div class="card">
           <div class="card-header"><h2>👷 Subcontractor Master</h2></div>
           <div class="card-body">
             <div class="form-grid">
@@ -662,7 +680,7 @@ body.light{
         </div>
 
         <!-- SUBCON SCOPE -->
-        <div class="card settings-section">
+        <div class="card">
           <div class="card-header"><h2>📐 Subcon Scope Allocation</h2></div>
           <div class="card-body">
             <div class="form-grid">
@@ -677,17 +695,8 @@ body.light{
           </div>
         </div>
 
-        <!-- STOCK REGISTER SETUP -->
-        <div class="card settings-section">
-          <div class="card-header"><h2>📊 Stock Register</h2></div>
-          <div class="card-body">
-            <p style="color:var(--text3);font-size:13px;margin-bottom:12px">Creates a <strong>StockRegister</strong> sheet in your Google Sheet with SUMIFS formulas that auto-calculate live stock across all locations.</p>
-            <button class="btn btn-secondary" onclick="setupStockSheet(this)">⚙️ Generate Stock Sheet</button>
-          </div>
-        </div>
-
         <!-- PIN SETTINGS -->
-        <div class="card settings-section">
+        <div class="card">
           <div class="card-header"><h2>🔐 Access PIN</h2></div>
           <div class="card-body">
             <div class="form-grid">
@@ -707,133 +716,203 @@ body.light{
 <div id="toast-container"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  CONSTANTS
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbxarP70J_zqc9JQJQpunzvGNWWgX7XpxFYHOF_yB6YqmvYIL79-7j5Ff8EZfxvXXtM/exec';
 const DEFAULT_PIN = '1234';
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
-  consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn',
-  workprogress:'WorkProgress'
+  consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn'
 };
-const STATUS_LABEL = {complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed'};
+const STATUS_LABEL = {
+  complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed'
+};
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  STATE
-// ═══════════════════════════════════════════════════════════════
-let MASTERS = { items:[], sites:[], subcons:[], subconScope:[] };
-let STOCK = {};  // item → { main, sites:{siteName:qty}, total }
-let DASH = {};
-let REPORT_DATA = null;
-let CURRENT_TAB = 'dashboard';
+// ══════════════════════════════════════════════════════
+let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{} };
+let STOCK = {};
 
-// ═══════════════════════════════════════════════════════════════
-//  API HELPERS
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  API
+// ══════════════════════════════════════════════════════
 async function api(params) {
-  const url = API + '?' + new URLSearchParams(params);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const r = await fetch(API + '?' + new URLSearchParams(params));
+  if(!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
-
-async function apiPost(action, data) {
+async function apiPost(action, data, extraParams) {
   const fd = new FormData();
   fd.append('action', action);
   fd.append('data', JSON.stringify(data));
-  const r = await fetch(API, { method:'POST', body:fd });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+  if(extraParams) Object.entries(extraParams).forEach(([k,v])=>fd.append(k,v));
+  const r = await fetch(API, {method:'POST', body:fd});
+  if(!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 async function initApp() {
-  setConnStatus(false);
+  setConn(false);
   try {
     const [masters, dash] = await Promise.all([
       api({action:'masters'}),
       api({action:'dashboard'})
     ]);
     MASTERS = masters;
-    DASH = dash;
-    buildMasterDropdowns();
+    buildDropdowns();
     renderDashboard(dash);
-    setConnStatus(true);
+    setConn(true);
   } catch(e) {
     toast('Connection failed: ' + e.message, 'error');
-    setConnStatus(false);
+    setConn(false);
   }
 }
 
-function setConnStatus(online) {
-  document.getElementById('conn-dot').className = 'dot' + (online ? '' : ' offline');
-  document.getElementById('conn-txt').textContent = online ? 'Online' : 'Offline';
+function setConn(ok) {
+  document.getElementById('conn-dot').className = 'dot' + (ok ? '' : ' offline');
+  document.getElementById('conn-txt').textContent = ok ? 'Online' : 'Offline';
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  MASTER DROPDOWNS
-// ═══════════════════════════════════════════════════════════════
-function buildMasterDropdowns() {
-  const sites = MASTERS.sites || [];
+// ══════════════════════════════════════════════════════
+//  DROPDOWNS
+// ══════════════════════════════════════════════════════
+function buildDropdowns() {
+  const sites   = MASTERS.sites   || [];
   const subcons = MASTERS.subcons || [];
-  const items = MASTERS.items || [];
+  const acts    = MASTERS.activities || [];
+  const bom     = MASTERS.bom || {};
 
-  // Site selects
-  const siteOpts = '<option value="">Select Site</option>' + sites.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-  const locationOpts = '<option value="Main Store">Main Store</option>' + sites.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  const siteOpts = '<option value="">Select Site</option>' +
+    sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  const locOpts = '<option value="Main Store">Main Store</option>' +
+    sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  const subOpts = '<option value="">Select Subcon</option>' +
+    subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+
+  // Merge activities master + BOM keys
+  const allActCodes = [...new Set([...acts.map(a=>a.code||a.name), ...Object.keys(bom)])];
+  const actOpts = '<option value="">— Select Activity —</option>' +
+    allActCodes.map(code => {
+      const a = acts.find(x=>(x.code||x.name)===code);
+      const label = a ? `${code} — ${a.name||code}` : code;
+      return `<option value="${esc(code)}">${esc(label)}</option>`;
+    }).join('');
+
   ['iss-site','con-site','sr-site','wp-site','sub-site','sc-site'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = id.includes('site') && !id.startsWith('sub') && !id.startsWith('sc') ? siteOpts : siteOpts;
+    const el=document.getElementById(id); if(el) el.innerHTML=siteOpts;
   });
-  document.getElementById('sub-site').innerHTML = siteOpts;
-  document.getElementById('sc-site').innerHTML = siteOpts;
-
-  // Location selects (Main Store + sites)
-  ['pur-location','trn-from','trn-to','ret-from','ret-to','trn-filter'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = locationOpts + (id.includes('filter') ? '' : '');
+  ['pur-location','trn-from','trn-to','ret-from','ret-to'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=locOpts;
   });
-
-  // Subcon selects
-  const subconOpts = '<option value="">Select Subcon</option>' + subcons.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  const tf=document.getElementById('trn-filter');
+  if(tf) tf.innerHTML='<option value="">All</option>'+
+    sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
   ['iss-subcon','con-subcon','sr-subcon','wp-subcon','sc-subcon'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = subconOpts;
+    const el=document.getElementById(id); if(el) el.innerHTML=subOpts;
   });
+  ['iss-activity','con-activity'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=actOpts;
+  });
+  const siteFilter = '<option value="">All</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  const subFilter  = '<option value="">All</option>'+subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  const issF=document.getElementById('iss-filter'); if(issF) issF.innerHTML=siteFilter;
+  const conF=document.getElementById('con-filter'); if(conF) conF.innerHTML=subFilter;
+  const srF =document.getElementById('sr-filter');  if(srF)  srF.innerHTML=subFilter;
 
-  // Filter selects
-  const siteFilterOpts = '<option value="">All</option>' + sites.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-  const subconFilterOpts = '<option value="">All</option>' + subcons.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-  const el1 = document.getElementById('iss-filter');
-  const el2 = document.getElementById('con-filter');
-  const el3 = document.getElementById('sr-filter');
-  if(el1) el1.innerHTML = siteFilterOpts;
-  if(el2) el2.innerHTML = subconFilterOpts;
-  if(el3) el3.innerHTML = subconFilterOpts;
-
-  // Render master lists
-  renderMasterList('im-list', items, r => `${r.name} <small style="color:var(--text3)">${r.unit} · Min:${r.minStock||0}</small>`);
-  renderMasterList('sm-list', sites, r => `${r.name} <small style="color:var(--text3)">${r.totalPoles}P · ${r.totalKms}KM</small>`);
-  renderMasterList('sub-list', subcons, r => `${r.name} <small style="color:var(--text3)">${r.site||''}</small>`);
-  renderMasterList('sc-list', MASTERS.subconScope||[], r => `${r.subcon} @ ${r.site} <small style="color:var(--text3)">${r.poles}P · ${r.kms}KM</small>`);
+  renderItemList();
+  renderSiteTable();
+  renderSimpleList('sub-list', subcons, r=>`${esc(r.name)} <small style="color:var(--text3)">${esc(r.site||'')}</small>`);
+  renderSimpleList('sc-list', MASTERS.subconScope||[], r=>`${esc(r.subcon)} @ ${esc(r.site)} <small style="color:var(--text3)">${r.poles||0}P · ${r.kms||0}KM</small>`);
 }
 
-function renderMasterList(elId, arr, labelFn) {
-  const el = document.getElementById(elId);
-  if(!el || !arr.length) { if(el) el.innerHTML = '<p style="color:var(--text4);font-size:12px">No records.</p>'; return; }
-  el.innerHTML = '<div style="max-height:150px;overflow-y:auto;font-size:12px">' +
-    arr.map(r => `<div style="padding:4px 0;border-bottom:1px solid var(--border)">${labelFn(r)}</div>`).join('') +
+function renderItemList() {
+  const items = MASTERS.items||[];
+  const el = document.getElementById('im-list'); if(!el) return;
+  if(!items.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No items.</p>';return;}
+  el.innerHTML='<div style="max-height:140px;overflow-y:auto">'+
+    items.map(r=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">${esc(r.name)} <small style="color:var(--text3)">${esc(r.unit||'')} · Min:${r.minStock||0}</small></div>`).join('')+
     '</div>';
 }
 
-// ═══════════════════════════════════════════════════════════════
+function renderSiteTable() {
+  const sites = MASTERS.sites||[];
+  const el = document.getElementById('sm-table-wrap'); if(!el) return;
+  if(!sites.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No sites yet.</p>';return;}
+  el.innerHTML=`<table>
+    <thead><tr><th>Site</th><th>Location</th><th>Poles (Scope)</th><th>Wire KM (Scope)</th><th></th></tr></thead>
+    <tbody>${sites.map(s=>`<tr>
+      <td style="font-weight:500">${esc(s.name)}</td>
+      <td style="color:var(--text3)">${esc(s.location||'—')}</td>
+      <td>${s.totalPoles||0}</td>
+      <td>${s.totalKms||0}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" onclick='editSite(${JSON.stringify(s)})'>✏️ Edit Scope</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function editSite(s) {
+  document.getElementById('sm-edit-key').value  = s.name;
+  document.getElementById('sm-name').value      = s.name;
+  document.getElementById('sm-location').value  = s.location||'';
+  document.getElementById('sm-contract').value  = s.contractNo||'';
+  document.getElementById('sm-poles').value     = s.totalPoles||0;
+  document.getElementById('sm-kms').value       = s.totalKms||0;
+  document.getElementById('sm-start').value     = s.startDate||'';
+  document.getElementById('sm-end').value       = s.endDate||'';
+  document.getElementById('sm-save-btn').textContent = '💾 Update Site';
+  document.getElementById('sm-cancel-btn').style.display = '';
+  document.getElementById('sm-edit-label').textContent = 'Editing: ' + s.name;
+  document.getElementById('sm-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelSiteEdit() {
+  document.getElementById('sm-edit-key').value = '';
+  ['sm-name','sm-location','sm-contract','sm-poles','sm-kms','sm-start','sm-end']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('sm-save-btn').textContent = '+ Add Site';
+  document.getElementById('sm-cancel-btn').style.display = 'none';
+  document.getElementById('sm-edit-label').textContent = '';
+}
+
+async function saveSiteMaster() {
+  const name = v('sm-name'); if(!name){toast('Site name required','error');return;}
+  const row = [name, v('sm-location'), v('sm-contract'),
+    parseFloat(v('sm-poles'))||0, parseFloat(v('sm-kms'))||0,
+    v('sm-start'), v('sm-end')];
+  const editKey = v('sm-edit-key');
+  try {
+    let res;
+    if(editKey) {
+      res = await apiPost('updateMasterRow', row, {sheet:'SiteMaster', key:editKey});
+    } else {
+      res = await apiPost('SiteMaster', [row]);
+    }
+    if(res.success){
+      toast(editKey ? '✅ Site updated' : '✅ Site added','success');
+      cancelSiteEdit();
+      initApp();
+    } else { toast(res.error||'Save failed','error'); }
+  } catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+function renderSimpleList(elId, arr, labelFn) {
+  const el=document.getElementById(elId); if(!el) return;
+  if(!arr.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No records.</p>';return;}
+  el.innerHTML='<div style="max-height:140px;overflow-y:auto">'+
+    arr.map(r=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">${labelFn(r)}</div>`).join('')+
+    '</div>';
+}
+
+// ══════════════════════════════════════════════════════
 //  DASHBOARD
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function renderDashboard(dash) {
-  const s = dash.summary || {};
+  const s = dash.summary||{};
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi"><div class="label">Sites</div><div class="value">${s.totalSites||0}</div></div>
     <div class="kpi"><div class="label">Items</div><div class="value">${s.totalItems||0}</div></div>
@@ -841,656 +920,508 @@ function renderDashboard(dash) {
       <div class="label">Low / Out</div><div class="value">${s.lowStock||0} / ${s.outOfStock||0}</div></div>
     <div class="kpi"><div class="label">Poles Done</div><div class="value">${s.donePoles||0}</div><div class="sub">of ${s.totalPoles||0} (${s.overallPolePct||0}%)</div></div>
     <div class="kpi"><div class="label">KMs Done</div><div class="value">${s.doneKms||0}</div><div class="sub">of ${s.totalKms||0} KM (${s.overallKmPct||0}%)</div></div>
-    <div class="kpi"><div class="label">Subcons</div><div class="value">${s.totalSubcons||0}</div></div>
-  `;
+    <div class="kpi"><div class="label">Subcons</div><div class="value">${s.totalSubcons||0}</div></div>`;
 
-  const alerts = dash.alerts || [];
+  const alerts=dash.alerts||[];
   document.getElementById('dash-alerts').innerHTML = alerts.length
-    ? alerts.map(a => `<div class="alert-row">
+    ? alerts.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
         <span class="status ${a.status}">${a.status==='out'?'⛔ Out':'⚠ Low'}</span>
-        <span class="item">${a.item}</span>
-        <span class="qty" style="color:var(--text3)">${a.total} ${a.unit}</span>
+        <span style="flex:1;font-weight:500">${esc(a.item)}</span>
+        <span style="font-size:12px;color:var(--text3)">${a.total||0} ${esc(a.unit||'')}</span>
       </div>`).join('')
     : '<p style="color:var(--text3)">✅ All items in stock</p>';
 
-  const sites = (dash.sites||[]).slice(0,5);
+  const sites=(dash.sites||[]).slice(0,6);
   document.getElementById('dash-sites').innerHTML = sites.length
-    ? sites.map(s => `<div style="margin-bottom:10px">
+    ? sites.map(s=>`<div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-          <span>${s.site}</span><span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span>
+          <span style="font-weight:500">${esc(s.site)}</span>
+          <span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill ${s.status}" style="width:${Math.min(s.overallPct,100)}%"></div></div>
-        <div class="pct-label">${s.overallPct}% · ${s.polesErected}/${s.totalPoles} poles · ${s.kmsStrung}/${s.totalKms} km</div>
+        <div class="progress-bar"><div class="progress-fill ${s.status}" style="width:${Math.min(s.overallPct||0,100)}%"></div></div>
+        <div class="pct-label">${s.overallPct||0}% · ${s.polesErected||0}/${s.totalPoles||0} poles · ${s.kmsStrung||0}/${s.totalKms||0} km</div>
       </div>`).join('')
-    : '<p style="color:var(--text3)">No work progress logged yet.</p>';
+    : '<p style="color:var(--text3)">No progress logged yet.</p>';
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  TAB NAVIGATION
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function showTab(name, link) {
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   document.querySelectorAll('#sidebar nav a').forEach(a=>a.classList.remove('active'));
   if(link) link.classList.add('active');
-  CURRENT_TAB = name;
   document.getElementById('topbar-title').textContent = link ? link.textContent.trim() : name;
 
+  const dateMap={purchase:'pur-date',transfer:'trn-date',issue:'iss-date',
+    consumption:'con-date',returns:'ret-date',subconreturn:'sr-date',workprogress:'wp-date'};
+  if(dateMap[name]){const el=document.getElementById(dateMap[name]);if(el&&!el.value)el.value=today();}
+
+  const vMap={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
+    consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'};
+  if(vMap[name]) autoVoucher(SHEET[name], vMap[name]);
+
+  const rMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
+    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
+  if(rMap[name]&&!document.getElementById(rMap[name]).children.length) addRow(name);
+
   if(name==='workprogress') loadWP();
-  if(name==='stock') loadStock();
+  if(name==='stock')        loadStock();
   if(name==='subconledger') loadSubconLedger();
-  if(name==='cvc') loadCvC();
-  if(name==='reports') loadReports();
-
-  // Set today's date on form tabs
-  const dateFields = {
-    purchase:'pur-date', transfer:'trn-date', issue:'iss-date',
-    consumption:'con-date', returns:'ret-date', subconreturn:'sr-date',
-    workprogress:'wp-date'
-  };
-  if(dateFields[name]) {
-    const el = document.getElementById(dateFields[name]);
-    if(el && !el.value) el.value = today();
-  }
-
-  // Auto-fetch next voucher
-  const voucherFields = {
-    purchase:'pur-voucher', transfer:'trn-voucher', issue:'iss-voucher',
-    consumption:'con-voucher', returns:'ret-voucher', subconreturn:'sr-voucher'
-  };
-  if(voucherFields[name]) autoVoucher(SHEET[name], voucherFields[name]);
-
-  // Reset rows if empty
-  const rowIds = {
-    purchase:'pur-rows', transfer:'trn-rows', issue:'iss-rows',
-    consumption:'con-rows', returns:'ret-rows', subconreturn:'sr-rows'
-  };
-  if(rowIds[name] && !document.getElementById(rowIds[name]).children.length) addRow(name);
+  if(name==='cvc')          loadCvC();
+  if(name==='reports')      loadReports();
 
   document.getElementById('sidebar').classList.remove('open');
 }
 
 async function autoVoucher(sheet, fieldId) {
   try {
-    const r = await api({action:'nextVoucher', sheet});
-    const el = document.getElementById(fieldId);
-    if(el && !el.dataset.manualEdit) el.value = r.voucher || '';
+    const r=await api({action:'nextVoucher',sheet});
+    const el=document.getElementById(fieldId);
+    if(el&&!el.dataset.manualEdit) el.value=r.voucher||'';
   } catch(e){}
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  ROW BUILDER
-// ═══════════════════════════════════════════════════════════════
-function addRow(type) {
-  const items = MASTERS.items || [];
-  const itemOpts = '<option value="">Select Item</option>' + items.map(i=>`<option value="${i.name}">${i.name}</option>`).join('');
+// ══════════════════════════════════════════════════════
+function addRow(type, prefill) {
+  const items=MASTERS.items||[];
+  const itemOpts='<option value="">Select Item</option>'+
+    items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+  const tbodyId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
+    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
+  const tbody=document.getElementById(tbodyId); if(!tbody) return;
+  const idx=tbody.children.length+1;
+  const tr=document.createElement('tr');
 
-  const tbody = document.getElementById(
-    {purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
-     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type]
-  );
-  if(!tbody) return;
-  const idx = tbody.children.length + 1;
-  const tr = document.createElement('tr');
-
-  let cells = '';
-  if(type==='purchase') {
-    cells = `<td>${idx}</td>
+  let cells='';
+  if(type==='purchase'){
+    cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'purchase')">${itemOpts}</select></td>
-      <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" placeholder="Unit" style="width:70px"></td>
-      <td><input type="number" class="rate-inp" min="0" step="0.01" placeholder="0.00" oninput="calcAmount(this)"></td>
+      <td><input type="number" class="qty-input" min="0" placeholder="0" oninput="calcAmt(this)"></td>
+      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><input type="number" class="rate-inp" min="0" step="0.01" placeholder="0.00" oninput="calcAmt(this)"></td>
       <td><input type="number" class="amt-inp" min="0" step="0.01" placeholder="0.00" readonly style="color:var(--text3)"></td>
-      <td><button class="rm-row" onclick="this.closest('tr').remove();renumberRows('${type}')">×</button></td>`;
-  } else if(type==='transfer' || type==='issue') {
-    cells = `<td>${idx}</td>
+      <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
+  } else if(type==='transfer'||type==='issue'){
+    cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'${type}');updateStock(this,'${type}')">${itemOpts}</select></td>
       <td class="stock-cell">—</td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" placeholder="Unit" style="width:70px"></td>
-      <td><button class="rm-row" onclick="this.closest('tr').remove();renumberRows('${type}')">×</button></td>`;
-  } else if(type==='consumption') {
-    cells = `<td>${idx}</td>
+      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
+  } else if(type==='consumption'){
+    cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'consumption')">${itemOpts}</select></td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" placeholder="Unit" style="width:70px"></td>
+      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
       <td><input type="text" class="note-inp" placeholder="Notes"></td>
-      <td><button class="rm-row" onclick="this.closest('tr').remove();renumberRows('${type}')">×</button></td>`;
-  } else if(type==='returns') {
-    cells = `<td>${idx}</td>
-      <td><select class="item-sel" onchange="fillUnit(this,'returns')">${itemOpts}</select></td>
+      <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
+  } else {
+    cells=`<td>${idx}</td>
+      <td><select class="item-sel" onchange="fillUnit(this,'${type}')">${itemOpts}</select></td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" placeholder="Unit" style="width:70px"></td>
-      <td><button class="rm-row" onclick="this.closest('tr').remove();renumberRows('${type}')">×</button></td>`;
-  } else if(type==='subconreturn') {
-    cells = `<td>${idx}</td>
-      <td><select class="item-sel" onchange="fillUnit(this,'subconreturn')">${itemOpts}</select></td>
-      <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" placeholder="Unit" style="width:70px"></td>
-      <td><button class="rm-row" onclick="this.closest('tr').remove();renumberRows('${type}')">×</button></td>`;
+      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   }
-
-  tr.innerHTML = cells;
+  tr.innerHTML=cells;
   tbody.appendChild(tr);
 
-  // stock check on qty input
-  if(type==='transfer'||type==='issue') {
-    tr.querySelector('.qty-input').addEventListener('input', function(){
-      checkQtyVsStock(this, type);
-    });
+  if(prefill){
+    const sel=tr.querySelector('.item-sel');
+    if(sel) sel.value=prefill.item||'';
+    const qty=tr.querySelector('.qty-input');
+    if(qty&&prefill.qty) qty.value=prefill.qty;
+    const unit=tr.querySelector('.unit-inp');
+    if(unit&&prefill.unit) unit.value=prefill.unit;
+    if((type==='transfer'||type==='issue')&&sel&&sel.value) updateStock(sel,type);
+  }
+  if(type==='transfer'||type==='issue'){
+    tr.querySelector('.qty-input').addEventListener('input',function(){ checkStock(this); });
   }
 }
 
-function renumberRows(type) {
-  const tbody = document.getElementById(
-    {purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
-     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type]
-  );
-  if(!tbody) return;
-  Array.from(tbody.rows).forEach((r,i)=>{ r.cells[0].textContent = i+1; });
+function renum(type){
+  const tids={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
+    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
+  const tbody=document.getElementById(tids[type]);
+  if(tbody) Array.from(tbody.rows).forEach((r,i)=>r.cells[0].textContent=i+1);
 }
 
-function fillUnit(sel, type) {
-  const name = sel.value;
-  const item = (MASTERS.items||[]).find(i=>i.name===name);
-  const tr = sel.closest('tr');
-  const unitEl = tr.querySelector('.unit-inp');
-  if(unitEl && item) unitEl.value = item.unit || '';
-  if((type==='transfer'||type==='issue') && name) updateStock(sel, type);
+function fillUnit(sel,type){
+  const name=sel.value;
+  const item=(MASTERS.items||[]).find(i=>i.name===name);
+  const tr=sel.closest('tr');
+  const u=tr.querySelector('.unit-inp');
+  if(u&&item) u.value=item.unit||'';
+  if((type==='transfer'||type==='issue')&&name) updateStock(sel,type);
 }
 
-function calcAmount(rateEl) {
-  const tr = rateEl.closest('tr');
-  const qty = parseFloat(tr.querySelector('.qty-input').value)||0;
-  const rate = parseFloat(rateEl.value)||0;
-  tr.querySelector('.amt-inp').value = (qty*rate).toFixed(2);
+function calcAmt(el){
+  const tr=el.closest('tr');
+  const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
+  const rate=parseFloat(tr.querySelector('.rate-inp')?.value)||0;
+  const amt=tr.querySelector('.amt-inp');
+  if(amt) amt.value=(qty*rate).toFixed(2);
 }
 
-function updateStock(sel, type) {
-  const item = sel.value;
-  const tr = sel.closest('tr');
-  const cell = tr.querySelector('.stock-cell');
-  if(!cell) return;
-
-  let avail = 0;
-  if(type==='transfer') {
-    const from = document.getElementById('trn-from')?.value || 'Main Store';
-    avail = getAvailableStock(item, from);
-  } else if(type==='issue') {
-    const site = document.getElementById('iss-site')?.value || '';
-    avail = getAvailableStock(item, site || 'Main Store');
-  }
-
-  const st = (MASTERS.items||[]).find(i=>i.name===item);
-  const statusCls = avail <= 0 ? 'out' : (st && avail <= st.minStock ? 'low' : 'ok');
-  cell.innerHTML = `<span class="stock-badge ${statusCls}">${avail}</span>`;
-  tr.querySelector('.qty-input').dataset.available = avail;
+function updateStock(sel,type){
+  const item=sel.value; const tr=sel.closest('tr');
+  const cell=tr.querySelector('.stock-cell'); if(!cell) return;
+  let avail=0;
+  if(type==='transfer'){ const from=v('trn-from')||'Main Store'; avail=getStock(item,from); }
+  else if(type==='issue'){ const site=v('iss-site'); avail=getStock(item,site||'Main Store'); }
+  const mi=(MASTERS.items||[]).find(i=>i.name===item);
+  const cls=avail<=0?'out':(mi&&avail<=(mi.minStock||0)?'low':'ok');
+  cell.innerHTML=`<span class="stock-badge ${cls}">${avail}</span>`;
+  tr.querySelector('.qty-input').dataset.available=avail;
 }
 
-function getAvailableStock(itemName, location) {
-  if(!STOCK || !STOCK.stock) return 0;
-  const row = STOCK.stock.find(s=>s.item===itemName);
-  if(!row) return 0;
-  if(location==='Main Store') return row.main||0;
-  return (row.sites && row.sites[location]) || 0;
+function getStock(item,loc){
+  if(!STOCK||!STOCK.stock) return 0;
+  const row=STOCK.stock.find(s=>s.item===item); if(!row) return 0;
+  return loc==='Main Store'?(row.main||0):((row.sites&&row.sites[loc])||0);
 }
 
-function checkQtyVsStock(input, type) {
-  const avail = parseFloat(input.dataset.available) || 0;
-  const qty = parseFloat(input.value) || 0;
-  input.classList.toggle('over-stock', qty > avail && avail > 0);
+function checkStock(input){
+  const avail=parseFloat(input.dataset.available)||0;
+  const qty=parseFloat(input.value)||0;
+  input.classList.toggle('over-stock', qty>avail&&avail>0);
 }
 
-function onIssSiteChange() {
-  // Refresh stock badges when site changes
-  const rows = document.querySelectorAll('#iss-rows tr');
-  rows.forEach(tr => {
-    const sel = tr.querySelector('.item-sel');
-    if(sel && sel.value) updateStock(sel, 'issue');
+function onIssSiteChange(){
+  document.querySelectorAll('#iss-rows tr').forEach(tr=>{
+    const sel=tr.querySelector('.item-sel');
+    if(sel&&sel.value) updateStock(sel,'issue');
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  BOM ACTIVITY LOADER
+// ══════════════════════════════════════════════════════
+function loadBOMForActivity(type){
+  const actId = type==='issue' ? 'iss-activity' : 'con-activity';
+  const code = document.getElementById(actId)?.value;
+  if(!code){ toast('Select an activity first','error'); return; }
+  const bom = MASTERS.bom||{};
+  const entries = bom[code]||[];
+  if(!entries.length){ toast('No BOM items for this activity','info'); return; }
+  const tbodyId = type==='issue'?'iss-rows':'con-rows';
+  document.getElementById(tbodyId).innerHTML='';
+  entries.forEach(e=>addRow(type,{item:e.material||e.item,qty:e.qty,unit:e.unit}));
+  toast(`Loaded ${entries.length} items from BOM`,'success');
+}
+
+// ══════════════════════════════════════════════════════
 //  SAVE TRANSACTION
-// ═══════════════════════════════════════════════════════════════
-async function saveTxn(type) {
-  const cfg = {
-    purchase: { sheet:'Purchase', date:'pur-date', voucher:'pur-voucher',
-      headerFn: ()=>[
-        v('pur-date'), v('pur-voucher'), v('pur-supplier'),
-        null, null, null, null, null, v('pur-location'), v('pur-invoice'), v('pur-remarks')
-      ],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        const rate=parseFloat(tr.querySelector('.rate-inp').value)||0;
-        const amt=parseFloat(tr.querySelector('.amt-inp').value)||0;
-        if(!item||!qty) return null;
-        return [h[0],h[1],h[2],item,qty,unit,rate,amt,h[8],h[9],h[10]];
-      }
-    },
-    transfer: { sheet:'Transfer', date:'trn-date', voucher:'trn-voucher',
-      headerFn: ()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,v('trn-remarks')],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        if(!item||!qty) return null;
-        return [h[0],h[1],h[2],h[3],item,qty,unit,h[7]];
-      }
-    },
-    issue: { sheet:'Issue', date:'iss-date', voucher:'iss-voucher',
-      headerFn: ()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-remarks')],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        if(!item||!qty) return null;
-        if(tr.querySelector('.qty-input').classList.contains('over-stock')) {
-          const avail=parseFloat(tr.querySelector('.qty-input').dataset.available)||0;
-          if(!confirm(`Qty (${qty}) exceeds available stock (${avail}) for "${item}". Save anyway?`)) return 'ABORT';
-        }
-        return [h[0],h[1],h[2],h[3],item,qty,unit,h[7]];
-      }
-    },
-    consumption: { sheet:'Consumption', date:'con-date', voucher:'con-voucher',
-      headerFn: ()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        const notes=tr.querySelector('.note-inp')?.value||'';
-        if(!item||!qty) return null;
-        return [h[0],h[1],h[2],h[3],item,qty,unit,notes];
-      }
-    },
-    returns: { sheet:'Returns', date:'ret-date', voucher:'ret-voucher',
-      headerFn: ()=>[v('ret-date'),v('ret-voucher'),v('ret-from'),v('ret-to'),null,null,null,v('ret-remarks')],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        if(!item||!qty) return null;
-        return [h[0],h[1],h[2],h[3],item,qty,unit,h[7]];
-      }
-    },
-    subconreturn: { sheet:'SubconReturn', date:'sr-date', voucher:'sr-voucher',
-      headerFn: ()=>[v('sr-date'),v('sr-voucher'),v('sr-site'),v('sr-subcon'),null,null,null,v('sr-reason')],
-      rowFn: (tr,h)=>{
-        const item=tr.querySelector('.item-sel').value;
-        const qty=parseFloat(tr.querySelector('.qty-input').value)||0;
-        const unit=tr.querySelector('.unit-inp').value;
-        if(!item||!qty) return null;
-        return [h[0],h[1],h[2],h[3],item,qty,unit,h[7]];
-      }
-    }
+// ══════════════════════════════════════════════════════
+async function saveTxn(type){
+  const cfg={
+    purchase:{sheet:'Purchase',
+      hdr:()=>[v('pur-date'),v('pur-voucher'),v('pur-supplier'),null,null,null,null,null,v('pur-location'),v('pur-invoice'),v('pur-remarks')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||0;if(!i||!q)return null;return[h[0],h[1],h[2],i,q,u,rt,a,h[8],h[9],h[10]];}},
+    transfer:{sheet:'Transfer',
+      hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,v('trn-remarks')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+    issue:{sheet:'Issue',
+      hdr:()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-remarks')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const over=tr.querySelector('.qty-input').classList.contains('over-stock');
+        if(over){const av=parseFloat(tr.querySelector('.qty-input').dataset.available)||0;if(!confirm(`Qty(${q}) > available(${av}) for "${i}". Save anyway?`))return'ABORT';}
+        return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+    consumption:{sheet:'Consumption',
+      hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,n=tr.querySelector('.note-inp')?.value||'';if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,n];}},
+    returns:{sheet:'Returns',
+      hdr:()=>[v('ret-date'),v('ret-voucher'),v('ret-from'),v('ret-to'),null,null,null,v('ret-remarks')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+    subconreturn:{sheet:'SubconReturn',
+      hdr:()=>[v('sr-date'),v('sr-voucher'),v('sr-site'),v('sr-subcon'),null,null,null,v('sr-reason')],
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}}
   };
-
-  const c = cfg[type];
-  if(!c) return;
-  const h = c.headerFn();
-  if(!h[0]) { toast('Please enter a date.','error'); return; }
-
-  const tbodyId = {purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
-    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
-  const rows = [];
-  let aborted = false;
-  for(const tr of document.getElementById(tbodyId).rows) {
-    const r = c.rowFn(tr, h);
-    if(r==='ABORT') { aborted=true; break; }
-    if(r) rows.push(r);
+  const c=cfg[type]; if(!c) return;
+  const h=c.hdr(); if(!h[0]){toast('Date required','error');return;}
+  const tbId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
+  const rows=[]; let abort=false;
+  for(const tr of document.getElementById(tbId).rows){
+    const r=c.row(tr,h); if(r==='ABORT'){abort=true;break;} if(r) rows.push(r);
   }
-  if(aborted) return;
-  if(!rows.length) { toast('No valid rows to save.','error'); return; }
-
-  try {
-    const res = await apiPost(c.sheet, rows);
-    if(res.success) {
-      toast(`✅ ${rows.length} row(s) saved to ${c.sheet}`,'success');
+  if(abort) return;
+  if(!rows.length){toast('No valid rows','error');return;}
+  try{
+    const res=await apiPost(c.sheet,rows);
+    if(res.success){
+      toast(`✅ ${rows.length} row(s) saved`,'success');
       resetForm(type);
-      fetchRecords(type, true);
-      // refresh stock state
+      fetchRecords(type,true);
       refreshStock();
-    } else {
-      toast(res.error||'Save failed','error');
-    }
-  } catch(e) { toast('Error: '+e.message,'error'); }
+    } else { toast(res.error||'Save failed','error'); }
+  } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
-function resetForm(type) {
-  const map = {
-    purchase: ['pur-supplier','pur-invoice','pur-remarks'],
-    transfer: ['trn-remarks'],
-    issue: ['iss-remarks'],
-    consumption: ['con-remarks'],
-    returns: ['ret-remarks'],
-    subconreturn: ['sr-reason']
-  };
-  const rowIds = {purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
-    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
-  (map[type]||[]).forEach(id=>{ const e=document.getElementById(id); if(e)e.value=''; });
-  const tbody = document.getElementById(rowIds[type]);
-  if(tbody) tbody.innerHTML = '';
+function resetForm(type){
+  const clearMap={purchase:['pur-supplier','pur-invoice','pur-remarks'],
+    transfer:['trn-remarks'],issue:['iss-remarks'],
+    consumption:['con-remarks'],returns:['ret-remarks'],subconreturn:['sr-reason']};
+  const tbId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
+    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
+  (clearMap[type]||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const tb=document.getElementById(tbId); if(tb) tb.innerHTML='';
   addRow(type);
-  autoVoucher(SHEET[type], {
-    purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
-    consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'
-  }[type]);
+  const vf={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
+    consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'}[type];
+  autoVoucher(SHEET[type],vf);
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  FETCH PAST RECORDS
-// ═══════════════════════════════════════════════════════════════
-async function fetchRecords(type, autoToday=false) {
-  const cfg = {
-    purchase:    { sheet:'Purchase',    fromId:'pur-from',toId:'pur-to',searchId:'pur-search',filterId:null,       outId:'pur-records',    metaLabel:'Supplier' },
-    transfer:    { sheet:'Transfer',    fromId:'trn-from',toId:'trn-to',searchId:'trn-search',filterId:'trn-filter',outId:'trn-records',   metaLabel:'From→To' },
-    issue:       { sheet:'Issue',       fromId:'iss-from',toId:'iss-to',searchId:'iss-search',filterId:'iss-filter',outId:'iss-records',   metaLabel:'Site' },
-    consumption: { sheet:'Consumption', fromId:'con-from',toId:'con-to',searchId:'con-search',filterId:'con-filter',outId:'con-records',   metaLabel:'Subcon' },
-    returns:     { sheet:'Returns',     fromId:'ret-from',toId:'ret-to',searchId:'ret-search',filterId:null,       outId:'ret-records',    metaLabel:'From→To' },
-    subconreturn:{ sheet:'SubconReturn',fromId:'sr-from', toId:'sr-to', searchId:'sr-search', filterId:'sr-filter', outId:'sr-records',    metaLabel:'Subcon' }
+// ══════════════════════════════════════════════════════
+async function fetchRecords(type, autoToday=false){
+  const cfg={
+    purchase:    {sheet:'Purchase',    from:'pur-from',to:'pur-to',search:'pur-search',filter:null,        out:'pur-records'},
+    transfer:    {sheet:'Transfer',    from:'trn-from',to:'trn-to',search:'trn-search',filter:'trn-filter',out:'trn-records'},
+    issue:       {sheet:'Issue',       from:'iss-from',to:'iss-to',search:'iss-search',filter:'iss-filter',out:'iss-records'},
+    consumption: {sheet:'Consumption', from:'con-from',to:'con-to',search:'con-search',filter:'con-filter',out:'con-records'},
+    returns:     {sheet:'Returns',     from:'ret-from',to:'ret-to',search:'ret-search',filter:null,        out:'ret-records'},
+    subconreturn:{sheet:'SubconReturn',from:'sr-from', to:'sr-to', search:'sr-search', filter:'sr-filter', out:'sr-records'}
   };
-  const c = cfg[type];
-  if(!c) return;
-
-  if(autoToday) {
-    const t = today();
-    document.getElementById(c.fromId).value = t;
-    document.getElementById(c.toId).value = t;
-  }
-
-  const params = {
-    action:'getRecordsFiltered', sheet:c.sheet,
-    from: document.getElementById(c.fromId).value || '',
-    to:   document.getElementById(c.toId).value || '',
-    voucher: document.getElementById(c.searchId).value || '',
-    filter:  c.filterId ? (document.getElementById(c.filterId).value||'') : ''
-  };
-
-  const el = document.getElementById(c.outId);
-  el.innerHTML = '<p style="color:var(--text3)">Loading…</p>';
-
-  try {
-    const data = await api(params);
-    const groups = data.groups || data || [];
-    if(!groups.length) { el.innerHTML = '<p style="color:var(--text3)">No records found.</p>'; return; }
-    el.innerHTML = groups.map(g => renderVoucherCard(g, type)).join('');
-  } catch(e) {
-    el.innerHTML = `<p style="color:var(--red)">Error: ${e.message}</p>`;
-  }
+  const c=cfg[type]; if(!c) return;
+  if(autoToday){const t=today();document.getElementById(c.from).value=t;document.getElementById(c.to).value=t;}
+  const params={action:'getRecordsFiltered',sheet:c.sheet,
+    from:document.getElementById(c.from).value||'',
+    to:document.getElementById(c.to).value||'',
+    voucher:document.getElementById(c.search).value||'',
+    filter:c.filter?(document.getElementById(c.filter).value||''):''};
+  const el=document.getElementById(c.out);
+  el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
+  try{
+    const data=await api(params);
+    const groups=Array.isArray(data)?data:(data.groups||[]);
+    if(!groups.length){el.innerHTML='<p style="color:var(--text3)">No records found.</p>';return;}
+    el.innerHTML=groups.map(g=>renderVoucherCard(g,type)).join('');
+  } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
 }
 
-function renderVoucherCard(g, type) {
-  const colLabels = {
-    purchase:    ['Item','Qty','Unit','Rate','Amount'],
-    transfer:    ['Item','Qty','Unit'],
-    issue:       ['Item','Qty','Unit'],
-    consumption: ['Item','Qty','Unit','Notes'],
-    returns:     ['Item','Qty','Unit'],
-    subconreturn:['Item','Qty','Unit']
-  };
-  const labels = colLabels[type] || ['Item','Qty','Unit'];
-  const rows = g.rows || [];
-  const meta = g.meta || '';
+function renderVoucherCard(g,type){
+  const meta=g.meta||{};
+  const metaParts=[];
+  if(meta.supplier)metaParts.push('Supplier: '+esc(meta.supplier));
+  if(meta.from&&meta.to)metaParts.push(esc(meta.from)+' → '+esc(meta.to));
+  if(meta.site)metaParts.push('Site: '+esc(meta.site));
+  if(meta.subcon)metaParts.push('Subcon: '+esc(meta.subcon));
+  if(meta.location)metaParts.push('To: '+esc(meta.location));
 
-  return `<div class="voucher-card">
+  // Backend sends items (not rows); items are objects
+  const items=g.items||g.rows||[];
+  let tableHtml='';
+  if(items.length){
+    const first=items[0];
+    if(typeof first==='object'&&!Array.isArray(first)){
+      const keys=Object.keys(first);
+      tableHtml=`<table>
+        <thead><tr>${keys.map(k=>`<th>${esc(k)}</th>`).join('')}</tr></thead>
+        <tbody>${items.map(r=>`<tr>${keys.map(k=>`<td>${r[k]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>`;
+    } else {
+      tableHtml=`<table><tbody>${items.map(r=>`<tr>${(Array.isArray(r)?r:[r]).map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+  }
+
+  return`<div class="voucher-card">
     <div class="voucher-header">
-      <span class="voucher-num">${g.voucher||'—'}</span>
-      <span class="voucher-date">${g.date||''}</span>
+      <span class="voucher-num">${esc(g.voucher||'—')}</span>
+      <span class="voucher-date">${esc(g.date||'')}</span>
     </div>
-    ${meta ? `<div class="voucher-meta">${meta}</div>` : ''}
-    <div class="voucher-items">
-      <table>
-        <thead><tr>${labels.map(l=>`<th>${l}</th>`).join('')}</tr></thead>
-        <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('')}</tbody>
-      </table>
-    </div>
+    ${metaParts.length?`<div class="voucher-meta">${metaParts.join(' · ')}</div>`:''}
+    <div class="voucher-items">${tableHtml}</div>
   </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  WORK PROGRESS
-// ═══════════════════════════════════════════════════════════════
-async function loadWP() {
-  try {
-    const data = await api({action:'workprogress'});
-    renderWPSites(data.sites||[]);
-    renderWPSubcons(data.subcons||[]);
-  } catch(e) { toast('WP load failed: '+e.message,'error'); }
+// ══════════════════════════════════════════════════════
+async function loadWP(){
+  try{
+    const d=await api({action:'workprogress'});
+    renderWPSites(d.sites||[]);
+    renderWPSubcons(d.subcons||[]);
+  } catch(e){ toast('WP load failed: '+e.message,'error'); }
 }
 
-function renderWPSites(sites) {
-  const el = document.getElementById('wp-site-cards');
-  if(!sites.length) { el.innerHTML='<p style="color:var(--text3)">No site progress yet.</p>'; return; }
-  el.innerHTML = sites.map(s=>{
-    const st = s.status || 'delayed';
-    return `<div class="wp-card">
-      <div class="wp-card-header">
-        <div class="wp-card-title">${s.site}</div>
-        <span class="status ${st}">${STATUS_LABEL[st]||st}</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill ${st}" style="width:${Math.min(s.overallPct,100)}%"></div></div>
-      <div class="pct-label">${s.overallPct}%</div>
-      <div class="wp-grid">
-        <div class="wp-stat"><div class="s-label">Poles</div><div class="s-val">${s.polesErected} / ${s.totalPoles}</div></div>
-        <div class="wp-stat"><div class="s-label">KMs</div><div class="s-val">${s.kmsStrung} / ${s.totalKms}</div></div>
-      </div>
-    </div>`;
-  }).join('');
+function renderWPSites(sites){
+  const el=document.getElementById('wp-site-cards');
+  if(!sites.length){el.innerHTML='<p style="color:var(--text3)">No progress yet.</p>';return;}
+  el.innerHTML=sites.map(s=>`<div class="wp-card">
+    <div class="wp-card-header">
+      <div class="wp-card-title">${esc(s.site)}</div>
+      <span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill ${s.status||'ontrack'}" style="width:${Math.min(s.overallPct||0,100)}%"></div></div>
+    <div class="pct-label">${s.overallPct||0}%</div>
+    <div class="wp-grid">
+      <div class="wp-stat"><div class="s-label">Poles Done</div><div class="s-val">${s.polesErected||0} <small style="font-size:12px;color:var(--text3)">/ ${s.totalPoles||0}</small></div></div>
+      <div class="wp-stat"><div class="s-label">KMs Done</div><div class="s-val">${s.kmsStrung||0} <small style="font-size:12px;color:var(--text3)">/ ${s.totalKms||0}</small></div></div>
+    </div>
+  </div>`).join('');
 }
 
-function renderWPSubcons(subcons) {
-  const el = document.getElementById('wp-subcon-cards');
-  if(!subcons.length) { el.innerHTML='<p style="color:var(--text3)">No subcon progress yet.</p>'; return; }
-  el.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Subcon</th><th>Site</th><th>Poles Done</th><th>Scope Poles</th><th>KMs Done</th><th>Scope KMs</th><th>%</th><th>Status</th></tr></thead>
+function renderWPSubcons(subcons){
+  const el=document.getElementById('wp-subcon-cards');
+  if(!subcons.length){el.innerHTML='<p style="color:var(--text3)">No subcon progress.</p>';return;}
+  el.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>Subcon</th><th>Site</th><th>Poles</th><th>Scope</th><th>KMs</th><th>Scope</th><th>%</th><th>Status</th></tr></thead>
     <tbody>${subcons.map(s=>`<tr>
-      <td>${s.name}</td><td>${s.site}</td>
-      <td>${s.poles}</td><td>${s.scopePoles||'—'}</td>
-      <td>${s.kms}</td><td>${s.scopeKms||'—'}</td>
-      <td>${s.overallPct}%</td>
-      <td><span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span></td>
+      <td style="font-weight:500">${esc(s.name)}</td><td>${esc(s.site||'')}</td>
+      <td>${s.poles||0}</td><td style="color:var(--text3)">${s.scopePoles||'—'}</td>
+      <td>${s.kms||0}</td><td style="color:var(--text3)">${s.scopeKms||'—'}</td>
+      <td><strong>${s.overallPct||0}%</strong></td>
+      <td><span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
 
-async function saveWP() {
-  const date  = v('wp-date');
-  const site  = v('wp-site');
-  const sub   = v('wp-subcon');
-  const poles = parseFloat(v('wp-poles'))||0;
-  const kms   = parseFloat(v('wp-kms'))||0;
-  const rem   = v('wp-remarks');
-
-  if(!date)  { toast('Date required','error'); return; }
-  if(!site)  { toast('Site required','error'); return; }
-  if(!sub)   { toast('Subcontractor required','error'); return; }
-  if(!poles && !kms) { toast('Enter poles or KMs','error'); return; }
-
-  // [0]Date [1]Site [2]Subcon [3]WorkType [4]Poles [5]Kms [6]Remarks
-  const row = [date, site, sub, 'Both', poles, kms, rem];
-  try {
-    const res = await apiPost('WorkProgress', [row]);
-    if(res.success) {
-      toast('✅ Work progress saved','success');
+async function saveWP(){
+  const date=v('wp-date'),site=v('wp-site'),sub=v('wp-subcon');
+  const poles=parseFloat(v('wp-poles'))||0,kms=parseFloat(v('wp-kms'))||0;
+  if(!date){toast('Date required','error');return;}
+  if(!site){toast('Site required','error');return;}
+  if(!sub){toast('Subcontractor required','error');return;}
+  if(!poles&&!kms){toast('Enter poles or KMs','error');return;}
+  try{
+    const res=await apiPost('WorkProgress',[[date,site,sub,'Both',poles,kms,v('wp-remarks')]]);
+    if(res.success){
+      toast('✅ Progress saved','success');
       document.getElementById('wp-poles').value='';
       document.getElementById('wp-kms').value='';
       document.getElementById('wp-remarks').value='';
       loadWP();
-    } else { toast(res.error||'Save failed','error'); }
-  } catch(e) { toast('Error: '+e.message,'error'); }
+    } else toast(res.error||'Failed','error');
+  } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  STOCK VIEW
-// ═══════════════════════════════════════════════════════════════
-async function loadStock() {
-  try {
-    const data = await api({action:'stock'});
-    STOCK = data;
-    renderStockView(data);
-  } catch(e) { toast('Stock load failed: '+e.message,'error'); }
+// ══════════════════════════════════════════════════════
+async function loadStock(){
+  try{ const d=await api({action:'stock'}); STOCK=d; renderStockView(d); }
+  catch(e){ toast('Stock load failed','error'); }
+}
+async function refreshStock(){
+  try{ const d=await api({action:'stock'}); STOCK=d; } catch(e){}
 }
 
-async function refreshStock() {
-  try {
-    const data = await api({action:'stock'});
-    STOCK = data;
-  } catch(e){}
-}
-
-function renderStockView(data) {
-  const stock = data.stock || [];
-  const sites = [...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
-  const locations = ['Main Store', ...sites];
-
-  const tabs = document.getElementById('stock-tabs');
-  const wrap = document.getElementById('stock-table-wrap');
-
-  tabs.innerHTML = locations.map((loc,i)=>
-    `<button class="stock-tab-btn ${i===0?'active':''}" onclick="showStockLoc('${loc}',this)">${loc}</button>`
+function renderStockView(data){
+  const stock=data.stock||[];
+  const sites=[...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
+  const locs=['Main Store',...sites];
+  document.getElementById('stock-tabs').innerHTML=locs.map((l,i)=>
+    `<button class="stock-tab-btn ${i===0?'active':''}" onclick="showStockLoc(${i},this)">${esc(l)}</button>`
   ).join('');
-
-  // Build all location tables (only show active)
-  wrap.innerHTML = locations.map((loc,i)=>{
-    const rows = stock.map(s=>{
-      const qty = loc==='Main Store' ? (s.main||0) : ((s.sites&&s.sites[loc])||0);
-      const cls = qty<=0?'out':(s.minStock>0&&qty<=s.minStock?'low':'ok');
-      return `<tr>
-        <td>${s.item}</td><td style="color:var(--text3)">${s.unit}</td>
-        <td style="font-weight:600">${qty}</td>
-        <td>${s.minStock||'—'}</td>
-        <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td>
-      </tr>`;
+  document.getElementById('stock-table-wrap').innerHTML=locs.map((loc,i)=>{
+    const rows=stock.map(s=>{
+      const qty=loc==='Main Store'?(s.main||0):((s.sites&&s.sites[loc])||0);
+      const cls=qty<=0?'out':(s.minStock>0&&qty<=s.minStock?'low':'ok');
+      return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
+        <td style="font-size:15px;font-weight:600">${qty}</td><td>${s.minStock||'—'}</td>
+        <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
     });
-    return `<div id="sloc-${loc.replace(/\s/g,'_')}" style="display:${i===0?'block':'none'}">
-      <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min</th><th>Status</th></tr></thead>
-      <tbody>${rows.join('')}</tbody></table>
-    </div>`;
+    return`<div id="sloc-${i}" style="display:${i===0?'block':'none'}">
+      <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min Stock</th><th>Status</th></tr></thead>
+      <tbody>${rows.join('')}</tbody></table></div>`;
   }).join('');
 }
 
-function showStockLoc(loc, btn) {
+function showStockLoc(idx,btn){
   document.querySelectorAll('.stock-tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('[id^="sloc-"]').forEach(el=>el.style.display='none');
-  const el = document.getElementById('sloc-'+loc.replace(/\s/g,'_'));
-  if(el) el.style.display='block';
+  const el=document.getElementById('sloc-'+idx); if(el) el.style.display='block';
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  SUBCON LEDGER
-// ═══════════════════════════════════════════════════════════════
-async function loadSubconLedger() {
-  const el = document.getElementById('subcon-ledger-body');
-  el.innerHTML = '<p style="color:var(--text3)">Loading…</p>';
-  try {
-    const data = await api({action:'subconLedger'});
-    const ledger = Array.isArray(data) ? data : [];
-    if(!ledger.length) { el.innerHTML='<p style="color:var(--text3)">No ledger data.</p>'; return; }
-    el.innerHTML = ledger.map(sub=>`
-      <div style="margin-bottom:20px">
-        <h3 style="font-size:14px;margin-bottom:8px">👷 ${sub.subcon}</h3>
-        <div class="tbl-wrap">
-          <table><thead><tr><th>Item</th><th>Issued</th><th>Consumed</th><th>Balance</th></tr></thead>
-          <tbody>${(sub.items||[]).map(r=>`<tr>
-            <td>${r.item}</td><td>${r.issued}</td><td>${r.consumed}</td>
-            <td style="font-weight:600;color:${r.balance<0?'var(--red)':r.balance>0?'var(--yellow)':'var(--green)'}">${r.balance}</td>
-          </tr>`).join('')}</tbody></table>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) { el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
+// ══════════════════════════════════════════════════════
+async function loadSubconLedger(){
+  const el=document.getElementById('subcon-ledger-body');
+  el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
+  try{
+    const data=await api({action:'subconLedger'});
+    const ledger=Array.isArray(data)?data:[];
+    if(!ledger.length){el.innerHTML='<p style="color:var(--text3)">No data.</p>';return;}
+    el.innerHTML=ledger.map(sub=>`<div style="margin-bottom:20px">
+      <div style="font-weight:600;margin-bottom:8px">👷 ${esc(sub.subcon)}</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Item</th><th>Issued</th><th>Consumed</th><th>Balance</th></tr></thead>
+        <tbody>${(sub.items||[]).map(r=>`<tr>
+          <td>${esc(r.item)}</td><td>${r.issued||0}</td><td>${r.consumed||0}</td>
+          <td style="font-weight:600;color:${(r.balance||0)<0?'var(--red)':(r.balance||0)>0?'var(--yellow)':'var(--green)'}">${r.balance||0}</td>
+        </tr>`).join('')}</tbody>
+      </table></div></div>`).join('');
+  } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  CvC
-// ═══════════════════════════════════════════════════════════════
-async function loadCvC() {
-  const el = document.getElementById('cvc-body');
-  el.innerHTML = '<p style="color:var(--text3)">Loading…</p>';
-  try {
-    const [stockData, wpData] = await Promise.all([
-      api({action:'stock'}),
-      api({action:'workprogress'})
-    ]);
-    STOCK = stockData;
-    const sites = wpData.sites || [];
-    const stock = stockData.stock || [];
-
-    el.innerHTML = `<div class="tbl-wrap"><table>
-      <thead><tr><th>Site</th><th>Poles Done</th><th>KMs Done</th><th>Progress%</th><th>Stock at Site</th><th>Status</th></tr></thead>
-      <tbody>${sites.map(s=>{
-        const siteItems = stock.filter(st=>st.sites&&st.sites[s.site]>0);
-        const stockSummary = siteItems.length ? `${siteItems.length} items` : '—';
-        return `<tr>
-          <td>${s.site}</td>
-          <td>${s.polesErected}/${s.totalPoles}</td>
-          <td>${s.kmsStrung}/${s.totalKms}</td>
-          <td>${s.overallPct}%</td>
-          <td>${stockSummary}</td>
-          <td><span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span></td>
-        </tr>`;
+// ══════════════════════════════════════════════════════
+async function loadCvC(){
+  const el=document.getElementById('cvc-body');
+  el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
+  try{
+    const [sd,wd]=await Promise.all([api({action:'stock'}),api({action:'workprogress'})]);
+    STOCK=sd;
+    el.innerHTML=`<div class="tbl-wrap"><table>
+      <thead><tr><th>Site</th><th>Poles Done/Scope</th><th>KMs Done/Scope</th><th>Progress %</th><th>Items at Site</th><th>Status</th></tr></thead>
+      <tbody>${(wd.sites||[]).map(s=>{
+        const cnt=(sd.stock||[]).filter(st=>st.sites&&st.sites[s.site]>0).length;
+        return`<tr><td style="font-weight:500">${esc(s.site)}</td>
+          <td>${s.polesErected||0}/${s.totalPoles||0}</td>
+          <td>${s.kmsStrung||0}/${s.totalKms||0}</td>
+          <td><strong>${s.overallPct||0}%</strong></td>
+          <td>${cnt?cnt+' items':'—'}</td>
+          <td><span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td></tr>`;
       }).join('')}</tbody>
     </table></div>`;
-  } catch(e) { el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
+  } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  REPORTS
-// ═══════════════════════════════════════════════════════════════
-async function loadReports() {
-  ['variance','leakage','efficiency','movement','exception'].forEach(r=>{
-    const el=document.getElementById('report-'+r);
+// ══════════════════════════════════════════════════════
+async function loadReports(){
+  ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
+    const el=document.getElementById('report-'+k);
     if(el) el.innerHTML='<p style="color:var(--text3)">Generating…</p>';
   });
-  try {
-    const data = await api({action:'generateReports'});
-    REPORT_DATA = data;
+  try{
+    const data=await api({action:'generateReports'});
     renderReports(data);
-  } catch(e) {
-    ['variance','leakage','efficiency','movement','exception'].forEach(r=>{
-      const el=document.getElementById('report-'+r);
+  } catch(e){
+    ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
+      const el=document.getElementById('report-'+k);
       if(el) el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`;
     });
   }
 }
 
-function renderReports(data) {
-  const sections = data.sections || [];
-
-  const sectionMap = {
-    variance:   sections.find(s=>s.title&&s.title.toLowerCase().includes('variance')),
-    leakage:    sections.find(s=>s.title&&s.title.toLowerCase().includes('leakage')),
-    efficiency: sections.find(s=>s.title&&s.title.toLowerCase().includes('efficiency')),
-    movement:   sections.find(s=>s.title&&s.title.toLowerCase().includes('movement')),
-    exception:  sections.find(s=>s.title&&s.title.toLowerCase().includes('exception'))
-  };
-
+function renderReports(data){
+  const secs=data.sections||[];
   ['variance','leakage','efficiency','movement','exception'].forEach(key=>{
-    const el = document.getElementById('report-'+key);
-    if(!el) return;
-    const sec = sectionMap[key];
-    if(!sec) { el.innerHTML='<p style="color:var(--text3)">No data for this report.</p>'; return; }
-    el.innerHTML = renderReportSection(sec);
+    const el=document.getElementById('report-'+key); if(!el) return;
+    const sec=secs.find(s=>s.title&&s.title.toLowerCase().includes(key));
+    if(!sec){el.innerHTML='<p style="color:var(--text3)">No data.</p>';return;}
+    const rows=sec.rows||[];
+    const hdrs=sec.headers||Object.keys(rows[0]||{});
+    el.innerHTML=`<h3 style="font-size:14px;margin-bottom:12px">${esc(sec.title)}</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr>${hdrs.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(r=>`<tr>${hdrs.map(h=>`<td>${r[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div>`;
   });
 }
 
-function renderReportSection(sec) {
-  if(!sec) return '<p style="color:var(--text3)">—</p>';
-  let html = `<h3 style="font-size:14px;margin-bottom:12px">${sec.title||''}</h3>`;
-  const rows = sec.rows || [];
-  if(!rows.length) return html + '<p style="color:var(--text3)">No data.</p>';
-  const headers = sec.headers || Object.keys(rows[0]||{});
-  html += `<div class="tbl-wrap"><table>
-    <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map(r=>`<tr>${headers.map(h=>`<td>${r[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>
-  </table></div>`;
-  return html;
-}
-
-function showReport(key, tab) {
+function showReport(key,tab){
   document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
   tab.classList.add('active');
   ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
@@ -1499,113 +1430,64 @@ function showReport(key, tab) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  SETTINGS — MASTERS
-// ═══════════════════════════════════════════════════════════════
-async function saveMaster(sheet) {
+// ══════════════════════════════════════════════════════
+//  SETTINGS — OTHER MASTERS
+// ══════════════════════════════════════════════════════
+async function saveMaster(sheet){
   let row;
-  if(sheet==='ItemMaster') {
-    const name=v('im-name'); if(!name){toast('Item name required','error');return;}
-    row=[name,v('im-unit'),parseFloat(v('im-min'))||0,v('im-remarks')];
-  } else if(sheet==='SiteMaster') {
-    const name=v('sm-name'); if(!name){toast('Site name required','error');return;}
-    row=[name,v('sm-location'),v('sm-contract'),parseFloat(v('sm-poles'))||0,parseFloat(v('sm-kms'))||0,v('sm-start'),v('sm-end')];
-  } else if(sheet==='SubcontractorMaster') {
-    const name=v('sub-name'); if(!name){toast('Name required','error');return;}
-    row=[name,v('sub-contact'),v('sub-phone'),v('sub-site'),v('sub-pan')];
-  } else if(sheet==='SubconScope') {
-    const sub=v('sc-subcon'); const site=v('sc-site');
-    if(!sub||!site){toast('Select subcon and site','error');return;}
-    row=[sub,site,parseFloat(v('sc-poles'))||0,parseFloat(v('sc-kms'))||0,v('sc-remarks')];
+  if(sheet==='ItemMaster'){
+    const n=v('im-name');if(!n){toast('Name required','error');return;}
+    row=[n,v('im-unit'),parseFloat(v('im-min'))||0,v('im-remarks')];
+  } else if(sheet==='SubcontractorMaster'){
+    const n=v('sub-name');if(!n){toast('Name required','error');return;}
+    row=[n,v('sub-contact'),v('sub-phone'),v('sub-site'),v('sub-pan')];
+  } else if(sheet==='SubconScope'){
+    const s=v('sc-subcon'),si=v('sc-site');
+    if(!s||!si){toast('Select subcon + site','error');return;}
+    row=[s,si,parseFloat(v('sc-poles'))||0,parseFloat(v('sc-kms'))||0,v('sc-remarks')];
   }
   if(!row) return;
-  try {
-    const res = await apiPost(sheet, [row]);
-    if(res.success) {
-      toast('✅ Saved to '+sheet,'success');
-      initApp(); // reload masters
-    } else { toast(res.error||'Save failed','error'); }
-  } catch(e) { toast('Error: '+e.message,'error'); }
+  try{
+    const res=await apiPost(sheet,[row]);
+    if(res.success){toast('✅ Saved','success');initApp();}
+    else toast(res.error||'Failed','error');
+  } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
-async function setupStockSheet(btn) {
-  btn.disabled=true; btn.textContent='⏳ Generating…';
-  try {
-    const r = await api({action:'generateStockSheet'});
-    btn.disabled=false; btn.textContent='⚙️ Generate Stock Sheet';
-    if(r.success) toast('✅ StockRegister sheet created!','success');
-    else toast(r.error||'Failed','error');
-  } catch(e) {
-    btn.disabled=false; btn.textContent='⚙️ Generate Stock Sheet';
-    toast('Error: '+e.message,'error');
-  }
+// ══════════════════════════════════════════════════════
+//  PIN
+// ══════════════════════════════════════════════════════
+function verifyPIN(){
+  const entered=document.getElementById('pin-input').value;
+  const stored=localStorage.getItem('sf_pin')||DEFAULT_PIN;
+  if(entered===stored){document.getElementById('gate').style.display='none';initApp();}
+  else{document.getElementById('pin-error').textContent='Incorrect PIN.';document.getElementById('pin-input').value='';}
 }
-
-// ═══════════════════════════════════════════════════════════════
-//  PIN GATE
-// ═══════════════════════════════════════════════════════════════
-function verifyPIN() {
-  const entered = document.getElementById('pin-input').value;
-  const stored = localStorage.getItem('sf_pin') || DEFAULT_PIN;
-  if(entered === stored) {
-    document.getElementById('gate').style.display='none';
-    initApp();
-  } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
-    document.getElementById('pin-input').value='';
-  }
-}
-
-function changePIN() {
-  const np=document.getElementById('new-pin').value;
-  const cp=document.getElementById('confirm-pin').value;
-  if(!np) { toast('Enter new PIN','error'); return; }
-  if(np!==cp) { toast('PINs do not match','error'); return; }
-  localStorage.setItem('sf_pin', np);
+function changePIN(){
+  const np=v('new-pin'),cp=v('confirm-pin');
+  if(!np){toast('Enter new PIN','error');return;}
+  if(np!==cp){toast('PINs do not match','error');return;}
+  localStorage.setItem('sf_pin',np);
   toast('✅ PIN changed','success');
   document.getElementById('new-pin').value='';
   document.getElementById('confirm-pin').value='';
 }
+document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')verifyPIN();});
 
-document.getElementById('pin-input').addEventListener('keydown', e=>{
-  if(e.key==='Enter') verifyPIN();
-});
-
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  UTILITY
-// ═══════════════════════════════════════════════════════════════
-function v(id) { const e=document.getElementById(id); return e?e.value.trim():''; }
-function today() { return new Date().toISOString().split('T')[0]; }
-
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.innerHTML = `<span>${msg}</span>`;
+// ══════════════════════════════════════════════════════
+function v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function today(){return new Date().toISOString().split('T')[0];}
+function esc(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML=`<span>${msg}</span>`;
   document.getElementById('toast-container').appendChild(el);
-  setTimeout(()=>el.remove(), 3500);
+  setTimeout(()=>el.remove(),3500);
 }
-
-function toggleLight() {
-  document.body.classList.toggle('light');
-  localStorage.setItem('sf_light', document.body.classList.contains('light')?'1':'');
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  PWA SERVICE WORKER
-// ═══════════════════════════════════════════════════════════════
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  BOOT
-// ═══════════════════════════════════════════════════════════════
-if(localStorage.getItem('sf_light')==='1') document.body.classList.add('light');
-// Gate is shown by default; unlock via PIN
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 </script>
 </body>
 </html>
