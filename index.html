@@ -755,6 +755,7 @@ const STATUS_LABEL = {
 // ══════════════════════════════════════════════════════
 let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{} };
 let STOCK = {};
+const VSTORE = {}; // voucher data store for reversal
 
 // ══════════════════════════════════════════════════════
 //  API
@@ -1349,6 +1350,13 @@ function renderVoucherCard(g,type){
   if(meta.subcon)metaParts.push('Subcon: '+esc(meta.subcon));
   if(meta.location)metaParts.push('To: '+esc(meta.location));
 
+  // Store group for reversal lookup
+  const storeKey = type+'|'+(g.voucher||'');
+  VSTORE[storeKey] = g;
+
+  // Skip Reverse button for already-reversed vouchers
+  const isReversal = (g.voucher||'').startsWith('REV-');
+
   // Backend sends items (not rows); items are objects
   const items=g.items||g.rows||[];
   let tableHtml='';
@@ -1365,6 +1373,10 @@ function renderVoucherCard(g,type){
     }
   }
 
+  const revBtn = isReversal ? '' :
+    `<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px"
+      onclick="reverseTxn('${esc(type)}','${esc(g.voucher||'')}')">↩ Reverse</button>`;
+
   return`<div class="voucher-card">
     <div class="voucher-header">
       <span class="voucher-num">${esc(g.voucher||'—')}</span>
@@ -1372,7 +1384,50 @@ function renderVoucherCard(g,type){
     </div>
     ${metaParts.length?`<div class="voucher-meta">${metaParts.join(' · ')}</div>`:''}
     <div class="voucher-items">${tableHtml}</div>
+    ${revBtn}
   </div>`;
+}
+
+async function reverseTxn(type, voucher) {
+  const g = VSTORE[type+'|'+voucher];
+  if(!g){ toast('Voucher data not found — re-fetch records first','error'); return; }
+  if(!confirm(`Reverse voucher ${voucher}?\n\nThis posts negative offsetting entries to cancel the original transaction.`)) return;
+
+  const sheetMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+    consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+  const sheet=sheetMap[type]; if(!sheet){ toast('Unknown type','error'); return; }
+
+  const meta=g.meta||{};
+  const items=g.items||[];
+  if(!items.length){ toast('No items found in voucher','error'); return; }
+
+  const revDate=today();
+  const revVoucher='REV-'+voucher;
+  const revRemark='REVERSAL of '+voucher;
+
+  let rows=[];
+  if(type==='purchase'){
+    rows=items.map(it=>[revDate,revVoucher,meta.supplier||'',it.item||'',-(it.qty||0),it.unit||'',it.rate||0,-(it.amount||0),meta.location||'Main Store','',revRemark]);
+  } else if(type==='transfer'){
+    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+  } else if(type==='issue'){
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+  } else if(type==='consumption'){
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+  } else if(type==='returns'){
+    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+  } else if(type==='subconreturn'){
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+  }
+
+  try{
+    const res=await apiPost(sheet,rows);
+    if(res.success){
+      toast(`✅ Reversed as ${revVoucher}`,'success');
+      refreshStock();
+      fetchRecords(type,true);
+    } else { toast(res.error||'Reversal failed','error'); }
+  } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
 // ══════════════════════════════════════════════════════
