@@ -326,6 +326,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('purchase')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('purchase')">💾 Save Purchase</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('Purchase')" style="color:var(--accent)">🖨 Print GRN</button>
           </div>
         </div>
       </div>
@@ -336,6 +337,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>To</label><input type="date" id="pur-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="pur-search" placeholder="Search…"></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('purchase')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('purchase',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="pur-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -351,6 +353,12 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Voucher #</label><input type="text" id="trn-voucher" placeholder="Auto"></div>
             <div class="form-group"><label>From</label><select id="trn-from"><option value="Main Store">Main Store</option></select></div>
             <div class="form-group"><label>To</label><select id="trn-to"><option value="Main Store">Main Store</option></select></div>
+            <div class="form-group"><label>Transporter / Vehicle No.</label><input type="text" id="trn-vehicle" placeholder="Vehicle No."></div>
+            <div class="form-group"><label>Driver Name</label><input type="text" id="trn-driver" placeholder="Driver"></div>
+            <div class="form-group"><label>Prepared By</label><input type="text" id="trn-prepared" placeholder="Name"></div>
+            <div class="form-group"><label>Approved By</label><input type="text" id="trn-approved" placeholder="Name"></div>
+            <div class="form-group"><label>Delivered By</label><input type="text" id="trn-delivered" placeholder="Name"></div>
+            <div class="form-group"><label>Received By</label><input type="text" id="trn-received" placeholder="Name"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="trn-remarks"></div>
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
@@ -362,6 +370,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('transfer')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('transfer')">💾 Save Transfer</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('Transfer')" style="color:var(--accent)">🖨 Print Challan</button>
           </div>
         </div>
       </div>
@@ -373,6 +382,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="trn-search" placeholder="Search…"></div>
           <div class="form-group"><label>Location</label><select id="trn-filter"><option value="">All</option></select></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('transfer')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('transfer',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="trn-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -407,6 +417,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('issue')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('issue')">💾 Save Issue</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('Issue')" style="color:var(--accent)">🖨 Print Slip</button>
           </div>
         </div>
       </div>
@@ -418,6 +429,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="iss-search" placeholder="Search…"></div>
           <div class="form-group"><label>Site</label><select id="iss-filter"><option value="">All</option></select></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('issue')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('issue',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="iss-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -452,6 +464,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('consumption')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('consumption')">💾 Save Consumption</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('Consumption')" style="color:var(--accent)">🖨 Print</button>
           </div>
         </div>
       </div>
@@ -463,6 +476,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="con-search" placeholder="Search…"></div>
           <div class="form-group"><label>Subcon</label><select id="con-filter"><option value="">All</option></select></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('consumption')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('consumption',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="con-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -489,6 +503,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('returns')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('returns')">💾 Save Return</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('Returns')" style="color:var(--accent)">🖨 Print</button>
           </div>
         </div>
       </div>
@@ -499,6 +514,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>To</label><input type="date" id="ret-to"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="ret-search" placeholder="Search…"></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('returns')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('returns',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="ret-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -525,6 +541,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('subconreturn')">+ Add Row</button>
             <button class="btn btn-primary" onclick="saveTxn('subconreturn')">💾 Save Return</button>
+            <button class="btn btn-ghost btn-sm" onclick="printVoucher('SubconReturn')" style="color:var(--accent)">🖨 Print Return Note</button>
           </div>
         </div>
       </div>
@@ -536,6 +553,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="sr-search" placeholder="Search…"></div>
           <div class="form-group"><label>Subcon</label><select id="sr-filter"><option value="">All</option></select></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('subconreturn')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('subconreturn',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="sr-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
       </div>
@@ -1367,16 +1385,24 @@ async function saveTxn(type){
   const c=cfg[type]; if(!c) return;
   const h=c.hdr(); if(!h[0]){toast('Date required','error');return;}
   const tbId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
-  const rows=[]; let abort=false;
+  let rows=[]; let abort=false;
   for(const tr of document.getElementById(tbId).rows){
     const r=c.row(tr,h); if(r==='ABORT'){abort=true;break;} if(r) rows.push(r);
   }
   if(abort) return;
   if(!rows.length){toast('No valid rows','error');return;}
+  // Add logged-in user to each row as last column (audit trail)
+  const user = CURRENT_USER ? CURRENT_USER.name : '';
+  if(user) rows = rows.map(r => [...r, user]);
+
   try{
     const res=await apiPost(c.sheet,rows);
     if(res.success){
       toast(`✅ ${rows.length} row(s) saved`,'success');
+      // Auto-print voucher after save
+      const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+        consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+      if(printTypeMap[type]) setTimeout(()=>printVoucher(printTypeMap[type]), 400);
       resetForm(type);
       fetchRecords(type,true);
       refreshStock();
@@ -1401,7 +1427,7 @@ function resetForm(type){
 // ══════════════════════════════════════════════════════
 //  FETCH PAST RECORDS
 // ══════════════════════════════════════════════════════
-async function fetchRecords(type, autoToday=false){
+async function fetchRecords(type, autoToday=false, fetchAll=false){
   const cfg={
     purchase:    {sheet:'Purchase',    from:'pur-from',to:'pur-to',search:'pur-search',filter:null,        out:'pur-records'},
     transfer:    {sheet:'Transfer',    from:'trn-from-f',to:'trn-to-f',search:'trn-search',filter:'trn-filter',out:'trn-records'},
@@ -1413,17 +1439,22 @@ async function fetchRecords(type, autoToday=false){
   const c=cfg[type]; if(!c) return;
   if(autoToday){const t=today();document.getElementById(c.from).value=t;document.getElementById(c.to).value=t;}
   const params={action:'getRecordsFiltered',sheet:c.sheet,
-    from:document.getElementById(c.from).value||'',
-    to:document.getElementById(c.to).value||'',
-    voucher:document.getElementById(c.search).value||'',
-    filter:c.filter?(document.getElementById(c.filter).value||''):''};
+    from: fetchAll ? '' : (document.getElementById(c.from).value||''),
+    to:   fetchAll ? '' : (document.getElementById(c.to).value||''),
+    voucher: fetchAll ? '' : (document.getElementById(c.search).value||''),
+    filter:  fetchAll ? '' : (c.filter?(document.getElementById(c.filter).value||''):'')};
   const el=document.getElementById(c.out);
   el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
   try{
     const data=await api(params);
     const groups=Array.isArray(data)?data:(data.groups||[]);
     if(!groups.length){el.innerHTML='<p style="color:var(--text3)">No records found.</p>';return;}
-    el.innerHTML=groups.map(g=>renderVoucherCard(g,type)).join('');
+    const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+      consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+    const printAllBtn = printTypeMap[type]
+      ? `<div style="margin-bottom:10px"><button class="btn btn-ghost btn-sm" style="color:var(--accent)" onclick="printAllVouchers('${type}')">🖨 Print All (${groups.length})</button></div>`
+      : '';
+    el.innerHTML = printAllBtn + groups.map(g=>renderVoucherCard(g,type)).join('');
   } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
 }
 
@@ -1459,9 +1490,17 @@ function renderVoucherCard(g,type){
     }
   }
 
+  const canPrint = ['purchase','transfer','issue','consumption','returns','subconreturn'].includes(type);
+  const printTypeMap = {purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+    consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+
   const revBtn = isReversal ? '' :
     `<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px"
       onclick="reverseTxn('${esc(type)}','${esc(g.voucher||'')}')">↩ Reverse</button>`;
+  const printBtn = canPrint
+    ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px;color:var(--accent)"
+        onclick="reprintVoucher('${esc(type)}','${esc(g.voucher||'')}')">🖨 Print</button>`
+    : '';
 
   return`<div class="voucher-card">
     <div class="voucher-header">
@@ -1470,7 +1509,7 @@ function renderVoucherCard(g,type){
     </div>
     ${metaParts.length?`<div class="voucher-meta">${metaParts.join(' · ')}</div>`:''}
     <div class="voucher-items">${tableHtml}</div>
-    ${revBtn}
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${printBtn}${revBtn}</div>
   </div>`;
 }
 
@@ -1584,6 +1623,344 @@ async function saveWP(){
 async function loadStock(){
   try{ const d=await api({action:'stock'}); STOCK=d; renderStockView(d); }
   catch(e){ toast('Stock load failed','error'); }
+}
+
+// ══════════════════════════════════════════════════════
+//  PRINT SYSTEM
+// ══════════════════════════════════════════════════════
+const CO_NAME = 'Thakur Electricals &amp; Engineers Pvt Ltd';
+const CO_SUB  = 'Material Management System — SiteFlow';
+
+function printStyles(){
+  return `*{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial,sans-serif;color:#111;font-size:12px;background:#fff;}
+    .page{padding:24px 28px;}
+    .co-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e2a38;padding-bottom:10px;margin-bottom:14px;}
+    .co-name{font-size:16px;font-weight:700;color:#1e2a38;}
+    .co-sub{font-size:10px;color:#666;margin-top:3px;}
+    .doc-title{font-size:13px;font-weight:700;color:#fff;background:#1e2a38;padding:4px 12px;border-radius:4px;text-align:right;}
+    .doc-no{font-size:11px;color:#444;margin-top:4px;text-align:right;}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;background:#f8f9fa;padding:10px 12px;border-radius:4px;border:1px solid #e0e0e0;}
+    .meta-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+    .meta-item label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}
+    .meta-item span{font-size:12px;color:#111;font-weight:500;}
+    table{width:100%;border-collapse:collapse;margin-bottom:14px;}
+    thead th{background:#1e2a38;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+    thead th.r{text-align:right;}
+    tbody td{padding:6px 8px;border-bottom:1px solid #e8e8e8;font-size:11px;vertical-align:middle;}
+    tbody td.r{text-align:right;}
+    tbody tr:nth-child(even){background:#fafafa;}
+    .total-row td{font-weight:700;background:#f0f4f8;border-top:2px solid #1e2a38;font-size:12px;}
+    .signs{display:grid;gap:0;margin-top:30px;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
+    .signs-row{display:flex;border-bottom:1px solid #ddd;}
+    .signs-row:last-child{border-bottom:none;}
+    .sign-box{flex:1;padding:8px 12px;border-right:1px solid #ddd;}
+    .sign-box:last-child{border-right:none;}
+    .sign-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+    .sign-name{font-size:11px;color:#111;font-weight:500;min-height:14px;}
+    .sign-line{border-top:1px solid #999;margin-top:28px;padding-top:4px;font-size:9px;color:#888;text-align:center;}
+    .cut-line{border-top:2px dashed #999;text-align:center;margin:20px 0;font-size:10px;color:#999;padding-top:6px;}
+    .dual-copy{font-size:9px;font-weight:700;color:#fff;background:#666;padding:2px 8px;border-radius:3px;float:right;}
+    .footer{margin-top:14px;font-size:9px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;}
+    .page-break{page-break-before:always;}`;
+}
+
+function getFormRows(type){
+  const tbodyId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
+    consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody) return {rows:[],total:0};
+  const rows=[]; let total=0;
+  for(const tr of tbody.rows){
+    const item=tr.querySelector('.item-sel')?.value||''; if(!item) continue;
+    const qty=parseFloat(tr.querySelector('.qty-input')?.value)||0; if(!qty) continue;
+    const unit=tr.querySelector('.unit-inp')?.value||'';
+    const rate=parseFloat(tr.querySelector('.rate-inp')?.value)||0;
+    const amount=parseFloat(tr.querySelector('.amt-inp')?.value)||(qty*rate);
+    const notes=tr.querySelector('.note-inp')?.value||'';
+    if(type==='purchase') total+=amount;
+    rows.push({item,qty,unit,rate,amount,notes});
+  }
+  return {rows,total};
+}
+
+function buildVoucherHtml(type, data){
+  const now=new Date().toLocaleString('en-IN');
+  const printed=`Printed on ${now} · Thakur Electricals &amp; Engineers Pvt Ltd`;
+  const user=CURRENT_USER?CURRENT_USER.name:'';
+
+  if(type==='Purchase'){
+    const voucher=data.voucher||v('pur-voucher');
+    const date=data.date||v('pur-date');
+    const supplier=data.supplier||v('pur-supplier');
+    const invoice=data.invoice||v('pur-invoice');
+    const loc=data.loc||document.getElementById('pur-location')?.options[document.getElementById('pur-location')?.selectedIndex]?.text||'Main Store';
+    const rows=data.rows||(getFormRows('purchase').rows);
+    const total=rows.reduce((a,r)=>a+(r.amount||0),0);
+    return`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Goods Receipt Note</div><div class="doc-no">Voucher: ${voucher}${invoice?' | Invoice: '+invoice:''}</div></div>
+      </div>
+      <div class="meta-grid cols3">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>Supplier</label><span>${supplier||'—'}</span></div>
+        <div class="meta-item"><label>Delivery To</label><span>${loc}</span></div>
+      </div>
+      <table>
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
+        </tbody>
+        ${total?`<tfoot><tr class="total-row"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px">₹${total.toLocaleString('en-IN')}</td></tr></tfoot>`:''}
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Checked By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+  }
+
+  if(type==='Transfer'){
+    const voucher=data.voucher||v('trn-voucher');
+    const date=data.date||v('trn-date');
+    const from=data.from||document.getElementById('trn-from')?.options[document.getElementById('trn-from')?.selectedIndex]?.text||v('trn-from');
+    const to=data.to||document.getElementById('trn-to')?.options[document.getElementById('trn-to')?.selectedIndex]?.text||v('trn-to');
+    const vehicle=data.vehicle||v('trn-vehicle');
+    const driver=data.driver||v('trn-driver');
+    const prepared=data.prepared||v('trn-prepared')||user;
+    const approved=data.approved||v('trn-approved');
+    const delivered=data.delivered||v('trn-delivered');
+    const received=data.received||v('trn-received');
+    const remarks=data.remarks||v('trn-remarks');
+    const rows=data.rows||(getFormRows('transfer').rows);
+    const challanBlock=(copyLabel)=>`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Delivery Challan <span class="dual-copy">${copyLabel}</span></div><div class="doc-no">Challan No: ${voucher}</div></div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>From</label><span>${from}</span></div>
+        <div class="meta-item"><label>To</label><span>${to}</span></div>
+        <div class="meta-item"><label>Vehicle No.</label><span>${vehicle||'—'}</span></div>
+        <div class="meta-item"><label>Driver</label><span>${driver||'—'}</span></div>
+        ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
+      </div>
+      <table>
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        </tbody>
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${prepared}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name">${approved}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Delivered By</div><div class="sign-name">${delivered}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${received}</div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+    return challanBlock('ORIGINAL')+`<div class="cut-line page-break">✂ &nbsp; Cut Here — Duplicate Copy &nbsp; ✂</div>`+challanBlock('DUPLICATE');
+  }
+
+  if(type==='Issue'){
+    const voucher=data.voucher||v('iss-voucher');
+    const date=data.date||v('iss-date');
+    const site=data.site||document.getElementById('iss-site')?.options[document.getElementById('iss-site')?.selectedIndex]?.text||'';
+    const subcon=data.subcon||document.getElementById('iss-subcon')?.options[document.getElementById('iss-subcon')?.selectedIndex]?.text||'';
+    const remarks=data.remarks||v('iss-remarks');
+    const rows=data.rows||(getFormRows('issue').rows);
+    return`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Material Issue Slip</div><div class="doc-no">Issue No: ${voucher}</div></div>
+      </div>
+      <div class="meta-grid cols3">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>Site</label><span>${site}</span></div>
+        <div class="meta-item"><label>Issued To (Subcon)</label><span>${subcon}</span></div>
+        ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
+      </div>
+      <table>
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        </tbody>
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By (Subcon)</div><div class="sign-name">${subcon}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+  }
+
+  if(type==='Consumption'){
+    const voucher=data.voucher||v('con-voucher');
+    const date=data.date||v('con-date');
+    const site=data.site||document.getElementById('con-site')?.options[document.getElementById('con-site')?.selectedIndex]?.text||'';
+    const subcon=data.subcon||document.getElementById('con-subcon')?.options[document.getElementById('con-subcon')?.selectedIndex]?.text||'';
+    const rows=data.rows||(getFormRows('consumption').rows);
+    return`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Consumption Voucher</div><div class="doc-no">Voucher No: ${voucher}</div></div>
+      </div>
+      <div class="meta-grid cols3">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>Site</label><span>${site}</span></div>
+        <div class="meta-item"><label>Subcontractor</label><span>${subcon}</span></div>
+      </div>
+      <table>
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:70px">Qty Used</th><th style="width:60px">Unit</th><th>Notes</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td>${r.notes||''}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td></tr>').join('')}
+        </tbody>
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Subcontractor</div><div class="sign-name">${subcon}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Site Supervisor</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+  }
+
+  if(type==='Returns'){
+    const voucher=data.voucher||v('ret-voucher');
+    const date=data.date||v('ret-date');
+    const from=data.from||document.getElementById('ret-from')?.options[document.getElementById('ret-from')?.selectedIndex]?.text||'';
+    const to=data.to||document.getElementById('ret-to')?.options[document.getElementById('ret-to')?.selectedIndex]?.text||'';
+    const remarks=data.remarks||v('ret-remarks');
+    const rows=data.rows||(getFormRows('returns').rows);
+    return`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Material Return Note</div><div class="doc-no">Return No: ${voucher}</div></div>
+      </div>
+      <div class="meta-grid cols3">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>From</label><span>${from}</span></div>
+        <div class="meta-item"><label>To</label><span>${to}</span></div>
+        ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
+      </div>
+      <table>
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        </tbody>
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Returned By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+  }
+
+  if(type==='SubconReturn'){
+    const voucher=data.voucher||v('sr-voucher');
+    const date=data.date||v('sr-date');
+    const site=data.site||document.getElementById('sr-site')?.options[document.getElementById('sr-site')?.selectedIndex]?.text||'';
+    const subcon=data.subcon||document.getElementById('sr-subcon')?.options[document.getElementById('sr-subcon')?.selectedIndex]?.text||'';
+    const reason=data.reason||v('sr-reason');
+    const rows=data.rows||(getFormRows('subconreturn').rows);
+    return`<div class="page">
+      <div class="co-hdr">
+        <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
+        <div><div class="doc-title">Subcontractor Return Note</div><div class="doc-no">Return No: ${voucher}</div></div>
+      </div>
+      <div class="meta-grid cols3">
+        <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>Site</label><span>${site||'—'}</span></div>
+        <div class="meta-item"><label>Subcontractor</label><span>${subcon||'—'}</span></div>
+        ${reason?`<div class="meta-item" style="grid-column:1/-1"><label>Reason</label><span>${reason}</span></div>`:''}
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Item</th><th>Qty Returned</th><th>Unit</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        </tbody>
+      </table>
+      <div class="signs"><div class="signs-row">
+        <div class="sign-box"><div class="sign-label">Returned By (Subcon)</div><div class="sign-name">${subcon}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By (Store)</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+      </div></div>
+      <div class="footer">${printed}</div>
+    </div>`;
+  }
+  return '';
+}
+
+function openPrintWindow(html, title){
+  const w=window.open('about:blank','_blank','width=860,height=750,scrollbars=yes,resizable=yes');
+  if(!w){toast('Print blocked — allow popups for this site','error');return;}
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+    <style>${printStyles()}</style></head><body>${html}
+    <scr`+`ipt>window.onload=function(){setTimeout(function(){window.print();},300);};
+    window.onafterprint=function(){window.close();};</scr`+`ipt></body></html>`);
+  w.document.close();
+}
+
+function printVoucher(type, data={}){
+  const html=buildVoucherHtml(type, data||{});
+  if(!html){toast('Nothing to print — fill the form first','warning');return;}
+  openPrintWindow(html, type+' — SiteFlow');
+}
+
+function reprintVoucher(type, voucher){
+  const g=VSTORE[type+'|'+voucher];
+  if(!g){toast('Print data not found — re-fetch records first','error');return;}
+  const meta=g.meta||{};
+  const items=g.items||[];
+  const rows=items.map(it=>({item:it.item||'',qty:it.qty||0,unit:it.unit||'',
+    rate:it.rate||0,amount:it.amount||0,notes:it.notes||it.remarks||''}));
+  const typeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+    consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+  const data={voucher:g.voucher,date:g.date,rows,
+    supplier:meta.supplier,invoice:meta.invoice,loc:meta.location,
+    from:meta.from,to:meta.to,site:meta.site,subcon:meta.subcon,
+    vehicle:meta.vehicle,driver:meta.driver,
+    prepared:meta.prepared,approved:meta.approved,
+    delivered:meta.delivered,received:meta.received,
+    remarks:meta.remarks,reason:meta.reason};
+  printVoucher(typeMap[type]||type, data);
+}
+
+function printAllVouchers(type){
+  const typeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
+    consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
+  const pt=typeMap[type]; if(!pt) return;
+  // Collect all rendered voucher cards' storeKeys
+  const allKeys=Object.keys(VSTORE).filter(k=>k.startsWith(type+'|'));
+  if(!allKeys.length){toast('No records loaded — fetch records first','error');return;}
+  let combined='';
+  allKeys.forEach((k,i)=>{
+    const g=VSTORE[k]; if(!g) return;
+    const meta=g.meta||{};
+    const items=g.items||[];
+    const rows=items.map(it=>({item:it.item||'',qty:it.qty||0,unit:it.unit||'',
+      rate:it.rate||0,amount:it.amount||0,notes:it.notes||it.remarks||''}));
+    const data={voucher:g.voucher,date:g.date,rows,
+      supplier:meta.supplier,invoice:meta.invoice,loc:meta.location,
+      from:meta.from,to:meta.to,site:meta.site,subcon:meta.subcon,
+      vehicle:meta.vehicle,driver:meta.driver,
+      prepared:meta.prepared,approved:meta.approved,
+      delivered:meta.delivered,received:meta.received,
+      remarks:meta.remarks,reason:meta.reason};
+    const html=buildVoucherHtml(pt,data);
+    combined += (i>0?'<div class="page-break"></div>':'')+html;
+  });
+  if(!combined){toast('Nothing to print','warning');return;}
+  openPrintWindow(combined, pt+' Register — SiteFlow');
 }
 async function refreshStock(){
   try{ const d=await api({action:'stock'}); STOCK=d; } catch(e){}
