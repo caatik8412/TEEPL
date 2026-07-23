@@ -1040,13 +1040,37 @@ function renderSimpleList(elId, arr, labelFn) {
 // ══════════════════════════════════════════════════════
 function renderDashboard(dash) {
   const s = dash.summary||{};
+
+  // Valid site names from MASTERS (filter out ghost entries like "Site" from bad WP rows)
+  const validSiteNames = new Set((MASTERS.sites||[]).map(ms=>ms.name));
+
+  // Filtered WP sites — only real sites from SiteMaster
+  const wpSites = (dash.sites||[]).filter(ds => validSiteNames.has(ds.site));
+
+  // Build a map of WP data by site name for quick lookup
+  const wpMap = {};
+  wpSites.forEach(ds => { wpMap[ds.site] = ds; });
+
+  // Recalculate totals from SiteMaster (scope) + WP data (done),
+  // so sites with no WP yet still contribute their scope to the totals
+  let totalPoles=0, totalKms=0, donePoles=0, doneKms=0;
+  (MASTERS.sites||[]).forEach(ms => {
+    totalPoles += ms.totalPoles||0;
+    totalKms   += ms.totalKms||0;
+    const wp = wpMap[ms.name]||{};
+    donePoles += wp.polesErected||0;
+    doneKms   += wp.kmsStrung||0;
+  });
+  const overallPolePct = totalPoles>0 ? Math.round(donePoles/totalPoles*100) : 0;
+  const overallKmPct  = totalKms>0   ? Math.round(doneKms/totalKms*100)     : 0;
+
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi"><div class="label">Sites</div><div class="value">${s.totalSites||0}</div></div>
+    <div class="kpi"><div class="label">Sites</div><div class="value">${(MASTERS.sites||[]).length||s.totalSites||0}</div></div>
     <div class="kpi"><div class="label">Items</div><div class="value">${s.totalItems||0}</div></div>
     <div class="kpi ${s.outOfStock>0?'danger':s.lowStock>0?'warn':'ok'}">
       <div class="label">Low / Out</div><div class="value">${s.lowStock||0} / ${s.outOfStock||0}</div></div>
-    <div class="kpi"><div class="label">Poles Done</div><div class="value">${s.donePoles||0}</div><div class="sub">of ${s.totalPoles||0} (${s.overallPolePct||0}%)</div></div>
-    <div class="kpi"><div class="label">KMs Done</div><div class="value">${s.doneKms||0}</div><div class="sub">of ${s.totalKms||0} KM (${s.overallKmPct||0}%)</div></div>
+    <div class="kpi"><div class="label">Poles Done</div><div class="value">${donePoles}</div><div class="sub">of ${totalPoles} (${overallPolePct}%)</div></div>
+    <div class="kpi"><div class="label">KMs Done</div><div class="value">${doneKms}</div><div class="sub">of ${totalKms} KM (${overallKmPct}%)</div></div>
     <div class="kpi"><div class="label">Subcons</div><div class="value">${s.totalSubcons||0}</div></div>`;
 
   const alerts=dash.alerts||[];
@@ -1058,9 +1082,18 @@ function renderDashboard(dash) {
       </div>`).join('')
     : '<p style="color:var(--text3)">✅ All items in stock</p>';
 
-  const sites=(dash.sites||[]).slice(0,6);
-  document.getElementById('dash-sites').innerHTML = sites.length
-    ? sites.map(s=>`<div style="margin-bottom:10px">
+  // Show all SiteMaster sites (merge with WP data); sites with no WP show 0%
+  const allSites = (MASTERS.sites||[]).map(ms => {
+    const wp = wpMap[ms.name] || {};
+    const pct = wp.overallPct || 0;
+    const status = pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed';
+    return {site:ms.name, totalPoles:ms.totalPoles||0, totalKms:ms.totalKms||0,
+      polesErected:wp.polesErected||0, kmsStrung:wp.kmsStrung||0,
+      overallPct:pct, status:wp.status||status};
+  }).slice(0,6);
+
+  document.getElementById('dash-sites').innerHTML = allSites.length
+    ? allSites.map(s=>`<div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
           <span style="font-weight:500">${esc(s.site)}</span>
           <span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span>
