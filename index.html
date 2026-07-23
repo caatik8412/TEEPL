@@ -368,8 +368,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
       <div class="card">
         <div class="card-header"><h2>📋 Past Records</h2></div>
         <div class="fetch-bar">
-          <div class="form-group"><label>From</label><input type="date" id="trn-from"></div>
-          <div class="form-group"><label>To</label><input type="date" id="trn-to"></div>
+          <div class="form-group"><label>From</label><input type="date" id="trn-from-f"></div>
+          <div class="form-group"><label>To</label><input type="date" id="trn-to-f"></div>
           <div class="form-group"><label>Voucher / Item</label><input type="text" id="trn-search" placeholder="Search…"></div>
           <div class="form-group"><label>Location</label><select id="trn-filter"><option value="">All</option></select></div>
           <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('transfer')">🔍 Fetch</button>
@@ -432,7 +432,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Date</label><input type="date" id="con-date"></div>
             <div class="form-group"><label>Voucher #</label><input type="text" id="con-voucher" placeholder="Auto"></div>
             <div class="form-group"><label>Site</label><select id="con-site"><option value="">Select Site</option></select></div>
-            <div class="form-group"><label>Subcontractor</label><select id="con-subcon"><option value="">Select Subcon</option></select></div>
+            <div class="form-group"><label>Subcontractor</label><select id="con-subcon" onchange="onSubconChange('consumption')"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="con-remarks"></div>
           </div>
           <!-- Activity BOM loader -->
@@ -445,7 +445,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty Used</th><th>Unit</th><th>Notes</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Used</th><th>Unit</th><th>Notes</th><th></th></tr></thead>
               <tbody id="con-rows"></tbody>
             </table>
           </div>
@@ -513,12 +513,12 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Date</label><input type="date" id="sr-date"></div>
             <div class="form-group"><label>Voucher #</label><input type="text" id="sr-voucher" placeholder="Auto"></div>
             <div class="form-group"><label>Site</label><select id="sr-site"><option value="">Select Site</option></select></div>
-            <div class="form-group"><label>Subcontractor</label><select id="sr-subcon"><option value="">Select Subcon</option></select></div>
+            <div class="form-group"><label>Subcontractor</label><select id="sr-subcon" onchange="onSubconChange('subconreturn')"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Reason</label><input type="text" id="sr-reason" placeholder="Work complete / excess material…"></div>
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty Returned</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Returned</th><th>Unit</th><th></th></tr></thead>
               <tbody id="sr-rows"></tbody>
             </table>
           </div>
@@ -852,6 +852,17 @@ function buildDropdowns() {
   renderSiteTable();
   renderSubconList();
   renderScopeList();
+
+  // Refresh item selects in any existing transaction rows
+  // (handles the case where addRow() was called before initApp() completed)
+  const items = MASTERS.items || [];
+  const itemOpts = '<option value="">Select Item</option>' +
+    items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+  document.querySelectorAll('.item-sel').forEach(sel => {
+    const prev = sel.value;
+    sel.innerHTML = itemOpts;
+    if(prev) sel.value = prev;
+  });
 }
 
 function renderItemList() {
@@ -1082,7 +1093,7 @@ function showTab(name, link) {
     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
   if(rMap[name]&&!document.getElementById(rMap[name]).children.length) addRow(name);
 
-  if(name==='issue'||name==='transfer') refreshStock();
+  if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
   if(name==='subconledger') loadSubconLedger();
@@ -1131,11 +1142,19 @@ function addRow(type, prefill) {
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   } else if(type==='consumption'){
     cells=`<td>${idx}</td>
-      <td><select class="item-sel" onchange="fillUnit(this,'consumption')">${itemOpts}</select></td>
+      <td><select class="item-sel" onchange="fillUnit(this,'consumption');updateStock(this,'consumption')">${itemOpts}</select></td>
+      <td class="stock-cell">—</td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
       <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
       <td><input type="text" class="note-inp" placeholder="Notes"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
+  } else if(type==='subconreturn'){
+    cells=`<td>${idx}</td>
+      <td><select class="item-sel" onchange="fillUnit(this,'subconreturn');updateStock(this,'subconreturn')">${itemOpts}</select></td>
+      <td class="stock-cell">—</td>
+      <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
+      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><button class="rm-row" onclick="this.closest('tr').remove();renum('subconreturn')">×</button></td>`;
   } else {
     cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'${type}')">${itemOpts}</select></td>
@@ -1153,9 +1172,9 @@ function addRow(type, prefill) {
     if(qty&&prefill.qty) qty.value=prefill.qty;
     const unit=tr.querySelector('.unit-inp');
     if(unit&&prefill.unit) unit.value=prefill.unit;
-    if((type==='transfer'||type==='issue')&&sel&&sel.value) updateStock(sel,type);
+    if((type==='transfer'||type==='issue'||type==='consumption'||type==='subconreturn')&&sel&&sel.value) updateStock(sel,type);
   }
-  if(type==='transfer'||type==='issue'){
+  if(type==='transfer'||type==='issue'||type==='consumption'||type==='subconreturn'){
     tr.querySelector('.qty-input').addEventListener('input',function(){ checkStock(this); });
   }
 }
@@ -1195,15 +1214,27 @@ function updateStock(sel,type){
     const site=v('iss-site');
     if(!site){ cell.innerHTML='<span class="stock-badge out">Select site first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
     avail=getStock(item,site);
+  } else if(type==='consumption'){
+    const subcon=v('con-subcon');
+    if(!subcon){ cell.innerHTML='<span class="stock-badge out">Select subcon first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
+    avail=getStock(item,subcon,'subcon');
+  } else if(type==='subconreturn'){
+    const subcon=v('sr-subcon');
+    if(!subcon){ cell.innerHTML='<span class="stock-badge out">Select subcon first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
+    avail=getStock(item,subcon,'subcon');
   }
-  const mi=(MASTERS.items||[]).find(i=>i.name===item);
-  const cls=avail<=0?'out':(mi&&avail<=(mi.minStock||0)?'low':'ok');
+  const cls=avail<=0?'out':'ok';
   cell.innerHTML=`<span class="stock-badge ${cls}">${avail}</span>`;
   tr.querySelector('.qty-input').dataset.available=avail;
 }
 
-function getStock(item,loc){
-  if(!STOCK||!STOCK.stock) return 0;
+function getStock(item,loc,locType){
+  if(!STOCK) return 0;
+  if(locType==='subcon'){
+    if(!STOCK.subconStock) return 0;
+    return (STOCK.subconStock[loc]&&STOCK.subconStock[loc][item])||0;
+  }
+  if(!STOCK.stock) return 0;
   const row=STOCK.stock.find(s=>s.item===item); if(!row) return 0;
   return loc==='Main Store'?(row.main||0):((row.sites&&row.sites[loc])||0);
 }
@@ -1221,6 +1252,14 @@ function onIssSiteChange(){
   document.querySelectorAll('#iss-rows tr').forEach(tr=>{
     const sel=tr.querySelector('.item-sel');
     if(sel&&sel.value) updateStock(sel,'issue');
+  });
+}
+
+function onSubconChange(type){
+  const rowsId = type==='consumption'?'con-rows':'sr-rows';
+  document.querySelectorAll('#'+rowsId+' tr').forEach(tr=>{
+    const sel=tr.querySelector('.item-sel');
+    if(sel&&sel.value) updateStock(sel,type);
   });
 }
 
@@ -1270,13 +1309,27 @@ async function saveTxn(type){
         return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
     consumption:{sheet:'Consumption',
       hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,n=tr.querySelector('.note-inp')?.value||'';if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,n];}},
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,n=tr.querySelector('.note-inp')?.value||'';if(!i||!q)return null;
+        const qtyEl=tr.querySelector('.qty-input');
+        const av=parseFloat(qtyEl.dataset.available);
+        if(!isNaN(av)&&av>=0&&q>av){
+          toast(`❌ Cannot consume ${q} of "${i}" — subcon only holds ${av}`,'error');
+          return'ABORT';
+        }
+        return[h[0],h[1],h[2],h[3],i,q,u,n];}},
     returns:{sheet:'Returns',
       hdr:()=>[v('ret-date'),v('ret-voucher'),v('ret-from'),v('ret-to'),null,null,null,v('ret-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
     subconreturn:{sheet:'SubconReturn',
       hdr:()=>[v('sr-date'),v('sr-voucher'),v('sr-site'),v('sr-subcon'),null,null,null,v('sr-reason')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}}
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const qtyEl=tr.querySelector('.qty-input');
+        const av=parseFloat(qtyEl.dataset.available);
+        if(!isNaN(av)&&av>=0&&q>av){
+          toast(`❌ Cannot return ${q} of "${i}" — subcon only holds ${av}`,'error');
+          return'ABORT';
+        }
+        return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}}
   };
   const c=cfg[type]; if(!c) return;
   const h=c.hdr(); if(!h[0]){toast('Date required','error');return;}
@@ -1318,7 +1371,7 @@ function resetForm(type){
 async function fetchRecords(type, autoToday=false){
   const cfg={
     purchase:    {sheet:'Purchase',    from:'pur-from',to:'pur-to',search:'pur-search',filter:null,        out:'pur-records'},
-    transfer:    {sheet:'Transfer',    from:'trn-from',to:'trn-to',search:'trn-search',filter:'trn-filter',out:'trn-records'},
+    transfer:    {sheet:'Transfer',    from:'trn-from-f',to:'trn-to-f',search:'trn-search',filter:'trn-filter',out:'trn-records'},
     issue:       {sheet:'Issue',       from:'iss-from',to:'iss-to',search:'iss-search',filter:'iss-filter',out:'iss-records'},
     consumption: {sheet:'Consumption', from:'con-from',to:'con-to',search:'con-search',filter:'con-filter',out:'con-records'},
     returns:     {sheet:'Returns',     from:'ret-from',to:'ret-to',search:'ret-search',filter:null,        out:'ret-records'},
