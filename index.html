@@ -202,6 +202,10 @@ tr:hover td{background:rgba(0,0,0,.025)}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .form-grid{grid-template-columns:1fr}
   .wp-grid{grid-template-columns:1fr}
+  /* Dashboard 2-col cards → stack on mobile */
+  #tab-dashboard>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  /* Work Progress fixed layout → stack on mobile */
+  #tab-workprogress>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
 }
 .menu-btn{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;font-size:20px}
 @media(max-width:700px){.menu-btn{display:flex}}
@@ -242,7 +246,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
       <div style="font-size:9px;color:var(--text4);font-weight:400;line-height:1.2">Thakur Electricals &amp; Engrs</div>
     </div>
   </div>
-  <nav>
+  <div>
     <div class="section-label">Overview</div>
     <a class="active" onclick="showTab('dashboard',this)"><span class="icon">📊</span>Dashboard</a>
 
@@ -265,7 +269,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
     <div class="section-label">Admin</div>
     <a id="settings-link" onclick="showTab('settings',this)"><span class="icon">⚙️</span>Settings</a>
-  </nav>
+  </div>
   <div class="status-bar">
     <div class="dot" id="conn-dot"></div>
     <span id="conn-txt">Connecting…</span>
@@ -965,7 +969,8 @@ function renderScopeList() {
 }
 
 function editScope(r) {
-  document.getElementById('sc-edit-key').value  = r.subcon;
+  // Composite key: subcon||site — uniquely identifies a scope row even if subcon has multiple sites
+  document.getElementById('sc-edit-key').value  = r.subcon + '||' + r.site;
   document.getElementById('sc-subcon').value    = r.subcon||'';
   document.getElementById('sc-site').value      = r.site||'';
   document.getElementById('sc-poles').value     = r.poles||0;
@@ -1161,7 +1166,12 @@ async function autoVoucher(sheet, fieldId) {
   try {
     const r=await api({action:'nextVoucher',sheet});
     const el=document.getElementById(fieldId);
-    if(el&&!el.dataset.manualEdit) el.value=r.voucher||'';
+    if(el&&!el.dataset.manualEdit) {
+      el.value=r.voucher||'';
+      // Wire up manual-edit flag once (idempotent — addEventListener deduplicates by reference)
+      el._voucherListener = el._voucherListener || (function(){ el.dataset.manualEdit='1'; });
+      el.addEventListener('input', el._voucherListener);
+    }
   } catch(e){}
 }
 
@@ -1342,7 +1352,9 @@ async function saveTxn(type){
       hdr:()=>[v('pur-date'),v('pur-voucher'),v('pur-supplier'),null,null,null,null,null,v('pur-location'),v('pur-invoice'),v('pur-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||0;if(!i||!q)return null;return[h[0],h[1],h[2],i,q,u,rt,a,h[8],h[9],h[10]];}},
     transfer:{sheet:'Transfer',
-      hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,v('trn-remarks')],
+      hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,
+        v('trn-vehicle'),v('trn-driver'),v('trn-prepared'),v('trn-approved'),
+        v('trn-delivered'),v('trn-received'),v('trn-delivery-date'),v('trn-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
@@ -1350,9 +1362,9 @@ async function saveTxn(type){
           toast(`❌ Cannot transfer ${q} of "${i}" — only ${av} available at ${h[2]}`,'error');
           return'ABORT';
         }
-        return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+        return[h[0],h[1],h[2],h[3],i,q,u,h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14]];}},
     issue:{sheet:'Issue',
-      hdr:()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-remarks')],
+      hdr:()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-issuedby'),v('iss-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
@@ -1360,7 +1372,7 @@ async function saveTxn(type){
           toast(`❌ Cannot issue ${q} of "${i}" — only ${av} available at site`,'error');
           return'ABORT';
         }
-        return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+        return[h[0],h[1],h[2],h[3],i,q,u,h[7],h[8]];}},
     consumption:{sheet:'Consumption',
       hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,n=tr.querySelector('.note-inp')?.value||'';if(!i||!q)return null;
@@ -1415,7 +1427,8 @@ async function saveTxn(type){
 
 function resetForm(type){
   const clearMap={purchase:['pur-supplier','pur-invoice','pur-remarks'],
-    transfer:['trn-remarks'],issue:['iss-remarks'],
+    transfer:['trn-vehicle','trn-driver','trn-prepared','trn-approved','trn-delivered','trn-received','trn-delivery-date','trn-remarks'],
+    issue:['iss-issuedby','iss-remarks'],
     consumption:['con-remarks'],returns:['ret-remarks'],subconreturn:['sr-reason']};
   const tbId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
@@ -1571,8 +1584,11 @@ async function loadWP(){
 
 function renderWPSites(sites){
   const el=document.getElementById('wp-site-cards');
-  if(!sites.length){el.innerHTML='<p style="color:var(--text3)">No progress yet.</p>';return;}
-  el.innerHTML=sites.map(s=>`<div class="wp-card">
+  // Filter ghost sites — only show sites that exist in MASTERS
+  const validNames=new Set((MASTERS.sites||[]).map(s=>s.name));
+  const filtered=sites.filter(s=>validNames.has(s.site));
+  if(!filtered.length){el.innerHTML='<p style="color:var(--text3)">No progress yet.</p>';return;}
+  el.innerHTML=filtered.map(s=>`<div class="wp-card">
     <div class="wp-card-header">
       <div class="wp-card-title">${esc(s.site)}</div>
       <span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status}</span>
@@ -1737,12 +1753,12 @@ function buildVoucherHtml(type, data){
       </div>
       <div class="meta-grid cols3">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Supplier</label><span>${supplier||'—'}</span></div>
-        <div class="meta-item"><label>Delivery To</label><span>${loc}</span></div>
+        <div class="meta-item"><label>Supplier</label><span>${esc(supplier)||'—'}</span></div>
+        <div class="meta-item"><label>Delivery To</label><span>${esc(loc)}</span></div>
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
         ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
         </tbody>
         ${total?`<tfoot><tr class="total-row"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px">₹${total.toLocaleString('en-IN')}</td></tr></tfoot>`:''}
@@ -1779,23 +1795,23 @@ function buildVoucherHtml(type, data){
       <div class="meta-grid">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Delivery Date</label><span>${delDate||date}</span></div>
-        <div class="meta-item"><label>From</label><span>${from}</span></div>
-        <div class="meta-item"><label>To</label><span>${to}</span></div>
-        <div class="meta-item"><label>Vehicle No.</label><span>${vehicle||'—'}</span></div>
-        <div class="meta-item"><label>Driver</label><span>${driver||'—'}</span></div>
+        <div class="meta-item"><label>From</label><span>${esc(from)}</span></div>
+        <div class="meta-item"><label>To</label><span>${esc(to)}</span></div>
+        <div class="meta-item"><label>Vehicle No.</label><span>${esc(vehicle)||'—'}</span></div>
+        <div class="meta-item"><label>Driver</label><span>${esc(driver)||'—'}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td></tr>`).join('')}
         ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
         </tbody>
       </table>
       <div class="signs"><div class="signs-row">
-        <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${prepared}</div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name">${approved}</div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Delivered By</div><div class="sign-name">${delivered}</div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${received}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${esc(prepared)}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name">${esc(approved)}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Delivered By</div><div class="sign-name">${esc(delivered)}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${esc(received)}</div><div class="sign-line">Signature</div></div>
       </div></div>
       <div class="footer">${printed}</div>
     </div>`;
@@ -1817,19 +1833,19 @@ function buildVoucherHtml(type, data){
       </div>
       <div class="meta-grid cols3">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
-        <div class="meta-item"><label>Site</label><span>${site}</span></div>
-        <div class="meta-item"><label>Issued To (Subcon)</label><span>${subcon}</span></div>
+        <div class="meta-item"><label>Site</label><span>${esc(site)}</span></div>
+        <div class="meta-item"><label>Issued To (Subcon)</label><span>${esc(subcon)}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td></tr>`).join('')}
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td></tr>`).join('')}
         ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
         </tbody>
       </table>
       <div class="signs"><div class="signs-row">
-        <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${issuedBy}</div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Received By (Subcon)</div><div class="sign-name">${subcon}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${esc(issuedBy)}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By (Subcon)</div><div class="sign-name">${esc(subcon)}</div><div class="sign-line">Signature</div></div>
         <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
       </div></div>
       <div class="footer">${printed}</div>
@@ -1999,12 +2015,19 @@ function printAllVouchers(type){
   openPrintWindow(combined, pt+' Register — SiteFlow');
 }
 async function refreshStock(){
-  try{ const d=await api({action:'stock'}); STOCK=d; } catch(e){}
+  try{
+    const d=await api({action:'stock'}); STOCK=d;
+    // Re-render live if user is currently on Stock View
+    if(document.getElementById('tab-stock').classList.contains('active')) renderStockView(d);
+  } catch(e){}
 }
 
 function renderStockView(data){
   const stock=data.stock||[];
-  const sites=[...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
+  // Use MASTERS.sites as authoritative list — avoids ghost site tabs from stale data
+  const masterSiteNames=(MASTERS.sites||[]).map(s=>s.name);
+  const sites=masterSiteNames.length ? masterSiteNames :
+    [...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
   const locs=['Main Store',...sites];
   document.getElementById('stock-tabs').innerHTML=locs.map((l,i)=>
     `<button class="stock-tab-btn ${i===0?'active':''}" onclick="showStockLoc(${i},this)">${esc(l)}</button>`
