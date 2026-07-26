@@ -2061,16 +2061,23 @@ async function loadCvC(){
   try{
     const [sd,wd]=await Promise.all([api({action:'stock'}),api({action:'workprogress'})]);
     STOCK=sd;
+    // Build a map from API response, then iterate MASTERS.sites as source of truth
+    const wpMap={};
+    (wd.sites||[]).forEach(s=>{ if(s.site) wpMap[s.site]=s; });
+    const validSites=(MASTERS.sites||[]);
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>Site</th><th>Poles Done/Scope</th><th>KMs Done/Scope</th><th>Progress %</th><th>Items at Site</th><th>Status</th></tr></thead>
-      <tbody>${(wd.sites||[]).map(s=>{
-        const cnt=(sd.stock||[]).filter(st=>st.sites&&st.sites[s.site]>0).length;
-        return`<tr><td style="font-weight:500">${esc(s.site)}</td>
-          <td>${s.polesErected||0}/${s.totalPoles||0}</td>
-          <td>${s.kmsStrung||0}/${s.totalKms||0}</td>
-          <td><strong>${s.overallPct||0}%</strong></td>
+      <tbody>${validSites.map(ms=>{
+        const s=wpMap[ms.name]||{};
+        const pct=s.overallPct||0;
+        const status=s.status||(pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed');
+        const cnt=(sd.stock||[]).filter(st=>st.sites&&st.sites[ms.name]>0).length;
+        return`<tr><td style="font-weight:500">${esc(ms.name)}</td>
+          <td>${s.polesErected||0}/${ms.totalPoles||0}</td>
+          <td>${s.kmsStrung||0}/${ms.totalKms||0}</td>
+          <td><strong>${pct}%</strong></td>
           <td>${cnt?cnt+' items':'—'}</td>
-          <td><span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td></tr>`;
+          <td><span class="status ${status}">${STATUS_LABEL[status]||status||'—'}</span></td></tr>`;
       }).join('')}</tbody>
     </table></div>`;
   } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
