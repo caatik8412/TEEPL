@@ -1417,11 +1417,17 @@ async function saveTxn(type){
     const res=await apiPost(c.sheet,rows);
     if(res.success){
       toast(`✅ ${rows.length} row(s) saved`,'success');
-      // Auto-print voucher after save
+      // Auto-print voucher after save — capture form data BEFORE resetting
       const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
         consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
-      if(printTypeMap[type]) setTimeout(()=>printVoucher(printTypeMap[type]), 400);
-      resetForm(type);
+      if(printTypeMap[type]){
+        setTimeout(()=>{
+          printVoucher(printTypeMap[type]);
+          resetForm(type);
+        }, 400);
+      } else {
+        resetForm(type);
+      }
       fetchRecords(type,true);
       refreshStock();
     } else { toast(res.error||'Save failed','error'); }
@@ -1685,36 +1691,41 @@ const CO_SUB  = 'Material Management System — SiteFlow';
 
 function printStyles(){
   return `*{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:Arial,sans-serif;color:#111;font-size:12px;background:#fff;}
-    .page{padding:24px 28px;}
-    .co-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e2a38;padding-bottom:10px;margin-bottom:14px;}
+    body{font-family:Arial,sans-serif;color:#111;font-size:11px;background:#fff;}
+    .page{padding:18px 24px;}
+    .co-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e2a38;padding-bottom:8px;margin-bottom:10px;}
     .co-name{font-size:16px;font-weight:700;color:#1e2a38;}
     .co-sub{font-size:10px;color:#666;margin-top:3px;}
     .doc-title{font-size:13px;font-weight:700;color:#fff;background:#1e2a38;padding:4px 12px;border-radius:4px;text-align:right;}
     .doc-no{font-size:11px;color:#444;margin-top:4px;text-align:right;}
-    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;background:#f8f9fa;padding:10px 12px;border-radius:4px;border:1px solid #e0e0e0;}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;background:#f8f9fa;padding:8px 10px;border-radius:4px;border:1px solid #e0e0e0;}
     .meta-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
     .meta-item label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}
     .meta-item span{font-size:12px;color:#111;font-weight:500;}
-    table{width:100%;border-collapse:collapse;margin-bottom:14px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:10px;}
     thead th{background:#1e2a38;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
     thead th.r{text-align:right;}
     tbody td{padding:6px 8px;border-bottom:1px solid #e8e8e8;font-size:11px;vertical-align:middle;}
     tbody td.r{text-align:right;}
     tbody tr:nth-child(even){background:#fafafa;}
     .total-row td{font-weight:700;background:#f0f4f8;border-top:2px solid #1e2a38;font-size:12px;}
-    .signs{display:grid;gap:0;margin-top:30px;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
+    .signs{display:grid;gap:0;margin-top:16px;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
     .signs-row{display:flex;border-bottom:1px solid #ddd;}
     .signs-row:last-child{border-bottom:none;}
-    .sign-box{flex:1;padding:8px 12px;border-right:1px solid #ddd;}
+    .sign-box{flex:1;padding:6px 10px;border-right:1px solid #ddd;}
     .sign-box:last-child{border-right:none;}
     .sign-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
     .sign-name{font-size:11px;color:#111;font-weight:500;min-height:14px;}
-    .sign-line{border-top:1px solid #999;margin-top:28px;padding-top:4px;font-size:9px;color:#888;text-align:center;}
-    .cut-line{border-top:2px dashed #999;text-align:center;margin:20px 0;font-size:10px;color:#999;padding-top:6px;}
+    .sign-line{border-top:1px solid #999;margin-top:20px;padding-top:4px;font-size:9px;color:#888;text-align:center;}
     .dual-copy{font-size:9px;font-weight:700;color:#fff;background:#666;padding:2px 8px;border-radius:3px;float:right;}
-    .footer{margin-top:14px;font-size:9px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;}
-    .page-break{page-break-before:always;}`;
+    .footer{margin-top:10px;font-size:9px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:6px;}
+    .page-break{page-break-before:always;}
+    .copy-divider{border:none;border-top:1.5px dashed #bbb;margin:10px 0;}
+    .dual-wrap .page{padding:14px 22px;}
+    .dual-wrap .meta-grid{margin-bottom:10px;}
+    .dual-wrap table{margin-bottom:10px;}
+    .dual-wrap .signs{margin-top:14px;}
+    .dual-wrap .footer{margin-top:8px;}`;
 }
 
 function getFormRows(type){
@@ -1807,7 +1818,7 @@ function buildVoucherHtml(type, data){
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
         <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td></tr>`).join('')}
-        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        ${Array(Math.max(0,3-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
         </tbody>
       </table>
       <div class="signs"><div class="signs-row">
@@ -1818,7 +1829,7 @@ function buildVoucherHtml(type, data){
       </div></div>
       <div class="footer">${printed}</div>
     </div>`;
-    return challanBlock('ORIGINAL')+`<div class="cut-line page-break">✂ &nbsp; Cut Here — Duplicate Copy &nbsp; ✂</div>`+challanBlock('DUPLICATE');
+    return challanBlock('ORIGINAL')+`<div class="page-break"></div>`+challanBlock('DUPLICATE');
   }
 
   if(type==='Issue'){
