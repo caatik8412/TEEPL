@@ -359,6 +359,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Approved By</label><input type="text" id="trn-approved" placeholder="Name"></div>
             <div class="form-group"><label>Delivered By</label><input type="text" id="trn-delivered" placeholder="Name"></div>
             <div class="form-group"><label>Received By</label><input type="text" id="trn-received" placeholder="Name"></div>
+            <div class="form-group"><label>Delivery Date</label><input type="date" id="trn-delivery-date"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="trn-remarks"></div>
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
@@ -398,6 +399,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Voucher #</label><input type="text" id="iss-voucher" placeholder="Auto"></div>
             <div class="form-group"><label>Site</label><select id="iss-site" onchange="onIssSiteChange()"><option value="">Select Site</option></select></div>
             <div class="form-group"><label>Subcontractor</label><select id="iss-subcon"><option value="">Select Subcon</option></select></div>
+            <div class="form-group"><label>Issued By</label><input type="text" id="iss-issuedby" placeholder="Store in-charge name"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="iss-remarks"></div>
           </div>
           <!-- Activity BOM loader -->
@@ -592,6 +594,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
         <div class="card-header">
           <h2>🗂️ Stock by Location</h2>
           <button class="btn btn-ghost btn-sm" onclick="loadStock()">↻ Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="printStockRegister()" style="color:var(--accent)">🖨 Print Register</button>
         </div>
         <div class="card-body">
           <div class="stock-tabs" id="stock-tabs"></div>
@@ -1625,6 +1628,36 @@ async function loadStock(){
   catch(e){ toast('Stock load failed','error'); }
 }
 
+function printStockRegister(){
+  if(!STOCK||!STOCK.stock){toast('Load stock first','warning');return;}
+  const sites=(MASTERS.sites||[]).map(s=>s.name);
+  const now=new Date().toLocaleString('en-IN');
+  const rows=STOCK.stock.map((r,i)=>{
+    const siteCells=sites.map(s=>`<td style="text-align:center">${(r.sites&&r.sites[s])||0}</td>`).join('');
+    const total=(r.main||0)+sites.reduce((a,s)=>a+((r.sites&&r.sites[s])||0),0);
+    const bc=r.status==='out'?'#fee2e2':r.status==='low'?'#fef9c3':'#f0fdf4';
+    const fc=r.status==='out'?'#dc2626':r.status==='low'?'#ca8a04':'#16a34a';
+    return`<tr style="background:${i%2===0?'#fafafa':'#fff'}">
+      <td>${i+1}</td><td><b>${r.item||''}</b></td><td style="text-align:center">${r.unit||''}</td>
+      <td style="text-align:center">${r.main||0}</td>${siteCells}
+      <td style="text-align:center;font-weight:700">${total}</td>
+      <td style="text-align:center;background:${bc};color:${fc};font-size:10px;font-weight:700">${(r.status||'ok').toUpperCase()}</td>
+    </tr>`;
+  }).join('');
+  const html=`<div class="page">
+    <div class="co-hdr">
+      <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">Material Management System — SiteFlow</div></div>
+      <div><div class="doc-title">Stock Register</div><div class="doc-no">As on: ${now}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Item</th><th style="text-align:center">Unit</th><th style="text-align:center">Main Store</th>${sites.map(s=>`<th style="text-align:center">${s}</th>`).join('')}<th style="text-align:center">Total</th><th style="text-align:center">Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">Printed on ${now} · Thakur Electricals &amp; Engineers Pvt Ltd</div>
+  </div>`;
+  openPrintWindow(html,'Stock Register — SiteFlow');
+}
+
 // ══════════════════════════════════════════════════════
 //  PRINT SYSTEM
 // ══════════════════════════════════════════════════════
@@ -1731,6 +1764,7 @@ function buildVoucherHtml(type, data){
     const to=data.to||document.getElementById('trn-to')?.options[document.getElementById('trn-to')?.selectedIndex]?.text||v('trn-to');
     const vehicle=data.vehicle||v('trn-vehicle');
     const driver=data.driver||v('trn-driver');
+    const delDate=data.delDate||v('trn-delivery-date')||date;
     const prepared=data.prepared||v('trn-prepared')||user;
     const approved=data.approved||v('trn-approved');
     const delivered=data.delivered||v('trn-delivered');
@@ -1744,6 +1778,7 @@ function buildVoucherHtml(type, data){
       </div>
       <div class="meta-grid">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
+        <div class="meta-item"><label>Delivery Date</label><span>${delDate||date}</span></div>
         <div class="meta-item"><label>From</label><span>${from}</span></div>
         <div class="meta-item"><label>To</label><span>${to}</span></div>
         <div class="meta-item"><label>Vehicle No.</label><span>${vehicle||'—'}</span></div>
@@ -1772,6 +1807,7 @@ function buildVoucherHtml(type, data){
     const date=data.date||v('iss-date');
     const site=data.site||document.getElementById('iss-site')?.options[document.getElementById('iss-site')?.selectedIndex]?.text||'';
     const subcon=data.subcon||document.getElementById('iss-subcon')?.options[document.getElementById('iss-subcon')?.selectedIndex]?.text||'';
+    const issuedBy=data.issuedBy||v('iss-issuedby')||user;
     const remarks=data.remarks||v('iss-remarks');
     const rows=data.rows||(getFormRows('issue').rows);
     return`<div class="page">
@@ -1792,7 +1828,7 @@ function buildVoucherHtml(type, data){
         </tbody>
       </table>
       <div class="signs"><div class="signs-row">
-        <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Issued By</div><div class="sign-name">${issuedBy}</div><div class="sign-line">Signature</div></div>
         <div class="sign-box"><div class="sign-label">Received By (Subcon)</div><div class="sign-name">${subcon}</div><div class="sign-line">Signature</div></div>
         <div class="sign-box"><div class="sign-label">Verified By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
       </div></div>
@@ -2134,17 +2170,23 @@ const USERS = [
   {id:'Amish',       pass:'Amish@1996',        role:'user',  name:'Amish Thakur'},
 ];
 let CURRENT_USER = null;
+const SESSION_KEY = 'sf_session_v1';
+
+function applyUser(user) {
+  CURRENT_USER = user;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('user-name-tag').textContent = '👤 ' + user.name;
+  const sl = document.getElementById('settings-link');
+  if(sl) sl.style.display = user.role === 'admin' ? '' : 'none';
+}
 
 function doLogin() {
   const uid = document.getElementById('login-user').value.trim();
   const pwd = document.getElementById('login-pass').value;
   const user = USERS.find(u => u.id.toLowerCase() === uid.toLowerCase() && u.pass === pwd);
   if(user) {
-    CURRENT_USER = user;
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('user-name-tag').textContent = '👤 ' + user.name;
-    const sl = document.getElementById('settings-link');
-    if(sl) sl.style.display = user.role === 'admin' ? '' : 'none';
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({id: user.id}));
+    applyUser(user);
     initApp();
   } else {
     document.getElementById('login-error').textContent = 'Incorrect username or password.';
@@ -2153,19 +2195,30 @@ function doLogin() {
 }
 
 function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
   CURRENT_USER = null;
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('login-user').value = '';
   document.getElementById('login-pass').value = '';
   document.getElementById('login-error').textContent = '';
   document.getElementById('user-name-tag').textContent = '';
-  // Reset to dashboard
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-dashboard').classList.add('active');
   document.querySelectorAll('#sidebar nav a').forEach(a=>a.classList.remove('active'));
   document.querySelector('#sidebar nav a').classList.add('active');
   document.getElementById('topbar-title').textContent = 'Dashboard';
 }
+
+// Auto-restore session on page load/refresh
+(function restoreSession(){
+  try{
+    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');
+    if(saved && saved.id){
+      const user = USERS.find(u => u.id === saved.id);
+      if(user){ applyUser(user); initApp(); }
+    }
+  }catch(e){}
+})();
 
 document.getElementById('login-user').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-pass').focus(); });
 document.getElementById('login-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
