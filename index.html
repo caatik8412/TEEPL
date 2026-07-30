@@ -2063,7 +2063,7 @@ function renderStockView(data){
   const masterSiteNames=(MASTERS.sites||[]).map(s=>s.name);
   const sites=masterSiteNames.length ? masterSiteNames :
     [...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
-  const locs=['All','Main Store',...sites];
+  const locs=['All','Main Store',...sites,'By Subcon'];
   document.getElementById('stock-tabs').innerHTML=locs.map((l,i)=>
     `<button class="stock-tab-btn ${i===0?'active':''}" onclick="showStockLoc(${i},this)">${esc(l)}</button>`
   ).join('');
@@ -2081,6 +2081,23 @@ function renderStockView(data){
       return`<div id="sloc-0" style="display:block">
         <table><thead><tr><th>Item</th><th>Unit</th><th>Main Store</th>${sites.map(st=>`<th>${esc(st)}</th>`).join('')}<th>Total</th><th>Min Stock</th><th>Status</th></tr></thead>
         <tbody>${rows.join('')}</tbody></table></div>`;
+    } else if(loc==='By Subcon'){
+      const subconStock=data.subconStock||{};
+      const subcons=Object.keys(subconStock);
+      if(!subcons.length) return`<div id="sloc-${i}" style="display:none"><p style="color:var(--text3)">No subcon stock.</p></div>`;
+      const inner=subcons.map(sub=>{
+        const items=subconStock[sub]||{};
+        const itemRows=Object.entries(items).filter(([,q])=>q>0).map(([item,qty])=>{
+          const s=stock.find(x=>x.item===item)||{};
+          return`<tr><td style="font-weight:500">${esc(item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td><td style="font-weight:600">${qty}</td></tr>`;
+        }).join('');
+        if(!itemRows) return '';
+        return`<div style="margin-bottom:16px">
+          <div style="font-weight:600;margin-bottom:6px;color:var(--text)">👷 ${esc(sub)}</div>
+          <table><thead><tr><th>Item</th><th>Unit</th><th>With Subcon</th></tr></thead>
+          <tbody>${itemRows}</tbody></table></div>`;
+      }).join('');
+      return`<div id="sloc-${i}" style="display:none">${inner||'<p style="color:var(--text3)">No items with subcontractors.</p>'}</div>`;
     } else {
       rows=stock.map(s=>{
         const qty=loc==='Main Store'?(s.main||0):((s.sites&&s.sites[loc])||0);
@@ -2229,19 +2246,20 @@ function renderReports(d){
     '<h3 style="font-size:14px;margin-bottom:12px">Site-wise Progress Report</h3>'+
     tbl(['Site','Contract','Poles Done','Poles Scope','Poles%','KMs Done','KMs Scope','KMs%','Status'],leakRows);
 
-  // 3. SUBCON EFFICIENCY
+  // 3. SUBCON EFFICIENCY (qty-based)
   const effRows=Object.entries(issuedBySubcon).map(([sub,items])=>{
     const site=subconSiteMap[sub]||'—';
-    const iss=Object.entries(items).reduce((a,[item,q])=>a+q*(rates[item]||0),0);
-    const con=Object.entries(consumedBySubcon[sub]||{}).reduce((a,[item,q])=>a+q*(rates[item]||0),0);
-    const bal=iss-con;
-    const eff=iss>0?Math.round(con/iss*100):0;
+    const issQty=Object.values(items).reduce((a,q)=>a+q,0);
+    const conQty=Object.values(consumedBySubcon[sub]||{}).reduce((a,q)=>a+q,0);
+    const bal=issQty-conQty;
+    const eff=issQty>0?Math.round(conQty/issQty*100):0;
+    const wp=wpBySubcon[sub]||{};
     const risk=eff<50?'🔴 High Risk':eff<75?'🟠 Medium':eff<90?'🟡 Watch':'✅ Good';
-    return{Subcontractor:sub,Site:site,'Issued(₹)':Math.round(iss).toLocaleString('en-IN'),'Consumed(₹)':Math.round(con).toLocaleString('en-IN'),'Balance(₹)':Math.round(bal).toLocaleString('en-IN'),'Efficiency%':eff+'%','Risk':risk};
+    return{Subcontractor:sub,Site:site,'Issued (Qty)':issQty,'Consumed (Qty)':conQty,'Balance (Qty)':bal,'Poles Done':wp.poles||0,'KMs Done':wp.kms||0,'Efficiency%':eff+'%',Risk:risk};
   });
   document.getElementById('report-efficiency').innerHTML=
     '<h3 style="font-size:14px;margin-bottom:12px">Subcontractor Efficiency Report</h3>'+
-    tbl(['Subcontractor','Site','Issued(₹)','Consumed(₹)','Balance(₹)','Efficiency%','Risk'],effRows);
+    tbl(['Subcontractor','Site','Issued (Qty)','Consumed (Qty)','Balance (Qty)','Poles Done','KMs Done','Efficiency%','Risk'],effRows);
 
   // 4. MOVEMENT
   const movItems=new Set([...Object.keys(purchased),...Object.keys(issuedTotal),...Object.keys(consumedTotal)]);
