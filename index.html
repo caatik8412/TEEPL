@@ -595,6 +595,20 @@ tr:hover td{background:rgba(0,0,0,.025)}
         <div class="card-header"><h2>👷 Subcontractor Progress</h2></div>
         <div class="card-body" id="wp-subcon-cards"></div>
       </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-header">
+          <h2>📋 Work History</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="wph-site" onchange="filterWPHistory()" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text)">
+              <option value="">All Sites</option>
+            </select>
+            <select id="wph-subcon" onchange="filterWPHistory()" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text)">
+              <option value="">All Subcons</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" id="wp-history-body"><p style="color:var(--text3)">Loading…</p></div>
+      </div>
     </div>
 
     <!-- STOCK VIEW -->
@@ -789,7 +803,7 @@ const SHEET = {
   consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn'
 };
 const STATUS_LABEL = {
-  complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed'
+  complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed', noscope:'⚪ No Scope'
 };
 
 // ══════════════════════════════════════════════════════
@@ -1604,12 +1618,39 @@ async function reverseTxn(type, voucher) {
 // ══════════════════════════════════════════════════════
 //  WORK PROGRESS
 // ══════════════════════════════════════════════════════
+let WP_HISTORY=[];
+
 async function loadWP(){
   try{
-    const d=await api({action:'workprogress'});
+    const [d,h]=await Promise.all([api({action:'workprogress'}),api({action:'wpHistory'})]);
     renderWPSites(d.sites||[]);
     renderWPSubcons(d.subcons||[]);
+    WP_HISTORY=h.entries||[];
+    // populate filter dropdowns
+    const sites=[...new Set(WP_HISTORY.map(e=>e.site))].sort();
+    const subcons=[...new Set(WP_HISTORY.map(e=>e.subcon))].sort();
+    const sEl=document.getElementById('wph-site');
+    const scEl=document.getElementById('wph-subcon');
+    if(sEl) sEl.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option>${esc(s)}</option>`).join('');
+    if(scEl) scEl.innerHTML='<option value="">All Subcons</option>'+subcons.map(s=>`<option>${esc(s)}</option>`).join('');
+    filterWPHistory();
   } catch(e){ toast('WP load failed: '+e.message,'error'); }
+}
+
+function filterWPHistory(){
+  const site=document.getElementById('wph-site')?.value||'';
+  const sub=document.getElementById('wph-subcon')?.value||'';
+  const filtered=WP_HISTORY.filter(e=>(!site||e.site===site)&&(!sub||e.subcon===sub));
+  const el=document.getElementById('wp-history-body');
+  if(!el) return;
+  if(!filtered.length){el.innerHTML='<p style="color:var(--text3)">No entries.</p>';return;}
+  el.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>Date</th><th>Site</th><th>Subcontractor</th><th>Poles Done</th><th>KMs Done</th><th>Remarks</th></tr></thead>
+    <tbody>${filtered.map(e=>`<tr>
+      <td>${esc(e.date)}</td><td>${esc(e.site)}</td><td>${esc(e.subcon)}</td>
+      <td>${e.poles||0}</td><td>${e.kms||0}</td><td style="color:var(--text3)">${esc(e.remarks)||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
 
 function renderWPSites(sites){
@@ -1636,14 +1677,17 @@ function renderWPSubcons(subcons){
   const el=document.getElementById('wp-subcon-cards');
   if(!subcons.length){el.innerHTML='<p style="color:var(--text3)">No subcon progress.</p>';return;}
   el.innerHTML=`<div class="tbl-wrap"><table>
-    <thead><tr><th>Subcon</th><th>Site</th><th>Poles</th><th>Scope</th><th>KMs</th><th>Scope</th><th>%</th><th>Status</th></tr></thead>
-    <tbody>${subcons.map(s=>`<tr>
-      <td style="font-weight:500">${esc(s.name)}</td><td>${esc(s.site||'')}</td>
-      <td>${s.poles||0}</td><td style="color:var(--text3)">${s.scopePoles||'—'}</td>
-      <td>${s.kms||0}</td><td style="color:var(--text3)">${s.scopeKms||'—'}</td>
-      <td><strong>${s.overallPct||0}%</strong></td>
-      <td><span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td>
-    </tr>`).join('')}</tbody>
+    <thead><tr><th>Subcon</th><th>Site</th><th>Poles Done</th><th>Poles Scope</th><th>KMs Done</th><th>KMs Scope</th><th>%</th><th>Status</th></tr></thead>
+    <tbody>${subcons.map(s=>{
+      const noScope=!s.scopePoles&&!s.scopeKms;
+      return`<tr>
+        <td style="font-weight:500">${esc(s.name)}</td><td>${esc(s.site||'')}</td>
+        <td>${s.poles||0}</td><td style="color:var(--text3)">${s.scopePoles||'—'}</td>
+        <td>${s.kms||0}</td><td style="color:var(--text3)">${s.scopeKms||'—'}</td>
+        <td><strong>${noScope?'—':(s.overallPct||0)+'%'}</strong></td>
+        <td><span class="status ${s.status||'delayed'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
   </table></div>`;
 }
 
@@ -2330,7 +2374,7 @@ async function saveMaster(sheet){
       toast(editKey?'✅ Updated':'✅ Saved','success');
       if(sheet==='ItemMaster') cancelItemEdit();
       if(sheet==='SubcontractorMaster') cancelSubconEdit();
-      if(sheet==='SubconScope') cancelScopeEdit();
+      if(sheet==='SubconScope'){ cancelScopeEdit(); loadWP(); }
       initApp();
     } else toast(res.error||'Failed','error');
   } catch(e){ toast('Error: '+e.message,'error'); }
