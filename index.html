@@ -660,8 +660,14 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
     <!-- SETTINGS -->
     <div id="tab-settings" class="tab-pane">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="report-tabs" style="margin-bottom:14px">
+        <div class="report-tab active" onclick="showSettingsTab('items',this)">📦 Items</div>
+        <div class="report-tab" onclick="showSettingsTab('sites',this)">🏗️ Sites</div>
+        <div class="report-tab" onclick="showSettingsTab('subcons',this)">👷 Subcontractors</div>
+        <div class="report-tab" onclick="showSettingsTab('scope',this)">📐 Scope</div>
+      </div>
 
+      <div id="stab-items">
         <!-- ITEM MASTER -->
         <div class="card">
           <div class="card-header">
@@ -683,7 +689,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div id="im-list" style="margin-top:12px"></div>
           </div>
         </div>
+      </div>
 
+      <div id="stab-sites" style="display:none">
         <!-- SITE MASTER -->
         <div class="card">
           <div class="card-header">
@@ -712,7 +720,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             </div>
           </div>
         </div>
+      </div>
 
+      <div id="stab-subcons" style="display:none">
         <!-- SUBCON MASTER -->
         <div class="card">
           <div class="card-header">
@@ -735,7 +745,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div id="sub-list" style="margin-top:12px"></div>
           </div>
         </div>
+      </div>
 
+      <div id="stab-scope" style="display:none">
         <!-- SUBCON SCOPE -->
         <div class="card">
           <div class="card-header">
@@ -758,8 +770,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div id="sc-list" style="margin-top:12px"></div>
           </div>
         </div>
-
       </div>
+
     </div>
 
   </div><!-- #page -->
@@ -2249,6 +2261,15 @@ function renderReports(d){
     (excRows.length
       ? tbl(['Material','Issued','Consumed','Balance','Bal%','₹ at Risk','Flag'],excRows)
       : '<p style="color:var(--green)">✅ No exceptions — all items within acceptable variance.</p>');
+}
+
+function showSettingsTab(key,tab){
+  document.querySelectorAll('#tab-settings .report-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  ['items','sites','subcons','scope'].forEach(k=>{
+    const el=document.getElementById('stab-'+k);
+    if(el) el.style.display=(k===key?'block':'none');
+  });
 }
 
 function showReport(key,tab){
