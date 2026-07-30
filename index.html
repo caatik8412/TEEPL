@@ -12,7 +12,7 @@ if(location.protocol==='https:'){
     icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231f6feb'/><text y='.85em' font-size='340' x='50%' text-anchor='middle' font-family='Arial' font-weight='bold' fill='white'>S</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
   const b=new Blob([JSON.stringify(m)],{type:'application/json'});
   const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);
-  const swCode=`const C='sf-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com'))return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
+  const swCode=`const C='sf-v2';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com'))return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
   const sb=new Blob([swCode],{type:'text/javascript'});
   navigator.serviceWorker.register(URL.createObjectURL(sb)).catch(()=>{});
 }
@@ -1253,7 +1253,12 @@ function showTab(name, link) {
 
   const rMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
-  if(rMap[name]&&!document.getElementById(rMap[name]).children.length) addRow(name);
+  if(rMap[name]){
+    const tb=document.getElementById(rMap[name]);
+    // If no rows, or all rows are blank (stale cache artifact) — reset to 1 clean row
+    const allBlank=!tb.children.length||[...tb.querySelectorAll('.item-sel')].every(s=>!s.value);
+    if(allBlank){tb.innerHTML='';addRow(name);}
+  }
 
   if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
   if(name==='workprogress') loadWP();
