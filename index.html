@@ -1939,6 +1939,7 @@ function buildVoucherHtml(type, data){
     const date=data.date||v('con-date');
     const site=data.site||document.getElementById('con-site')?.options[document.getElementById('con-site')?.selectedIndex]?.text||'';
     const subcon=data.subcon||document.getElementById('con-subcon')?.options[document.getElementById('con-subcon')?.selectedIndex]?.text||'';
+    const remarks=data.remarks||v('con-remarks');
     const rows=data.rows||(getFormRows('consumption').rows);
     return`<div class="page">
       <div class="co-hdr">
@@ -1949,10 +1950,11 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Site</label><span>${site}</span></div>
         <div class="meta-item"><label>Subcontractor</label><span>${subcon}</span></div>
+        ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${esc(remarks)}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:70px">Qty Used</th><th style="width:60px">Unit</th><th>Notes</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td>${r.notes||''}</td></tr>`).join('')}
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td>${r.note||''}</td></tr>`).join('')}
         ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td></tr>').join('')}
         </tbody>
       </table>
@@ -2180,9 +2182,10 @@ async function loadSubconLedger(){
     el.innerHTML=ledger.map(sub=>`<div style="margin-bottom:20px">
       <div style="font-weight:600;margin-bottom:8px">👷 ${esc(sub.subcon)}</div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Item</th><th>Issued</th><th>Consumed</th><th>Balance</th></tr></thead>
+        <thead><tr><th>Item</th><th>Issued</th><th>Consumed</th><th>Returned</th><th>Balance</th></tr></thead>
         <tbody>${(sub.items||[]).map(r=>`<tr>
           <td>${esc(r.item)}</td><td>${r.issued||0}</td><td>${r.consumed||0}</td>
+          <td style="color:var(--green)">${r.returned||0}</td>
           <td style="font-weight:600;color:${(r.balance||0)<0?'var(--red)':(r.balance||0)>0?'var(--yellow)':'var(--green)'}">${r.balance||0}</td>
         </tr>`).join('')}</tbody>
       </table></div></div>`).join('');
