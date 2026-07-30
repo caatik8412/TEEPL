@@ -1255,9 +1255,8 @@ function showTab(name, link) {
     consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'};
   if(rMap[name]){
     const tb=document.getElementById(rMap[name]);
-    // If no rows, or all rows are blank (stale cache artifact) — reset to 1 clean row
     const allBlank=!tb.children.length||[...tb.querySelectorAll('.item-sel')].every(s=>!s.value);
-    if(allBlank){tb.innerHTML='';addRow(name);}
+    if(allBlank){tb.innerHTML='';for(let i=0;i<5;i++)addRow(name);}
   }
 
   if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
