@@ -299,7 +299,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
         <div class="kpi"><div class="label">Poles Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
         <div class="kpi"><div class="label">KMs Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
         <div class="card">
           <div class="card-header"><h2>⚠️ Stock Alerts</h2></div>
           <div class="card-body" id="dash-alerts"><div class="skeleton" style="height:14px"></div></div>
@@ -308,6 +308,10 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="card-header"><h2>📈 Site Progress</h2></div>
           <div class="card-body" id="dash-sites"><div class="skeleton" style="height:14px"></div></div>
         </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>👷 Subcontractor Progress</h2></div>
+        <div class="card-body" id="dash-subcons"><div class="skeleton" style="height:14px"></div></div>
       </div>
     </div>
 
@@ -1159,6 +1163,32 @@ function renderDashboard(dash) {
         <div class="pct-label">${s.overallPct||0}% · ${s.polesErected||0}/${s.totalPoles||0} poles · ${s.kmsStrung||0}/${s.totalKms||0} km</div>
       </div>`).join('')
     : '<p style="color:var(--text3)">No progress logged yet.</p>';
+
+  // Subcontractor Progress table
+  const subcons = (dash.subcons||[]).filter(sc => validSiteNames.has(sc.site));
+  const subconEl = document.getElementById('dash-subcons');
+  if(subconEl){
+    if(!subcons.length){
+      subconEl.innerHTML='<p style="color:var(--text3)">No subcontractor progress yet.</p>';
+    } else {
+      subconEl.innerHTML=`<div class="tbl-wrap"><table>
+        <thead><tr><th>Subcon</th><th>Site</th><th>Poles Done</th><th>Poles Scope</th><th>KMs Done</th><th>KMs Scope</th><th>%</th><th>Status</th></tr></thead>
+        <tbody>${subcons.map(sc=>{
+          const noScope=!sc.scopePoles&&!sc.scopeKms;
+          return`<tr>
+            <td><strong>${esc(sc.name)}</strong></td>
+            <td>${esc(sc.site)}</td>
+            <td>${sc.poles||0}</td>
+            <td>${noScope?'—':sc.scopePoles||0}</td>
+            <td>${sc.kms||0}</td>
+            <td>${noScope?'—':sc.scopeKms||0}</td>
+            <td><strong>${noScope?'—':(sc.overallPct||0)+'%'}</strong></td>
+            <td><span class="status ${sc.status||'delayed'}">${STATUS_LABEL[sc.status]||sc.status||'—'}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════
