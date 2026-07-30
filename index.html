@@ -425,6 +425,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('issue')">+ Add Row</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearRows('issue')" style="color:var(--red)">✕ Clear All</button>
             <button class="btn btn-primary" onclick="saveTxn('issue')">💾 Save Issue</button>
             <button class="btn btn-ghost btn-sm" onclick="printVoucher('Issue')" style="color:var(--accent)">🖨 Print Slip</button>
           </div>
@@ -472,6 +473,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('consumption')">+ Add Row</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearRows('consumption')" style="color:var(--red)">✕ Clear All</button>
             <button class="btn btn-primary" onclick="saveTxn('consumption')">💾 Save Consumption</button>
             <button class="btn btn-ghost btn-sm" onclick="printVoucher('Consumption')" style="color:var(--accent)">🖨 Print</button>
           </div>
@@ -1434,6 +1436,13 @@ async function saveTxn(type){
   } catch(e){ toast('Error: '+e.message,'error'); }
 }
 
+function clearRows(type){
+  const tbodyId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
+  const tbody=document.getElementById(tbodyId); if(!tbody) return;
+  tbody.innerHTML='';
+  addRow(type);
+}
+
 function resetForm(type){
   const clearMap={purchase:['pur-supplier','pur-invoice','pur-remarks'],
     transfer:['trn-vehicle','trn-driver','trn-prepared','trn-approved','trn-delivered','trn-received','trn-delivery-date','trn-remarks'],
@@ -2042,21 +2051,36 @@ function renderStockView(data){
   const masterSiteNames=(MASTERS.sites||[]).map(s=>s.name);
   const sites=masterSiteNames.length ? masterSiteNames :
     [...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
-  const locs=['Main Store',...sites];
+  const locs=['All','Main Store',...sites];
   document.getElementById('stock-tabs').innerHTML=locs.map((l,i)=>
     `<button class="stock-tab-btn ${i===0?'active':''}" onclick="showStockLoc(${i},this)">${esc(l)}</button>`
   ).join('');
   document.getElementById('stock-table-wrap').innerHTML=locs.map((loc,i)=>{
-    const rows=stock.map(s=>{
-      const qty=loc==='Main Store'?(s.main||0):((s.sites&&s.sites[loc])||0);
-      const cls=qty<=0?'out':(s.minStock>0&&qty<=s.minStock?'low':'ok');
-      return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
-        <td style="font-size:15px;font-weight:600">${qty}</td><td>${s.minStock||'—'}</td>
-        <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
-    });
-    return`<div id="sloc-${i}" style="display:${i===0?'block':'none'}">
-      <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min Stock</th><th>Status</th></tr></thead>
-      <tbody>${rows.join('')}</tbody></table></div>`;
+    let rows;
+    if(loc==='All'){
+      rows=stock.map(s=>{
+        const total=(s.main||0)+sites.reduce((a,st)=>a+((s.sites&&s.sites[st])||0),0);
+        const cls=total<=0?'out':(s.minStock>0&&total<=s.minStock?'low':'ok');
+        return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
+          <td style="font-weight:600">${s.main||0}</td>${sites.map(st=>`<td>${(s.sites&&s.sites[st])||0}</td>`).join('')}
+          <td style="font-size:15px;font-weight:600">${total}</td><td>${s.minStock||'—'}</td>
+          <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
+      });
+      return`<div id="sloc-0" style="display:block">
+        <table><thead><tr><th>Item</th><th>Unit</th><th>Main Store</th>${sites.map(st=>`<th>${esc(st)}</th>`).join('')}<th>Total</th><th>Min Stock</th><th>Status</th></tr></thead>
+        <tbody>${rows.join('')}</tbody></table></div>`;
+    } else {
+      rows=stock.map(s=>{
+        const qty=loc==='Main Store'?(s.main||0):((s.sites&&s.sites[loc])||0);
+        const cls=qty<=0?'out':(s.minStock>0&&qty<=s.minStock?'low':'ok');
+        return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
+          <td style="font-size:15px;font-weight:600">${qty}</td><td>${s.minStock||'—'}</td>
+          <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
+      });
+      return`<div id="sloc-${i}" style="display:none">
+        <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min Stock</th><th>Status</th></tr></thead>
+        <tbody>${rows.join('')}</tbody></table></div>`;
+    }
   }).join('');
 }
 
@@ -2126,10 +2150,10 @@ async function loadCvC(){
 async function loadReports(){
   ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
     const el=document.getElementById('report-'+k);
-    if(el) el.innerHTML='<p style="color:var(--text3)">Generating…</p>';
+    if(el) el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
   });
   try{
-    const data=await api({action:'generateReports'});
+    const data=await api({action:'reportData'});
     renderReports(data);
   } catch(e){
     ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
@@ -2139,20 +2163,92 @@ async function loadReports(){
   }
 }
 
-function renderReports(data){
-  const secs=data.sections||[];
-  ['variance','leakage','efficiency','movement','exception'].forEach(key=>{
-    const el=document.getElementById('report-'+key); if(!el) return;
-    const sec=secs.find(s=>s.title&&s.title.toLowerCase().includes(key));
-    if(!sec){el.innerHTML='<p style="color:var(--text3)">No data.</p>';return;}
-    const rows=sec.rows||[];
-    const hdrs=sec.headers||Object.keys(rows[0]||{});
-    el.innerHTML=`<h3 style="font-size:14px;margin-bottom:12px">${esc(sec.title)}</h3>
-      <div class="tbl-wrap"><table>
-        <thead><tr>${hdrs.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
-        <tbody>${rows.map(r=>`<tr>${hdrs.map(h=>`<td>${r[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>
-      </table></div>`;
+function renderReports(d){
+  const issuedBySubcon=d.issuedBySubcon||{};
+  const consumedBySubcon=d.consumedBySubcon||{};
+  const purchased=d.purchased||{};
+  const transferred=d.transferred||{};
+  const wpBySubcon=d.wpBySubcon||{};
+  const siteScope=d.siteScope||{};
+  const subconSiteMap=d.subconSiteMap||{};
+  const rates=d.rates||{};
+
+  const issuedTotal={}, consumedTotal={};
+  Object.values(issuedBySubcon).forEach(items=>Object.entries(items).forEach(([item,q])=>{ issuedTotal[item]=(issuedTotal[item]||0)+q; }));
+  Object.values(consumedBySubcon).forEach(items=>Object.entries(items).forEach(([item,q])=>{ consumedTotal[item]=(consumedTotal[item]||0)+q; }));
+
+  function tbl(hdrs,rows,colorFn){
+    if(!rows.length) return '<p style="color:var(--text3)">No data.</p>';
+    return`<div class="tbl-wrap"><table>
+      <thead><tr>${hdrs.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r=>`<tr style="${colorFn?colorFn(r):''}">${hdrs.map(h=>`<td>${r[h]??'—'}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  // 1. VARIANCE
+  const allItems=new Set([...Object.keys(issuedTotal),...Object.keys(consumedTotal)]);
+  const varRows=[...allItems].sort().map(item=>{
+    const iss=issuedTotal[item]||0, con=consumedTotal[item]||0, bal=iss-con;
+    const pct=iss>0?Math.round(bal/iss*100):0;
+    const val=Math.round(bal*(rates[item]||0));
+    return{Material:item,Issued:iss,Consumed:con,Balance:bal,'Bal%':pct+'%','₹ at Risk':val>0?'₹'+val.toLocaleString('en-IN'):'—'};
   });
+  document.getElementById('report-variance').innerHTML=
+    '<h3 style="font-size:14px;margin-bottom:12px">Material Variance Report</h3>'+
+    tbl(['Material','Issued','Consumed','Balance','Bal%','₹ at Risk'],varRows,
+      r=>parseInt(r['Bal%'])>25?'color:var(--red)':parseInt(r['Bal%'])>15?'color:var(--yellow)':'');
+
+  // 2. SITE LEAKAGE
+  const wpBySite={};
+  Object.entries(wpBySubcon).forEach(([sub,w])=>{
+    const site=w.site||subconSiteMap[sub]||''; if(!site) return;
+    if(!wpBySite[site]) wpBySite[site]={poles:0,kms:0};
+    wpBySite[site].poles+=(w.poles||0);
+    wpBySite[site].kms+=(w.kms||0);
+  });
+  const leakRows=Object.entries(siteScope).map(([site,sc])=>{
+    const done=wpBySite[site]||{poles:0,kms:0};
+    const pPct=sc.poles>0?Math.round(done.poles/sc.poles*100):0;
+    const kPct=sc.kms>0?Math.round(done.kms/sc.kms*100):0;
+    const status=pPct>=100&&kPct>=100?'✅ Complete':pPct>=60?'🟡 On Track':pPct>=30?'🟠 Slow':'🔴 Delayed';
+    return{Site:site,Contract:sc.contract||'—','Poles Done':done.poles,'Poles Scope':sc.poles,'Poles%':pPct+'%','KMs Done':done.kms,'KMs Scope':sc.kms,'KMs%':kPct+'%',Status:status};
+  });
+  document.getElementById('report-leakage').innerHTML=
+    '<h3 style="font-size:14px;margin-bottom:12px">Site-wise Progress Report</h3>'+
+    tbl(['Site','Contract','Poles Done','Poles Scope','Poles%','KMs Done','KMs Scope','KMs%','Status'],leakRows);
+
+  // 3. SUBCON EFFICIENCY
+  const effRows=Object.entries(issuedBySubcon).map(([sub,items])=>{
+    const site=subconSiteMap[sub]||'—';
+    const iss=Object.entries(items).reduce((a,[item,q])=>a+q*(rates[item]||0),0);
+    const con=Object.entries(consumedBySubcon[sub]||{}).reduce((a,[item,q])=>a+q*(rates[item]||0),0);
+    const bal=iss-con;
+    const eff=iss>0?Math.round(con/iss*100):0;
+    const risk=eff<50?'🔴 High Risk':eff<75?'🟠 Medium':eff<90?'🟡 Watch':'✅ Good';
+    return{Subcontractor:sub,Site:site,'Issued(₹)':Math.round(iss).toLocaleString('en-IN'),'Consumed(₹)':Math.round(con).toLocaleString('en-IN'),'Balance(₹)':Math.round(bal).toLocaleString('en-IN'),'Efficiency%':eff+'%','Risk':risk};
+  });
+  document.getElementById('report-efficiency').innerHTML=
+    '<h3 style="font-size:14px;margin-bottom:12px">Subcontractor Efficiency Report</h3>'+
+    tbl(['Subcontractor','Site','Issued(₹)','Consumed(₹)','Balance(₹)','Efficiency%','Risk'],effRows);
+
+  // 4. MOVEMENT
+  const movItems=new Set([...Object.keys(purchased),...Object.keys(issuedTotal),...Object.keys(consumedTotal)]);
+  const movRows=[...movItems].sort().map(item=>{
+    const pur=purchased[item]||0, tra=transferred[item]||0, iss=issuedTotal[item]||0, con=consumedTotal[item]||0;
+    return{Material:item,Purchased:pur,Transferred:tra,Issued:iss,Consumed:con,Balance:pur-iss};
+  });
+  document.getElementById('report-movement').innerHTML=
+    '<h3 style="font-size:14px;margin-bottom:12px">Material Movement Summary</h3>'+
+    tbl(['Material','Purchased','Transferred','Issued','Consumed','Balance'],movRows,
+      r=>r['Balance']<0?'color:var(--red)':'');
+
+  // 5. EXCEPTION
+  const excRows=varRows.filter(r=>parseInt(r['Bal%'])>15).map(r=>({...r,Flag:'⚠ High Variance'}));
+  document.getElementById('report-exception').innerHTML=
+    '<h3 style="font-size:14px;margin-bottom:12px">Exception Report</h3>'+
+    (excRows.length
+      ? tbl(['Material','Issued','Consumed','Balance','Bal%','₹ at Risk','Flag'],excRows)
+      : '<p style="color:var(--green)">✅ No exceptions — all items within acceptable variance.</p>');
 }
 
 function showReport(key,tab){
