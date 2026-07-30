@@ -2241,10 +2241,22 @@ function renderReports(d){
   const consumedBySubcon=d.consumedBySubcon||{};
   const purchased=d.purchased||{};
   const transferred=d.transferred||{};
-  const wpBySubcon=d.wpBySubcon||{};
+  const wpBySubconRaw=d.wpBySubcon||{};
+  const wpBySiteFromGAS=d.wpBySite||{};
   const siteScope=d.siteScope||{};
   const subconSiteMap=d.subconSiteMap||{};
   const rates=d.rates||{};
+  // wpBySubcon: flatten subcon||site keys back to subcon-keyed for efficiency report
+  const wpBySubcon={};
+  Object.entries(wpBySubconRaw).forEach(([key,w])=>{
+    const sub=w.name||key.split('||')[0];
+    if(!wpBySubcon[sub]) wpBySubcon[sub]={poles:0,kms:0,byActivity:{}};
+    wpBySubcon[sub].poles+=(w.poles||0);
+    wpBySubcon[sub].kms+=(w.kms||0);
+    Object.entries(w.byActivity||{}).forEach(([act,qty])=>{
+      wpBySubcon[sub].byActivity[act]=(wpBySubcon[sub].byActivity[act]||0)+qty;
+    });
+  });
 
   const issuedTotal={}, consumedTotal={};
   Object.values(issuedBySubcon).forEach(items=>Object.entries(items).forEach(([item,q])=>{ issuedTotal[item]=(issuedTotal[item]||0)+q; }));
@@ -2271,16 +2283,9 @@ function renderReports(d){
     tbl(['Material','Issued','Consumed','Balance','Bal%','₹ at Risk'],varRows,
       r=>parseInt(r['Bal%'])>25?'color:var(--red)':parseInt(r['Bal%'])>15?'color:var(--yellow)':'');
 
-  // 2. SITE LEAKAGE
-  const wpBySite={};
-  Object.entries(wpBySubcon).forEach(([sub,w])=>{
-    const site=w.site||subconSiteMap[sub]||''; if(!site) return;
-    if(!wpBySite[site]) wpBySite[site]={poles:0,kms:0};
-    wpBySite[site].poles+=(w.poles||0);
-    wpBySite[site].kms+=(w.kms||0);
-  });
+  // 2. SITE LEAKAGE — use wpBySite from GAS (correctly keyed per site)
   const leakRows=Object.entries(siteScope).map(([site,sc])=>{
-    const done=wpBySite[site]||{poles:0,kms:0};
+    const done=wpBySiteFromGAS[site]||{poles:0,kms:0};
     const pPct=sc.poles>0?Math.round(done.poles/sc.poles*100):0;
     const kPct=sc.kms>0?Math.round(done.kms/sc.kms*100):0;
     const status=pPct>=100&&kPct>=100?'✅ Complete':pPct>=60?'🟡 On Track':pPct>=30?'🟠 Slow':'🔴 Delayed';
