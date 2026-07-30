@@ -1405,7 +1405,7 @@ async function saveTxn(type){
         }
         return[h[0],h[1],h[2],h[3],i,q,u,h[7],h[8]];}},
     consumption:{sheet:'Consumption',
-      hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,v('con-remarks')],
+      hdr:()=>[v('con-date'),v('con-voucher'),v('con-site'),v('con-subcon'),null,null,null,null,v('con-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,n=tr.querySelector('.note-inp')?.value||'';if(!i||!q)return null;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
@@ -1413,7 +1413,7 @@ async function saveTxn(type){
           toast(`❌ Cannot consume ${q} of "${i}" — subcon only holds ${av}`,'error');
           return'ABORT';
         }
-        return[h[0],h[1],h[2],h[3],i,q,u,n];}},
+        return[h[0],h[1],h[2],h[3],i,q,u,n,h[8]];}},
     returns:{sheet:'Returns',
       hdr:()=>[v('ret-date'),v('ret-voucher'),v('ret-from'),v('ret-to'),null,null,null,v('ret-remarks')],
       row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
@@ -1430,6 +1430,7 @@ async function saveTxn(type){
   };
   const c=cfg[type]; if(!c) return;
   const h=c.hdr(); if(!h[0]){toast('Date required','error');return;}
+  if(type==='transfer'&&h[2]&&h[3]&&h[2]===h[3]){toast('❌ Transfer From and To cannot be the same location','error');return;}
   const tbId={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',consumption:'con-rows',returns:'ret-rows',subconreturn:'sr-rows'}[type];
   let rows=[]; let abort=false;
   for(const tr of document.getElementById(tbId).rows){
@@ -1481,6 +1482,8 @@ function resetForm(type){
   addRow(type);
   const vf={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
     consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'}[type];
+  const vEl=document.getElementById(vf);
+  if(vEl) delete vEl.dataset.manualEdit;
   autoVoucher(SHEET[type],vf);
 }
 
