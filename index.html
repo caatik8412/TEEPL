@@ -929,12 +929,19 @@ function renderItemList() {
   const items = MASTERS.items||[];
   const el = document.getElementById('im-list'); if(!el) return;
   if(!items.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No items.</p>';return;}
-  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
-    items.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
-      <span style="flex:1">${esc(r.name)} <small style="color:var(--text3)">${esc(r.unit||'')} · Min:${r.minStock||0}</small></span>
-      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editItem(${JSON.stringify(r)})'>✏️</button>
-    </div>`).join('')+
-    '</div>';
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${items.length} Items</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Item Name</th><th>Unit</th><th>Min Stock</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${items.map((r,i)=>`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.unit||'—')}</span></td>
+      <td>${r.minStock||0}</td>
+      <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editItem(${JSON.stringify(r)})'>✏ Edit</button></td>
+    </tr>`).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 function editItem(r) {
@@ -961,12 +968,20 @@ function renderSubconList() {
   const subcons = MASTERS.subcons||[];
   const el = document.getElementById('sub-list'); if(!el) return;
   if(!subcons.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No subcontractors.</p>';return;}
-  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
-    subcons.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
-      <span style="flex:1">${esc(r.name)} <small style="color:var(--text3)">${esc(r.site||'')}</small></span>
-      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editSubcon(${JSON.stringify(r)})'>✏️</button>
-    </div>`).join('')+
-    '</div>';
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${subcons.length} Subcontractors</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Name</th><th>Site</th><th>Contact Person</th><th>Phone</th><th>PAN</th><th></th></tr></thead>
+    <tbody>${subcons.map((r,i)=>`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.site||'—')}</span></td>
+      <td>${esc(r.contact||'—')}</td>
+      <td>${esc(r.phone||'—')}</td>
+      <td style="color:var(--text3)">${esc(r.pan||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editSubcon(${JSON.stringify(r)})'>✏ Edit</button></td>
+    </tr>`).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 function editSubcon(r) {
@@ -995,12 +1010,20 @@ function renderScopeList() {
   const scopes = MASTERS.subconScope||[];
   const el = document.getElementById('sc-list'); if(!el) return;
   if(!scopes.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No allocations.</p>';return;}
-  el.innerHTML='<div style="max-height:160px;overflow-y:auto">'+
-    scopes.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
-      <span style="flex:1">${esc(r.subcon)} @ ${esc(r.site)} <small style="color:var(--text3)">${r.poles||0}P · ${r.kms||0}KM</small></span>
-      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 7px;flex-shrink:0" onclick='editScope(${JSON.stringify(r)})'>✏️</button>
-    </div>`).join('')+
-    '</div>';
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${scopes.length} Allocations</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Subcontractor</th><th>Site</th><th>Poles Allocated</th><th>Wire (KM)</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${scopes.map((r,i)=>`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong>${esc(r.subcon)}</strong></td>
+      <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.site||'—')}</span></td>
+      <td>${r.poles||0}</td>
+      <td>${r.kms||0}</td>
+      <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editScope(${JSON.stringify(r)})'>✏ Edit</button></td>
+    </tr>`).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 function editScope(r) {
