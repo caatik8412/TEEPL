@@ -30,6 +30,20 @@ if(location.protocol==='https:'){
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;height:100dvh;overflow:hidden;display:flex}
 
+/* DIRECTOR MODE */
+body.director-mode #sidebar{display:none!important}
+body.director-mode #main{width:100%;flex-direction:column}
+body.director-mode #topbar{display:none!important}
+#director-nav{display:none;align-items:center;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0;position:sticky;top:0;z-index:99;width:100%}
+#director-nav .dir-brand{display:flex;align-items:center;gap:8px;padding:12px 16px;border-right:1px solid var(--border);font-weight:700;font-size:15px;color:var(--text)}
+#director-nav .dir-brand .logo{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+#director-nav .dir-tabs{display:flex;flex:1;gap:0}
+#director-nav .dir-tab{flex:1;padding:14px 8px;text-align:center;font-size:14px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+#director-nav .dir-tab:hover{color:var(--text);background:var(--bg3)}
+#director-nav .dir-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(31,111,235,.05)}
+#director-nav .dir-logout{padding:10px 16px;margin:6px;font-size:12px;border-radius:6px;border:1px solid rgba(207,34,46,.3);color:var(--red);background:none;cursor:pointer}
+body.director-mode #content-area{padding:12px}
+
 /* SIDEBAR */
 #sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 #sidebar .brand{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
@@ -214,6 +228,16 @@ tr:hover td{background:rgba(0,0,0,.025)}
 </style>
 </head>
 <body>
+
+<!-- DIRECTOR NAV -->
+<div id="director-nav">
+  <div class="dir-brand"><div class="logo">T</div><span>SiteFlow</span></div>
+  <div class="dir-tabs">
+    <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
+    <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
+  </div>
+  <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
+</div>
 
 <!-- LOGIN GATE -->
 <div id="gate">
@@ -2487,6 +2511,7 @@ const USERS = [
   {id:'Priya',       pass:'Priya@1997',        role:'user',  name:'Priyanka Agawane'},
   {id:'Hariprasad',  pass:'Hariprasad@2026',   role:'user',  name:'Hariprasad'},
   {id:'Amish',       pass:'Amish@1996',        role:'user',  name:'Amish Thakur'},
+  {id:'Director',    pass:'Director@2026',      role:'director', name:'Director'},
 ];
 let CURRENT_USER = null;
 const SESSION_KEY = 'sf_session_v1';
@@ -2497,6 +2522,22 @@ function applyUser(user) {
   document.getElementById('user-name-tag').textContent = '👤 ' + user.name;
   const sl = document.getElementById('settings-link');
   if(sl) sl.style.display = user.role === 'admin' ? '' : 'none';
+
+  if(user.role === 'director'){
+    document.body.classList.add('director-mode');
+    document.getElementById('director-nav').style.display = 'flex';
+    // Show only dashboard and reports tabs
+    showTab('dashboard');
+  } else {
+    document.body.classList.remove('director-mode');
+    document.getElementById('director-nav').style.display = 'none';
+  }
+}
+
+function dirTab(name, el){
+  document.querySelectorAll('#director-nav .dir-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  showTab(name);
 }
 
 function doLogin() {
@@ -2516,6 +2557,8 @@ function doLogin() {
 function doLogout() {
   sessionStorage.removeItem(SESSION_KEY);
   CURRENT_USER = null;
+  document.body.classList.remove('director-mode');
+  document.getElementById('director-nav').style.display = 'none';
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('login-user').value = '';
   document.getElementById('login-pass').value = '';
