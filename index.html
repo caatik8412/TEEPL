@@ -701,12 +701,11 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
     <!-- CvC -->
     <div id="tab-cvc" class="tab-pane">
-      <div class="card">
-        <div class="card-header">
-          <h2>⚖️ Consumed vs Completed</h2>
-          <button class="btn btn-ghost btn-sm" onclick="loadCvC()">↻ Refresh</button>
-        </div>
-        <div class="card-body" id="cvc-body"><p style="color:var(--text3)">Loading…</p></div>
+      <div class="card" style="text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">⚖️</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Consumed vs Completed</div>
+        <div style="font-size:14px;color:var(--text3);margin-bottom:4px">This report compares material consumed against work completed per site.</div>
+        <div style="display:inline-block;margin-top:20px;padding:6px 18px;background:rgba(31,111,235,.1);color:var(--accent);border-radius:20px;font-size:13px;font-weight:600">🚧 Coming Soon</div>
       </div>
     </div>
 
@@ -900,6 +899,26 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
   </div><!-- #page -->
 </div><!-- #main -->
+
+<!-- WP EDIT MODAL -->
+<div id="wp-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--bg2);border-radius:12px;padding:24px;width:90%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px">✏️ Edit Work Progress</div>
+    <input type="hidden" id="wpe-rownum">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="form-group"><label>Date</label><input type="date" id="wpe-date"></div>
+      <div class="form-group"><label>Site</label><input type="text" id="wpe-site" readonly style="color:var(--text3)"></div>
+      <div class="form-group"><label>Subcontractor</label><input type="text" id="wpe-subcon" readonly style="color:var(--text3)"></div>
+      <div class="form-group"><label>Poles Done</label><input type="number" id="wpe-poles" min="0" placeholder="0"></div>
+      <div class="form-group"><label>Wire Done (KM)</label><input type="number" id="wpe-kms" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group full-width"><label>Remarks</label><input type="text" id="wpe-remarks" placeholder="Optional"></div>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-primary btn-sm" id="wpe-save-btn" onclick="saveWPEdit()">💾 Save Changes</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeWPEditModal()">✕ Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast-container"></div>
 
@@ -1350,7 +1369,6 @@ function showTab(name, link) {
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
   if(name==='subconledger') loadSubconLedger();
-  if(name==='cvc')          loadCvC();
   if(name==='reports')      loadReports();
 
   document.getElementById('sidebar').classList.remove('open');
@@ -1847,12 +1865,52 @@ function filterWPHistory(){
   if(!el) return;
   if(!filtered.length){el.innerHTML='<p style="color:var(--text3)">No entries.</p>';return;}
   el.innerHTML=`<div class="tbl-wrap"><table>
-    <thead><tr><th>Date</th><th>Site</th><th>Subcontractor</th><th>Poles Done</th><th>KMs Done</th><th>Remarks</th></tr></thead>
-    <tbody>${filtered.map(e=>`<tr>
+    <thead><tr><th>Date</th><th>Site</th><th>Subcontractor</th><th>Poles Done</th><th>KMs Done</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${filtered.map((e,i)=>`<tr>
       <td>${esc(e.date)}</td><td>${esc(e.site)}</td><td>${esc(e.subcon)}</td>
       <td>${e.poles||0}</td><td>${e.kms||0}</td><td style="color:var(--text3)">${esc(e.remarks)||'—'}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" onclick="openWPEditModal(${WP_HISTORY.indexOf(e)})">✏️ Edit</button></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
+}
+
+function openWPEditModal(idx){
+  const e=WP_HISTORY[idx]; if(!e) return;
+  document.getElementById('wpe-rownum').value=e.rowNum||'';
+  document.getElementById('wpe-date').value=e.date||'';
+  document.getElementById('wpe-site').value=e.site||'';
+  document.getElementById('wpe-subcon').value=e.subcon||'';
+  document.getElementById('wpe-poles').value=e.poles||0;
+  document.getElementById('wpe-kms').value=e.kms||0;
+  document.getElementById('wpe-remarks').value=e.remarks||'';
+  document.getElementById('wp-edit-modal').style.display='flex';
+}
+
+function closeWPEditModal(){
+  document.getElementById('wp-edit-modal').style.display='none';
+}
+
+async function saveWPEdit(){
+  const rowNum=document.getElementById('wpe-rownum').value;
+  if(!rowNum){toast('Row reference missing','error');return;}
+  const date=document.getElementById('wpe-date').value;
+  const site=document.getElementById('wpe-site').value;
+  const subcon=document.getElementById('wpe-subcon').value;
+  const poles=parseFloat(document.getElementById('wpe-poles').value)||0;
+  const kms=parseFloat(document.getElementById('wpe-kms').value)||0;
+  const remarks=document.getElementById('wpe-remarks').value;
+  if(!date){toast('Date required','error');return;}
+  const btn=document.getElementById('wpe-save-btn');
+  btn.disabled=true;btn.innerHTML='⏳ Saving…';
+  try{
+    const res=await apiPost('updateWPRow',[date,site,subcon,'Both',poles,kms,remarks],{rowNum});
+    if(res.success){
+      toast('✅ Updated','success');
+      closeWPEditModal();
+      loadWP();
+    } else toast(res.error||'Failed','error');
+  } catch(e){ toast('Error: '+e.message,'error'); }
+  finally{ btn.disabled=false;btn.innerHTML='💾 Save Changes'; }
 }
 
 function renderWPSites(sites){
@@ -1900,6 +1958,8 @@ async function saveWP(){
   if(!site){toast('Site required','error');return;}
   if(!sub){toast('Subcontractor required','error');return;}
   if(!poles&&!kms){toast('Enter poles or KMs','error');return;}
+  const btn=document.querySelector('#wptab-log .btn-primary');
+  if(btn){btn.disabled=true;btn.style.opacity='0.5';btn.dataset.orig=btn.innerHTML;btn.innerHTML='⏳ Saving…';}
   try{
     const res=await apiPost('WorkProgress',[[date,site,sub,'Both',poles,kms,v('wp-remarks')]]);
     if(res.success){
@@ -1910,6 +1970,9 @@ async function saveWP(){
       loadWP();
     } else toast(res.error||'Failed','error');
   } catch(e){ toast('Error: '+e.message,'error'); }
+  finally{
+    if(btn){btn.disabled=false;btn.style.opacity='';btn.innerHTML=btn.dataset.orig||'💾 Save Progress';delete btn.dataset.orig;}
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2386,37 +2449,6 @@ async function loadSubconLedger(){
           <td style="font-weight:600;color:${(r.balance||0)<0?'var(--red)':(r.balance||0)>0?'var(--yellow)':'var(--green)'}">${r.balance||0}</td>
         </tr>`).join('')}</tbody>
       </table></div></div>`).join('');
-  } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
-}
-
-// ══════════════════════════════════════════════════════
-//  CvC
-// ══════════════════════════════════════════════════════
-async function loadCvC(){
-  const el=document.getElementById('cvc-body');
-  el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
-  try{
-    const [sd,wd]=await Promise.all([api({action:'stock'}),api({action:'workprogress'})]);
-    STOCK=sd;
-    // Build a map from API response, then iterate MASTERS.sites as source of truth
-    const wpMap={};
-    (wd.sites||[]).forEach(s=>{ if(s.site) wpMap[s.site]=s; });
-    const validSites=(MASTERS.sites||[]);
-    el.innerHTML=`<div class="tbl-wrap"><table>
-      <thead><tr><th>Site</th><th>Poles Done/Scope</th><th>KMs Done/Scope</th><th>Progress %</th><th>Items at Site</th><th>Status</th></tr></thead>
-      <tbody>${validSites.map(ms=>{
-        const s=wpMap[ms.name]||{};
-        const pct=s.overallPct||0;
-        const status=s.status||(pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed');
-        const cnt=(sd.stock||[]).filter(st=>st.sites&&st.sites[ms.name]>0).length;
-        return`<tr><td style="font-weight:500">${esc(ms.name)}</td>
-          <td>${s.polesErected||0}/${ms.totalPoles||0}</td>
-          <td>${s.kmsStrung||0}/${ms.totalKms||0}</td>
-          <td><strong>${pct}%</strong></td>
-          <td>${cnt?cnt+' items':'—'}</td>
-          <td><span class="status ${status}">${STATUS_LABEL[status]||status||'—'}</span></td></tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
   } catch(e){ el.innerHTML=`<p style="color:var(--red)">Error: ${e.message}</p>`; }
 }
 
