@@ -725,6 +725,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
         <div class="report-tab" onclick="showSettingsTab('sites',this)">🏗️ Sites</div>
         <div class="report-tab" onclick="showSettingsTab('subcons',this)">👷 Subcontractors</div>
         <div class="report-tab" onclick="showSettingsTab('scope',this)">📐 Scope</div>
+        <div class="report-tab" onclick="showSettingsTab('bom',this)">📋 BOM</div>
       </div>
 
       <div id="stab-items">
@@ -828,6 +829,47 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <button class="btn btn-ghost btn-sm" id="sc-cancel-btn" style="display:none" onclick="cancelScopeEdit()">✕ Cancel</button>
             </div>
             <div id="sc-list" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="stab-bom" style="display:none">
+        <!-- BOM MASTER -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📋 Bill of Materials (BOM)</h2>
+            <span style="font-size:11px;color:var(--text3)">Define which materials are needed per activity</span>
+          </div>
+          <div class="card-body">
+            <div class="form-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+              <div class="form-group">
+                <label>Activity Code</label>
+                <input type="text" id="bom-actcode" list="bom-actcode-list" placeholder="e.g. PE" oninput="onBOMActCodeInput()">
+                <datalist id="bom-actcode-list"></datalist>
+              </div>
+              <div class="form-group">
+                <label>Activity Name</label>
+                <input type="text" id="bom-actname" placeholder="e.g. Pole Erection">
+              </div>
+              <div class="form-group">
+                <label>Material (Item)</label>
+                <select id="bom-item" onchange="onBOMItemChange()"><option value="">Select Item</option></select>
+              </div>
+              <div class="form-group">
+                <label>Qty</label>
+                <input type="number" id="bom-qty" placeholder="0" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Unit</label>
+                <input type="text" id="bom-unit" placeholder="Nos / Mtrs / KM">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" onclick="saveBOMRow()">+ Add BOM Row</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearBOMForm()">✕ Clear</button>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+            <div id="bom-list"><p style="color:var(--text4);font-size:12px">Loading BOM...</p></div>
           </div>
         </div>
       </div>
@@ -2438,10 +2480,93 @@ function renderReports(d){
 function showSettingsTab(key,tab){
   document.querySelectorAll('#tab-settings .report-tab').forEach(t=>t.classList.remove('active'));
   tab.classList.add('active');
-  ['items','sites','subcons','scope'].forEach(k=>{
+  ['items','sites','subcons','scope','bom'].forEach(k=>{
     const el=document.getElementById('stab-'+k);
     if(el) el.style.display=(k===key?'block':'none');
   });
+  if(key==='bom') renderBOMSettings();
+}
+
+// ══════════════════════════════════════════════════════
+//  BOM MASTER
+// ══════════════════════════════════════════════════════
+function onBOMActCodeInput(){
+  const code=document.getElementById('bom-actcode').value.trim();
+  const act=(MASTERS.activities||[]).find(a=>(a.code||a.name)===code);
+  if(act && !document.getElementById('bom-actname').value) document.getElementById('bom-actname').value=act.name||'';
+}
+function onBOMItemChange(){
+  const item=(MASTERS.items||[]).find(i=>i.name===document.getElementById('bom-item').value);
+  if(item) document.getElementById('bom-unit').value=item.unit||'';
+}
+function clearBOMForm(){
+  ['bom-actcode','bom-actname','bom-qty','bom-unit'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bom-item').value='';
+}
+async function saveBOMRow(){
+  const code=v('bom-actcode').trim();
+  const name=v('bom-actname').trim();
+  const item=v('bom-item');
+  const qty=parseFloat(v('bom-qty'));
+  if(!code){toast('Activity Code required','error');return;}
+  if(!item){toast('Select a Material/Item','error');return;}
+  if(!qty||qty<=0){toast('Enter a valid Qty','error');return;}
+  const unit=v('bom-unit').trim();
+  try{
+    const res=await apiPost('BOMaster',[[code,name,item,qty,unit]]);
+    if(res.success){
+      toast('✅ BOM row added','success');
+      clearBOMForm();
+      await initApp();
+      renderBOMSettings();
+    } else toast(res.error||'Failed','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+function renderBOMSettings(){
+  // refresh datalist
+  const acts=MASTERS.activities||[];
+  const bom=MASTERS.bom||{};
+  const dl=document.getElementById('bom-actcode-list');
+  if(dl) dl.innerHTML=acts.map(a=>`<option value="${esc(a.code||a.name)}">${esc(a.code||a.name)} — ${esc(a.name)}</option>`).join('');
+  // refresh item select
+  const itemSel=document.getElementById('bom-item');
+  if(itemSel){
+    itemSel.innerHTML='<option value="">Select Item</option>'+(MASTERS.items||[]).map(i=>`<option value="${esc(i.name)}">${esc(i.name)} (${esc(i.unit)})</option>`).join('');
+  }
+  // render grouped BOM table
+  const allCodes=[...new Set([...acts.map(a=>a.code||a.name),...Object.keys(bom)])];
+  if(!allCodes.length){
+    document.getElementById('bom-list').innerHTML='<p style="color:var(--text4);font-size:12px">No BOM entries yet. Add one above.</p>';
+    return;
+  }
+  let html='';
+  allCodes.forEach(code=>{
+    const act=acts.find(a=>(a.code||a.name)===code);
+    const actName=act?act.name:code;
+    const entries=bom[code]||[];
+    if(!entries.length) return;
+    html+=`<div style="margin-bottom:18px">
+      <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px;padding:6px 10px;background:rgba(31,111,235,.07);border-radius:6px;border-left:3px solid var(--accent)">
+        ${esc(code)}${actName&&actName!==code?' — '+esc(actName):''}
+      </div>
+      <div class="tbl-wrap">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--bg3)">
+          <th style="text-align:left;padding:6px 10px;border:1px solid var(--border)">Material</th>
+          <th style="text-align:center;padding:6px 10px;border:1px solid var(--border);width:80px">Qty</th>
+          <th style="text-align:center;padding:6px 10px;border:1px solid var(--border);width:80px">Unit</th>
+        </tr></thead>
+        <tbody>`;
+    entries.forEach((e,i)=>{
+      html+=`<tr style="background:${i%2?'var(--bg3)':'var(--bg2)'}">
+        <td style="padding:5px 10px;border:1px solid var(--border)">${esc(e.material)}</td>
+        <td style="text-align:center;padding:5px 10px;border:1px solid var(--border)">${e.qty}</td>
+        <td style="text-align:center;padding:5px 10px;border:1px solid var(--border)">${esc(e.unit||'')}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  document.getElementById('bom-list').innerHTML=html||'<p style="color:var(--text4);font-size:12px">No BOM items yet for any activity.</p>';
 }
 
 function showWPTab(key,tab){
