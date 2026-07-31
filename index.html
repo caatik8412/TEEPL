@@ -1539,6 +1539,31 @@ function loadBOMForActivity(type){
 // ══════════════════════════════════════════════════════
 //  SAVE TRANSACTION
 // ══════════════════════════════════════════════════════
+const TAB_PANE={purchase:'tab-purchase',transfer:'tab-transfer',issue:'tab-issue',
+  consumption:'tab-consumption',returns:'tab-returns',subconreturn:'tab-subconreturn'};
+
+function setTxnBusy(type,busy){
+  const pane=document.getElementById(TAB_PANE[type]);
+  if(!pane) return;
+  const btns=[...pane.querySelectorAll('button')];
+  btns.forEach(b=>{
+    if(busy){
+      b.disabled=true;
+      b.style.opacity='0.5';
+      b.style.cursor='not-allowed';
+      if(b.onclick&&b.getAttribute('onclick')&&b.getAttribute('onclick').includes('saveTxn')){
+        b.dataset.origText=b.innerHTML;
+        b.innerHTML='⏳ Saving…';
+      }
+    } else {
+      b.disabled=false;
+      b.style.opacity='';
+      b.style.cursor='';
+      if(b.dataset.origText){b.innerHTML=b.dataset.origText;delete b.dataset.origText;}
+    }
+  });
+}
+
 async function saveTxn(type){
   const cfg={
     purchase:{sheet:'Purchase',
@@ -1604,11 +1629,11 @@ async function saveTxn(type){
   const user = CURRENT_USER ? CURRENT_USER.name : '';
   if(user) rows = rows.map(r => [...r, user]);
 
+  setTxnBusy(type,true);
   try{
     const res=await apiPost(c.sheet,rows);
     if(res.success){
       toast(`✅ ${rows.length} row(s) saved`,'success');
-      // Auto-print voucher after save — capture form data BEFORE resetting
       const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
         consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
       if(printTypeMap[type]){
@@ -1623,6 +1648,7 @@ async function saveTxn(type){
       refreshStock();
     } else { toast(res.error||'Save failed','error'); }
   } catch(e){ toast('Error: '+e.message,'error'); }
+  finally{ setTxnBusy(type,false); }
 }
 
 function clearRows(type){
