@@ -2510,6 +2510,7 @@ function clearBOMForm(){
   document.getElementById('bom-item').value='';
 }
 async function saveBOMRow(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
   const code=v('bom-actcode').trim();
   const name=v('bom-actname').trim();
   const item=v('bom-item');
