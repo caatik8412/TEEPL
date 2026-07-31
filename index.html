@@ -350,7 +350,15 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Delivery To</label><select id="pur-location"><option value="Main Store">Main Store</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="pur-remarks"></div>
           </div>
-          <div class="tbl-wrap" style="margin-top:14px">
+          <!-- Activity BOM loader -->
+          <div class="activity-bar">
+            <div class="form-group" style="flex:1">
+              <label>Load by Activity (BOM)</label>
+              <select id="pur-activity"><option value="">— Select Activity to auto-fill items —</option></select>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('purchase')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
+          </div>
+          <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
               <tbody id="pur-rows"></tbody>
@@ -395,7 +403,15 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Delivery Date</label><input type="date" id="trn-delivery-date"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="trn-remarks"></div>
           </div>
-          <div class="tbl-wrap" style="margin-top:14px">
+          <!-- Activity BOM loader -->
+          <div class="activity-bar">
+            <div class="form-group" style="flex:1">
+              <label>Load by Activity (BOM)</label>
+              <select id="trn-activity"><option value="">— Select Activity to auto-fill items —</option></select>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('transfer')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
+          </div>
+          <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
               <tbody id="trn-rows"></tbody>
@@ -989,7 +1005,7 @@ function buildDropdowns() {
   ['iss-subcon','con-subcon','sr-subcon','wp-subcon','sc-subcon'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=subOpts;
   });
-  ['iss-activity','con-activity'].forEach(id=>{
+  ['pur-activity','trn-activity','iss-activity','con-activity'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=actOpts;
   });
   const siteFilter = '<option value="">All</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
@@ -1509,14 +1525,13 @@ function onSubconChange(type){
 //  BOM ACTIVITY LOADER
 // ══════════════════════════════════════════════════════
 function loadBOMForActivity(type){
-  const actId = type==='issue' ? 'iss-activity' : 'con-activity';
-  const code = document.getElementById(actId)?.value;
-  if(!code){ toast('Select an activity first','error'); return; }
-  const bom = MASTERS.bom||{};
-  const entries = bom[code]||[];
-  if(!entries.length){ toast('No BOM items for this activity','info'); return; }
-  const tbodyId = type==='issue'?'iss-rows':'con-rows';
-  document.getElementById(tbodyId).innerHTML='';
+  const actIdMap={purchase:'pur-activity',transfer:'trn-activity',issue:'iss-activity',consumption:'con-activity'};
+  const tbodyMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',consumption:'con-rows'};
+  const code=document.getElementById(actIdMap[type])?.value;
+  if(!code){toast('Select an activity first','error');return;}
+  const entries=(MASTERS.bom||{})[code]||[];
+  if(!entries.length){toast('No BOM items for this activity','info');return;}
+  document.getElementById(tbodyMap[type]).innerHTML='';
   entries.forEach(e=>addRow(type,{item:e.material||e.item,qty:e.qty,unit:e.unit}));
   toast(`Loaded ${entries.length} items from BOM`,'success');
 }
