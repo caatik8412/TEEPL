@@ -12,7 +12,7 @@ if(location.protocol==='https:'){
     icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231f6feb'/><text y='.85em' font-size='340' x='50%' text-anchor='middle' font-family='Arial' font-weight='bold' fill='white'>S</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
   const b=new Blob([JSON.stringify(m)],{type:'application/json'});
   const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);
-  const swCode=`const C='sf-v2';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com'))return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
+  const swCode=`const C='sf-v3';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com'))return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
   const sb=new Blob([swCode],{type:'text/javascript'});
   navigator.serviceWorker.register(URL.createObjectURL(sb)).catch(()=>{});
 }
@@ -229,16 +229,6 @@ tr:hover td{background:rgba(0,0,0,.025)}
 </head>
 <body>
 
-<!-- DIRECTOR NAV -->
-<div id="director-nav">
-  <div class="dir-brand"><div class="logo">T</div><span>SiteFlow</span></div>
-  <div class="dir-tabs">
-    <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
-    <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
-  </div>
-  <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
-</div>
-
 <!-- LOGIN GATE -->
 <div id="gate">
   <div class="gate-box">
@@ -304,6 +294,15 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
 <!-- MAIN -->
 <div id="main">
+  <!-- DIRECTOR NAV (inside main so it sits at top of the flex column) -->
+  <div id="director-nav">
+    <div class="dir-brand"><div class="logo">T</div><span>SiteFlow</span></div>
+    <div class="dir-tabs">
+      <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
+      <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
+    </div>
+    <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
+  </div>
   <div id="topbar">
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     <h1 id="topbar-title">Dashboard</h1>
