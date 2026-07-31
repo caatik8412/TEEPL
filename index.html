@@ -2026,7 +2026,6 @@ function buildVoucherHtml(type, data){
     const invoice=data.invoice||v('pur-invoice');
     const loc=data.loc||document.getElementById('pur-location')?.options[document.getElementById('pur-location')?.selectedIndex]?.text||'Main Store';
     const rows=data.rows||(getFormRows('purchase').rows);
-    const total=rows.reduce((a,r)=>a+(r.amount||0),0);
     return`<div class="page">
       <div class="co-hdr">
         <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
@@ -2038,11 +2037,10 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Delivery To</label><span>${esc(loc)}</span></div>
       </div>
       <table>
-        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
-        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:80px">Qty</th><th style="width:80px">Unit</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
         </tbody>
-        ${total?`<tfoot><tr class="total-row"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px">₹${total.toLocaleString('en-IN')}</td></tr></tfoot>`:''}
       </table>
       <div class="signs"><div class="signs-row">
         <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
