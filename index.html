@@ -360,7 +360,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
               <tbody id="pur-rows"></tbody>
             </table>
           </div>
@@ -1404,8 +1404,10 @@ function addRow(type, prefill) {
   if(type==='purchase'){
     cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'purchase')">${itemOpts}</select></td>
-      <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
+      <td><input type="number" class="qty-input" min="0" placeholder="0" oninput="calcAmt(this)"></td>
       <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><input type="number" class="rate-inp" min="0" step="0.01" placeholder="0.00" oninput="calcAmt(this)"></td>
+      <td><input type="number" class="amt-inp" min="0" step="0.01" placeholder="0.00" readonly style="color:var(--text3)"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   } else if(type==='transfer'||type==='issue'){
     cells=`<td>${idx}</td>
@@ -1584,7 +1586,7 @@ async function saveTxn(type){
   const cfg={
     purchase:{sheet:'Purchase',
       hdr:()=>[v('pur-date'),v('pur-voucher'),v('pur-supplier'),null,null,null,null,null,v('pur-location'),v('pur-invoice'),v('pur-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],i,q,u,0,0,h[8],h[9],h[10]];}},
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||(q*rt);if(!i||!q)return null;if(!rt){toast('Rate is required for all items in Purchase','error');return'ABORT';}return[h[0],h[1],h[2],i,q,u,rt,a,h[8],h[9],h[10]];}},
     transfer:{sheet:'Transfer',
       hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,
         v('trn-vehicle'),v('trn-driver'),v('trn-prepared'),v('trn-approved'),
@@ -2089,6 +2091,7 @@ function buildVoucherHtml(type, data){
     const invoice=data.invoice||v('pur-invoice');
     const loc=data.loc||document.getElementById('pur-location')?.options[document.getElementById('pur-location')?.selectedIndex]?.text||'Main Store';
     const rows=data.rows||(getFormRows('purchase').rows);
+    const total=rows.reduce((a,r)=>a+(r.amount||0),0);
     return`<div class="page">
       <div class="co-hdr">
         <div><div class="co-name">Thakur Electricals &amp; Engineers Pvt Ltd</div><div class="co-sub">${CO_SUB}</div></div>
@@ -2100,10 +2103,11 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Delivery To</label><span>${esc(loc)}</span></div>
       </div>
       <table>
-        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:80px">Qty</th><th style="width:80px">Unit</th></tr></thead>
-        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td></tr>`).join('')}
-        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td></tr>').join('')}
+        <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item)}</td><td>${r.qty}</td><td>${esc(r.unit)}</td><td class="r">${r.rate?r.rate.toLocaleString('en-IN'):''}</td><td class="r">${r.amount?r.amount.toLocaleString('en-IN'):''}</td></tr>`).join('')}
+        ${Array(Math.max(0,5-rows.length)).fill('<tr><td></td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
         </tbody>
+        ${total?`<tfoot><tr class="total-row"><td colspan="4"></td><td style="text-align:right;padding:6px 8px">Total</td><td style="text-align:right;padding:6px 8px">₹${total.toLocaleString('en-IN')}</td></tr></tfoot>`:''}
       </table>
       <div class="signs"><div class="signs-row">
         <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
