@@ -348,6 +348,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Supplier</label><input type="text" id="pur-supplier" placeholder="Supplier name"></div>
             <div class="form-group"><label>Invoice No</label><input type="text" id="pur-invoice"></div>
             <div class="form-group"><label>Delivery To</label><select id="pur-location"><option value="Main Store">Main Store</option></select></div>
+            <div class="form-group"><label>Received By</label><input type="text" id="pur-receivedby" placeholder="Name"></div>
+            <div class="form-group"><label>Checked By</label><input type="text" id="pur-checkedby" placeholder="Name"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="pur-remarks"></div>
           </div>
           <!-- Activity BOM loader -->
@@ -1697,7 +1699,7 @@ function clearRows(type){
 }
 
 function resetForm(type){
-  const clearMap={purchase:['pur-supplier','pur-invoice','pur-remarks'],
+  const clearMap={purchase:['pur-supplier','pur-invoice','pur-receivedby','pur-checkedby','pur-remarks'],
     transfer:['trn-vehicle','trn-driver','trn-prepared','trn-approved','trn-delivered','trn-received','trn-delivery-date','trn-remarks'],
     issue:['iss-issuedby','iss-remarks'],
     consumption:['con-remarks'],returns:['ret-remarks'],subconreturn:['sr-reason']};
@@ -2118,6 +2120,8 @@ function buildVoucherHtml(type, data){
     const supplier=data.supplier||v('pur-supplier');
     const invoice=data.invoice||v('pur-invoice');
     const loc=data.loc||document.getElementById('pur-location')?.options[document.getElementById('pur-location')?.selectedIndex]?.text||'Main Store';
+    const receivedBy=data.receivedBy||v('pur-receivedby');
+    const checkedBy=data.checkedBy||v('pur-checkedby');
     const rows=data.rows||(getFormRows('purchase').rows);
     const total=rows.reduce((a,r)=>a+(r.amount||0),0);
     return`<div class="page">
@@ -2140,8 +2144,8 @@ function buildVoucherHtml(type, data){
       </table>
       <div class="signs"><div class="signs-row">
         <div class="sign-box"><div class="sign-label">Prepared By</div><div class="sign-name">${user}</div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Checked By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
-        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Checked By</div><div class="sign-name">${esc(checkedBy)}</div><div class="sign-line">Signature</div></div>
+        <div class="sign-box"><div class="sign-label">Received By</div><div class="sign-name">${esc(receivedBy)}</div><div class="sign-line">Signature</div></div>
         <div class="sign-box"><div class="sign-label">Approved By</div><div class="sign-name"></div><div class="sign-line">Signature</div></div>
       </div></div>
       <div class="footer">${printed}</div>
