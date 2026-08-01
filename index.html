@@ -358,6 +358,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('purchase')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
           </div>
+          <div id="pur-activity-tag" style="display:none;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(31,111,235,.1);padding:3px 10px;border-radius:12px">📋 Activity: <span id="pur-activity-name"></span></span>
+          </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
@@ -411,6 +414,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('transfer')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
           </div>
+          <div id="trn-activity-tag" style="display:none;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(31,111,235,.1);padding:3px 10px;border-radius:12px">📋 Activity: <span id="trn-activity-name"></span></span>
+          </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
@@ -459,6 +465,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('issue')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
           </div>
+          <div id="iss-activity-tag" style="display:none;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(31,111,235,.1);padding:3px 10px;border-radius:12px">📋 Activity: <span id="iss-activity-name"></span></span>
+          </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
@@ -506,6 +515,9 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <select id="con-activity"><option value="">— Select Activity to auto-fill items —</option></select>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadBOMForActivity('consumption')" style="flex-shrink:0;margin-bottom:1px">📋 Load Items</button>
+          </div>
+          <div id="con-activity-tag" style="display:none;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(31,111,235,.1);padding:3px 10px;border-radius:12px">📋 Activity: <span id="con-activity-name"></span></span>
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
@@ -1551,7 +1563,15 @@ function loadBOMForActivity(type){
   if(!entries.length){toast('No BOM items for this activity','info');return;}
   document.getElementById(tbodyMap[type]).innerHTML='';
   entries.forEach(e=>addRow(type,{item:e.material||e.item,qty:e.qty,unit:e.unit}));
-  toast(`Loaded ${entries.length} items from BOM`,'success');
+  // Show activity name tag
+  const acts=MASTERS.activities||[];
+  const act=acts.find(a=>(a.code||a.name)===code);
+  const label=act&&act.name?`${code} — ${act.name}`:code;
+  const tagEl=document.getElementById(type.substring(0,3)+'-activity-tag');
+  const nameEl=document.getElementById(type.substring(0,3)+'-activity-name');
+  if(tagEl) tagEl.style.display='block';
+  if(nameEl) nameEl.textContent=label;
+  toast(`Loaded ${entries.length} items from BOM — ${label}`,'success');
 }
 
 // ══════════════════════════════════════════════════════
@@ -1691,6 +1711,14 @@ function resetForm(type){
   const vEl=document.getElementById(vf);
   if(vEl) delete vEl.dataset.manualEdit;
   autoVoucher(SHEET[type],vf);
+  // Clear activity tag
+  const pfx={purchase:'pur',transfer:'trn',issue:'iss',consumption:'con'}[type];
+  if(pfx){
+    const tag=document.getElementById(pfx+'-activity-tag');
+    const act=document.getElementById(pfx+'-activity');
+    if(tag) tag.style.display='none';
+    if(act) act.value='';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2101,6 +2129,7 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Supplier</label><span>${esc(supplier)||'—'}</span></div>
         <div class="meta-item"><label>Delivery To</label><span>${esc(loc)}</span></div>
+        ${data.activity||document.getElementById('pur-activity-name')?.textContent?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('pur-activity-name')?.textContent||'')}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th><th class="r" style="width:80px">Rate (₹)</th><th class="r" style="width:90px">Amount (₹)</th></tr></thead>
@@ -2146,6 +2175,7 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Vehicle No.</label><span>${esc(vehicle)||'—'}</span></div>
         <div class="meta-item"><label>Driver</label><span>${esc(driver)||'—'}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
+        ${(data.activity||document.getElementById('trn-activity-name')?.textContent)?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('trn-activity-name')?.textContent||'')}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
@@ -2182,6 +2212,7 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Site</label><span>${esc(site)}</span></div>
         <div class="meta-item"><label>Issued To (Subcon)</label><span>${esc(subcon)}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
+        ${(data.activity||document.getElementById('iss-activity-name')?.textContent)?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('iss-activity-name')?.textContent||'')}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:60px">Qty</th><th style="width:60px">Unit</th></tr></thead>
@@ -2215,6 +2246,7 @@ function buildVoucherHtml(type, data){
         <div class="meta-item"><label>Site</label><span>${site}</span></div>
         <div class="meta-item"><label>Subcontractor</label><span>${subcon}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${esc(remarks)}</span></div>`:''}
+        ${(data.activity||document.getElementById('con-activity-name')?.textContent)?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('con-activity-name')?.textContent||'')}</span></div>`:''}
       </div>
       <table>
         <thead><tr><th style="width:30px">#</th><th>Item</th><th style="width:70px">Qty Used</th><th style="width:60px">Unit</th><th>Notes</th></tr></thead>
