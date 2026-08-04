@@ -275,6 +275,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
 
     <div class="section-label">Field</div>
+    <a onclick="showTab('project',this)"><span class="icon">🎯</span>Project Scope</a>
+    <a onclick="showTab('subconwork',this)"><span class="icon">👷</span>Subcon Work</a>
     <a onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
     <a onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
     <a onclick="showTab('subconledger',this)"><span class="icon">📋</span>Subcon Ledger</a>
@@ -329,10 +331,6 @@ tr:hover td{background:rgba(0,0,0,.025)}
         <div class="card">
           <div class="card-header"><h2>📈 Site Progress</h2></div>
           <div class="card-body" id="dash-sites"><div class="skeleton" style="height:14px"></div></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h2>⚠️ Stock Alerts</h2></div>
-          <div class="card-body" id="dash-alerts"><div class="skeleton" style="height:14px"></div></div>
         </div>
       </div>
     </div>
@@ -626,6 +624,43 @@ tr:hover td{background:rgba(0,0,0,.025)}
       </div>
     </div>
 
+    <!-- PROJECT SCOPE TAB -->
+    <div id="tab-project" class="tab-pane">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:700">🎯 Project Scope Overview</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Total scope vs allocated to subcontractors vs completed</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="proj-site-filter" onchange="renderProjectTab()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Sites</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadProjectTab()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div id="proj-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading project scope...</div></div>
+    </div>
+
+    <!-- SUBCON WORK -->
+    <div id="tab-subconwork" class="tab-pane">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:700">👷 Subcontractor Work</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Activity allocation · Materials required vs issued vs consumed</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="sw-subcon-filter" onchange="renderSubconWork(SW_DATA)" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Subcontractors</option>
+          </select>
+          <select id="sw-site-filter" onchange="renderSubconWork(SW_DATA)" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Sites</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadSubconWork()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div id="sw-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
+    </div>
+
     <!-- WORK PROGRESS -->
     <div id="tab-workprogress" class="tab-pane">
       <div class="report-tabs" style="margin-bottom:14px">
@@ -769,7 +804,6 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-grid">
               <div class="form-group"><label>Item Name</label><input type="text" id="im-name" placeholder="Item name"></div>
               <div class="form-group"><label>Unit</label><input type="text" id="im-unit" placeholder="Nos / Mtrs / KM"></div>
-              <div class="form-group"><label>Min Stock</label><input type="number" id="im-min" placeholder="0" min="0"></div>
               <div class="form-group"><label>Remarks</label><input type="text" id="im-remarks"></div>
             </div>
             <div class="btn-row">
@@ -838,6 +872,41 @@ tr:hover td{background:rgba(0,0,0,.025)}
       </div>
 
       <div id="stab-scope" style="display:none">
+
+        <!-- PROJECT SCOPE -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <h2>🏗️ Project Scope</h2>
+            <span id="ps-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
+          <div class="card-body">
+            <input type="hidden" id="ps-edit-key">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Site</label>
+                <select id="ps-site"><option value="">Select Site</option></select>
+              </div>
+              <div class="form-group">
+                <label>Activity</label>
+                <select id="ps-activity" onchange="onProjScopeActChange()"><option value="">Select Activity</option></select>
+              </div>
+              <div class="form-group">
+                <label>Multiplier / Target Qty</label>
+                <input type="number" id="ps-qty" placeholder="e.g. 500" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Unit</label>
+                <input type="text" id="ps-unit" placeholder="Auto from activity" readonly style="color:var(--text3)">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="ps-save-btn" onclick="saveProjectScope()">+ Save Scope</button>
+              <button class="btn btn-ghost btn-sm" id="ps-cancel-btn" style="display:none" onclick="cancelProjectScopeEdit()">✕ Cancel</button>
+            </div>
+            <div id="ps-list" style="margin-top:12px"></div>
+          </div>
+        </div>
+
         <!-- SUBCON SCOPE -->
         <div class="card">
           <div class="card-header">
@@ -847,14 +916,31 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="card-body">
             <input type="hidden" id="sc-edit-key">
             <div class="form-grid">
-              <div class="form-group"><label>Subcontractor</label><select id="sc-subcon"><option value="">Select Subcon</option></select></div>
-              <div class="form-group"><label>Site</label><select id="sc-site"><option value="">Select Site</option></select></div>
-              <div class="form-group"><label>Poles Allocated</label><input type="number" id="sc-poles" placeholder="0" min="0"></div>
-              <div class="form-group"><label>Wire Allocated (KM)</label><input type="number" id="sc-kms" placeholder="0.00" min="0" step="0.01"></div>
-              <div class="form-group"><label>Remarks</label><input type="text" id="sc-remarks"></div>
+              <div class="form-group">
+                <label>Subcontractor</label>
+                <select id="sc-subcon"><option value="">Select Subcon</option></select>
+              </div>
+              <div class="form-group">
+                <label>Site</label>
+                <select id="sc-site" onchange="onSubconScopeSiteChange()"><option value="">Select Site</option></select>
+              </div>
+              <div class="form-group">
+                <label>Activity</label>
+                <select id="sc-activity" onchange="onSubconScopeActChange()">
+                  <option value="">— Select site first —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Allocated Qty (Multiplier)</label>
+                <input type="number" id="sc-qty" placeholder="e.g. 200" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Unit</label>
+                <input type="text" id="sc-unit" readonly placeholder="Auto from activity" style="color:var(--text3)">
+              </div>
             </div>
             <div class="btn-row">
-              <button class="btn btn-primary btn-sm" id="sc-save-btn" onclick="saveMaster('SubconScope')">+ Save Allocation</button>
+              <button class="btn btn-primary btn-sm" id="sc-save-btn" onclick="saveSubconScope()">+ Save Allocation</button>
               <button class="btn btn-ghost btn-sm" id="sc-cancel-btn" style="display:none" onclick="cancelScopeEdit()">✕ Cancel</button>
             </div>
             <div id="sc-list" style="margin-top:12px"></div>
@@ -952,7 +1038,7 @@ const STATUS_LABEL = {
 // ══════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════
-let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{} };
+let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{}, siteScope:[] };
 let STOCK = {};
 const VSTORE = {}; // voucher data store for reversal
 
@@ -1026,7 +1112,15 @@ function buildDropdowns() {
       return `<option value="${esc(code)}">${esc(label)}</option>`;
     }).join('');
 
-  ['iss-site','con-site','sr-site','wp-site','sub-site','sc-site'].forEach(id=>{
+  // Populate Project scope site filter
+  const projFilter=document.getElementById('proj-site-filter');
+  if(projFilter){projFilter.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');}
+  // Subcon Work filters
+  const swSubF=document.getElementById('sw-subcon-filter');
+  if(swSubF) swSubF.innerHTML='<option value="">All Subcontractors</option>'+subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  const swSiteF=document.getElementById('sw-site-filter');
+  if(swSiteF) swSiteF.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+  ['iss-site','con-site','sr-site','wp-site','sub-site','sc-site','ps-site'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=siteOpts;
   });
   ['pur-location','trn-from','trn-to','ret-from','ret-to'].forEach(id=>{
@@ -1041,6 +1135,10 @@ function buildDropdowns() {
   ['pur-activity','trn-activity','iss-activity','con-activity'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=actOpts;
   });
+  // Project Scope activity dropdown — from ActivityMaster only, with unit info
+  const psActSel=document.getElementById('ps-activity');
+  if(psActSel) psActSel.innerHTML='<option value="">Select Activity</option>'+
+    acts.map(a=>`<option value="${esc(a.code||a.name)}" data-unit="${esc(a.unit||'')}">${esc(a.code||a.name)} — ${esc(a.name||a.code)}${a.unit?' ('+a.unit+')':''}</option>`).join('');
   const siteFilter = '<option value="">All</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
   const subFilter  = '<option value="">All</option>'+subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
   const issF=document.getElementById('iss-filter'); if(issF) issF.innerHTML=siteFilter;
@@ -1051,6 +1149,7 @@ function buildDropdowns() {
   renderSiteTable();
   renderSubconList();
   renderScopeList();
+  renderProjectScope();
 
   // Refresh item selects in any existing transaction rows
   // (handles the case where addRow() was called before initApp() completed)
@@ -1070,12 +1169,11 @@ function renderItemList() {
   if(!items.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No items.</p>';return;}
   el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${items.length} Items</div>
   <div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Item Name</th><th>Unit</th><th>Min Stock</th><th>Remarks</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>Item Name</th><th>Unit</th><th>Remarks</th><th></th></tr></thead>
     <tbody>${items.map((r,i)=>`<tr>
       <td style="color:var(--text3)">${i+1}</td>
       <td><strong>${esc(r.name)}</strong></td>
       <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.unit||'—')}</span></td>
-      <td>${r.minStock||0}</td>
       <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
       <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editItem(${JSON.stringify(r)})'>✏ Edit</button></td>
     </tr>`).join('')}
@@ -1087,7 +1185,6 @@ function editItem(r) {
   document.getElementById('im-edit-key').value  = r.name;
   document.getElementById('im-name').value      = r.name;
   document.getElementById('im-unit').value      = r.unit||'';
-  document.getElementById('im-min').value       = r.minStock||0;
   document.getElementById('im-remarks').value   = r.remarks||'';
   document.getElementById('im-save-btn').textContent = '💾 Update Item';
   document.getElementById('im-cancel-btn').style.display = '';
@@ -1097,7 +1194,7 @@ function editItem(r) {
 
 function cancelItemEdit() {
   document.getElementById('im-edit-key').value = '';
-  ['im-name','im-unit','im-min','im-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['im-name','im-unit','im-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('im-save-btn').textContent = '+ Add Item';
   document.getElementById('im-cancel-btn').style.display = 'none';
   document.getElementById('im-edit-label').textContent = '';
@@ -1148,46 +1245,467 @@ function cancelSubconEdit() {
 function renderScopeList() {
   const scopes = MASTERS.subconScope||[];
   const el = document.getElementById('sc-list'); if(!el) return;
-  if(!scopes.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No allocations.</p>';return;}
-  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${scopes.length} Allocations</div>
-  <div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Subcontractor</th><th>Site</th><th>Poles Allocated</th><th>Wire (KM)</th><th>Remarks</th><th></th></tr></thead>
-    <tbody>${scopes.map((r,i)=>`<tr>
-      <td style="color:var(--text3)">${i+1}</td>
-      <td><strong>${esc(r.subcon)}</strong></td>
-      <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.site||'—')}</span></td>
-      <td>${r.poles||0}</td>
-      <td>${r.kms||0}</td>
-      <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
-      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editScope(${JSON.stringify(r)})'>✏ Edit</button></td>
-    </tr>`).join('')}
-    </tbody>
-  </table></div>`;
+  if(!scopes.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No allocations yet.</p>';return;}
+  // Group by subcon
+  const bySubcon={};
+  scopes.forEach(r=>{
+    if(!bySubcon[r.subcon]) bySubcon[r.subcon]=[];
+    bySubcon[r.subcon].push(r);
+  });
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">${scopes.length} Allocations across ${Object.keys(bySubcon).length} Subcontractor(s)</div>`+
+    Object.keys(bySubcon).sort().map(sub=>`
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--border)">👷 ${esc(sub)}</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Site</th><th>Activity</th><th>Allocated Qty</th><th>Unit</th><th></th></tr></thead>
+          <tbody>${bySubcon[sub].map((r,i)=>`<tr>
+            <td style="color:var(--text3)">${i+1}</td>
+            <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.site||'—')}</span></td>
+            <td><strong>${esc(r.activityCode||'—')}</strong> <span style="color:var(--text3);font-size:11px">${esc(r.activityName?'— '+r.activityName:'')}</span></td>
+            <td style="font-weight:700;color:var(--green)">${(r.allocatedQty||0).toLocaleString('en-IN')}</td>
+            <td>${esc(r.unit||'—')}</td>
+            <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editScope(${JSON.stringify(r)})'>✏ Edit</button></td>
+          </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>`).join('');
+}
+
+function onSubconScopeSiteChange(){
+  const site=document.getElementById('sc-site')?.value;
+  const actSel=document.getElementById('sc-activity');
+  if(!actSel) return;
+  if(!site){actSel.innerHTML='<option value="">— Select site first —</option>';return;}
+  // Filter activities from SiteScope for selected site
+  const siteActs=(MASTERS.siteScope||[]).filter(s=>s.site===site);
+  if(!siteActs.length){
+    actSel.innerHTML='<option value="">— No activities in scope for this site —</option>';
+    return;
+  }
+  actSel.innerHTML='<option value="">Select Activity</option>'+
+    siteActs.map(s=>`<option value="${esc(s.activityCode)}" data-unit="${esc(s.unit||'')}">${esc(s.activityCode)} — ${esc(s.activityName||s.activityCode)}</option>`).join('');
+  document.getElementById('sc-qty').value='';
+  document.getElementById('sc-unit').value='';
+}
+
+function onSubconScopeActChange(){
+  const actSel=document.getElementById('sc-activity');
+  const opt=actSel?.options[actSel.selectedIndex];
+  const unit=opt?.dataset?.unit||'';
+  const unitEl=document.getElementById('sc-unit');
+  if(unitEl) unitEl.value=unit;
+}
+
+async function saveSubconScope(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
+  const subcon=document.getElementById('sc-subcon')?.value?.trim();
+  const site=document.getElementById('sc-site')?.value?.trim();
+  const actSel=document.getElementById('sc-activity');
+  const actCode=actSel?.value?.trim();
+  const actName=(MASTERS.siteScope||[]).find(s=>s.site===site&&s.activityCode===actCode)?.activityName||actCode||'';
+  const qty=parseFloat(document.getElementById('sc-qty')?.value)||0;
+  const unit=document.getElementById('sc-unit')?.value?.trim()||'';
+  const editKey=document.getElementById('sc-edit-key')?.value;
+  if(!subcon){toast('Select a subcontractor','error');return;}
+  if(!site){toast('Select a site','error');return;}
+  if(!actCode){toast('Select an activity','error');return;}
+  if(!qty||qty<=0){toast('Enter a valid allocated qty','error');return;}
+  const btn=document.getElementById('sc-save-btn');
+  const origTxt=btn?.textContent;
+  if(btn){btn.disabled=true;btn.style.opacity='0.5';btn.textContent='⏳ Saving…';}
+  const row=[subcon,site,actCode,actName,qty,unit];
+  try{
+    let res;
+    if(editKey){
+      res=await apiPost('updateMasterRow',row,{sheet:'SubconScope',key:editKey});
+    } else {
+      res=await apiPost('SubconScope',[row]);
+    }
+    if(res.success){
+      toast('✅ Allocation saved','success');
+      cancelScopeEdit();
+      await initApp();
+      renderScopeList();
+    } else toast(res.error||'Failed to save','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent=origTxt||'+ Save Allocation';}}
 }
 
 function editScope(r) {
-  // Composite key: subcon||site — uniquely identifies a scope row even if subcon has multiple sites
-  document.getElementById('sc-edit-key').value  = r.subcon + '||' + r.site;
-  document.getElementById('sc-subcon').value    = r.subcon||'';
-  document.getElementById('sc-site').value      = r.site||'';
-  document.getElementById('sc-poles').value     = r.poles||0;
-  document.getElementById('sc-kms').value       = r.kms||0;
-  document.getElementById('sc-remarks').value   = r.remarks||'';
+  // New composite key: subcon||site||activityCode
+  document.getElementById('sc-edit-key').value = r.subcon+'||'+r.site+'||'+(r.activityCode||'');
+  document.getElementById('sc-subcon').value   = r.subcon||'';
+  document.getElementById('sc-site').value     = r.site||'';
+  // Trigger site change to populate activities, then set activity
+  onSubconScopeSiteChange();
+  setTimeout(()=>{
+    document.getElementById('sc-activity').value = r.activityCode||'';
+    document.getElementById('sc-unit').value     = r.unit||'';
+  },50);
+  document.getElementById('sc-qty').value      = r.allocatedQty||0;
   document.getElementById('sc-save-btn').textContent = '💾 Update Allocation';
   document.getElementById('sc-cancel-btn').style.display = '';
-  document.getElementById('sc-edit-label').textContent = 'Editing: '+r.subcon+' @ '+r.site;
+  document.getElementById('sc-edit-label').textContent = 'Editing: '+r.subcon+' — '+r.activityCode+' @ '+r.site;
   document.getElementById('sc-subcon').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function cancelScopeEdit() {
   document.getElementById('sc-edit-key').value = '';
-  ['sc-poles','sc-kms','sc-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['sc-qty','sc-unit'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const sc=document.getElementById('sc-subcon'); if(sc) sc.value='';
   const ss=document.getElementById('sc-site');   if(ss) ss.value='';
+  const sa=document.getElementById('sc-activity'); if(sa) sa.innerHTML='<option value="">— Select site first —</option>';
   document.getElementById('sc-save-btn').textContent = '+ Save Allocation';
   document.getElementById('sc-cancel-btn').style.display = 'none';
   document.getElementById('sc-edit-label').textContent = '';
 }
+
+// ══════════════════════════════════════════════════════
+//  PROJECT SCOPE TAB
+// ══════════════════════════════════════════════════════
+async function loadProjectTab(){
+  const el=document.getElementById('proj-content');
+  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading project scope...</div>';
+  // Use MASTERS data (already loaded); just re-render
+  renderProjectTab();
+}
+
+function renderProjectTab(){
+  const el=document.getElementById('proj-content'); if(!el) return;
+  const siteScope=MASTERS.siteScope||[];
+  const subconScope=MASTERS.subconScope||[];
+  const filterSite=document.getElementById('proj-site-filter')?.value||'';
+
+  if(!siteScope.length){
+    el.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">No project scope defined yet.<br><small>Go to Settings → Scope → Project Scope to add activities.</small></div></div>';
+    return;
+  }
+
+  // Group SiteScope by site
+  const bySite={};
+  siteScope.forEach(s=>{
+    if(filterSite && s.site!==filterSite) return;
+    if(!bySite[s.site]) bySite[s.site]=[];
+    bySite[s.site].push(s);
+  });
+
+  // Build allocated map: site||actCode → total allocated qty
+  const allocMap={};
+  // Build subcon-level map: site||actCode → [{subcon, qty}]
+  const subconMap={};
+  subconScope.forEach(r=>{
+    const key=r.site+'||'+r.activityCode;
+    allocMap[key]=(allocMap[key]||0)+(r.allocatedQty||0);
+    if(!subconMap[key]) subconMap[key]=[];
+    subconMap[key].push({subcon:r.subcon,qty:r.allocatedQty||0,unit:r.unit||''});
+  });
+
+  if(!Object.keys(bySite).length){
+    el.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:24px;color:var(--text3)">No scope data for selected site.</div></div>';
+    return;
+  }
+
+  // Summary cards
+  const totalScope=siteScope.filter(s=>!filterSite||s.site===filterSite).reduce((a,s)=>a+(s.scopeQty||0),0);
+  const totalAlloc=Object.values(allocMap).reduce((a,v)=>a+v,0);
+  const totalNonAlloc=Math.max(0,totalScope-totalAlloc);
+
+  let html=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+    <div class="card" style="margin:0;padding:16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--accent)">${totalScope.toLocaleString('en-IN')}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Total Scope</div>
+    </div>
+    <div class="card" style="margin:0;padding:16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--green)">${totalAlloc.toLocaleString('en-IN')}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Allocated</div>
+    </div>
+    <div class="card" style="margin:0;padding:16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--yellow)">${totalNonAlloc.toLocaleString('en-IN')}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Non-Allocated</div>
+    </div>
+    <div class="card" style="margin:0;padding:16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--text3)">—</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Completed</div>
+      <div style="font-size:10px;color:var(--text4);margin-top:2px">From Work Progress</div>
+    </div>
+  </div>`;
+
+  // Per-site breakdown
+  html+=Object.keys(bySite).sort().map(site=>{
+    const acts=bySite[site];
+    const siteTotal=acts.reduce((a,s)=>a+(s.scopeQty||0),0);
+    const siteAlloc=acts.reduce((a,s)=>a+(allocMap[site+'||'+s.activityCode]||0),0);
+    const sitePct=siteTotal>0?Math.round(siteAlloc/siteTotal*100):0;
+    return `<div class="card" style="margin-bottom:14px">
+      <div class="card-header" style="padding:14px 16px">
+        <div>
+          <h2 style="font-size:14px">🏗️ ${esc(site)}</h2>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${acts.length} activit${acts.length===1?'y':'ies'} · Allocated ${sitePct}% of scope</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:var(--text3)">
+          <div style="font-weight:700;color:var(--accent);font-size:16px">${siteAlloc.toLocaleString('en-IN')} <span style="font-size:11px;font-weight:400">/ ${siteTotal.toLocaleString('en-IN')} allocated</span></div>
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:0">
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th>Activity</th><th class="r">Total Scope</th><th class="r">Allocated</th>
+            <th class="r">Non-Allocated</th><th class="r">Completed</th>
+            <th class="r">Pending (Alloc)</th><th class="r">Pending (Non-Alloc)</th><th>Subcontractors</th>
+          </tr></thead>
+          <tbody>${acts.map(s=>{
+            const key=site+'||'+s.activityCode;
+            const alloc=allocMap[key]||0;
+            const nonAlloc=Math.max(0,(s.scopeQty||0)-alloc);
+            const completed=0; // will come from WP once activity-based
+            const pendingAlloc=Math.max(0,alloc-completed);
+            const pendingNonAlloc=nonAlloc;
+            const allocPct=s.scopeQty>0?Math.round(alloc/s.scopeQty*100):0;
+            const subs=(subconMap[key]||[]).map(x=>`<span style="background:var(--bg3);padding:1px 6px;border-radius:10px;font-size:10px;margin:1px;display:inline-block">${esc(x.subcon)} (${x.qty.toLocaleString('en-IN')})</span>`).join(' ');
+            return `<tr>
+              <td>
+                <div style="font-weight:600">${esc(s.activityCode)}</div>
+                <div style="font-size:11px;color:var(--text3)">${esc(s.activityName||'')}</div>
+                <div style="height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;width:80px">
+                  <div style="height:4px;background:${allocPct>=100?'var(--green)':allocPct>0?'var(--accent)':'var(--border)'};border-radius:2px;width:${Math.min(100,allocPct)}%"></div>
+                </div>
+              </td>
+              <td class="r" style="font-weight:700">${(s.scopeQty||0).toLocaleString('en-IN')} <span style="font-size:10px;color:var(--text3)">${esc(s.unit||'')}</span></td>
+              <td class="r" style="color:var(--green);font-weight:600">${alloc.toLocaleString('en-IN')}</td>
+              <td class="r" style="color:${nonAlloc>0?'var(--yellow)':'var(--text3)'};font-weight:600">${nonAlloc.toLocaleString('en-IN')}</td>
+              <td class="r" style="color:var(--text4)">—</td>
+              <td class="r" style="color:var(--accent)">${pendingAlloc.toLocaleString('en-IN')}</td>
+              <td class="r" style="color:${pendingNonAlloc>0?'var(--red)':'var(--green)'}">${pendingNonAlloc.toLocaleString('en-IN')}</td>
+              <td>${subs||'<span style="color:var(--text4);font-size:11px">None assigned</span>'}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════
+//  PROJECT SCOPE
+// ══════════════════════════════════════════════════════
+function onProjScopeActChange(){
+  const sel=document.getElementById('ps-activity');
+  const opt=sel?.options[sel.selectedIndex];
+  const unit=opt?.dataset?.unit||'';
+  const unitEl=document.getElementById('ps-unit');
+  if(unitEl) unitEl.value=unit;
+}
+
+function renderProjectScope(){
+  const scopes=(MASTERS.siteScope||[]);
+  const el=document.getElementById('ps-list'); if(!el) return;
+  if(!scopes.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No project scope defined yet.</p>';return;}
+  // Group by site
+  const bySite={};
+  scopes.forEach(r=>{
+    if(!bySite[r.site]) bySite[r.site]=[];
+    bySite[r.site].push(r);
+  });
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${scopes.length} scope entries across ${Object.keys(bySite).length} site(s)</div>`+
+    Object.keys(bySite).sort().map(site=>`
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--border)">🏗️ ${esc(site)}</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Activity</th><th>Multiplier</th><th>Unit</th><th></th></tr></thead>
+          <tbody>${bySite[site].map((r,i)=>`<tr>
+            <td style="color:var(--text3)">${i+1}</td>
+            <td><strong>${esc(r.activityCode)}</strong> <span style="color:var(--text3);font-size:11px">— ${esc(r.activityName||'')}</span></td>
+            <td style="font-weight:700;color:var(--green)">${r.scopeQty?.toLocaleString('en-IN')||0}</td>
+            <td><span style="background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:11px">${esc(r.unit||'—')}</span></td>
+            <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editProjectScope(${JSON.stringify(r)})'>✏ Edit</button></td>
+          </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>`).join('');
+}
+
+function editProjectScope(r){
+  document.getElementById('ps-edit-key').value=r.site+'||'+r.activityCode;
+  document.getElementById('ps-site').value=r.site||'';
+  document.getElementById('ps-activity').value=r.activityCode||'';
+  document.getElementById('ps-qty').value=r.scopeQty||'';
+  document.getElementById('ps-unit').value=r.unit||'';
+  document.getElementById('ps-save-btn').textContent='💾 Update Scope';
+  document.getElementById('ps-cancel-btn').style.display='';
+  document.getElementById('ps-edit-label').textContent='Editing: '+r.activityCode+' @ '+r.site;
+  document.getElementById('ps-site').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelProjectScopeEdit(){
+  document.getElementById('ps-edit-key').value='';
+  ['ps-qty','ps-unit'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const s=document.getElementById('ps-site'); if(s) s.value='';
+  const a=document.getElementById('ps-activity'); if(a) a.value='';
+  document.getElementById('ps-save-btn').textContent='+ Save Scope';
+  document.getElementById('ps-cancel-btn').style.display='none';
+  document.getElementById('ps-edit-label').textContent='';
+}
+
+async function saveProjectScope(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
+  const site=document.getElementById('ps-site')?.value?.trim();
+  const actSel=document.getElementById('ps-activity');
+  const actCode=actSel?.value?.trim();
+  const actName=(MASTERS.activities||[]).find(a=>(a.code||a.name)===actCode)?.name||actCode||'';
+  const qty=parseFloat(document.getElementById('ps-qty')?.value)||0;
+  const unit=document.getElementById('ps-unit')?.value?.trim()||'';
+  const editKey=document.getElementById('ps-edit-key')?.value;
+  if(!site){toast('Select a site','error');return;}
+  if(!actCode){toast('Select an activity','error');return;}
+  if(!qty||qty<=0){toast('Enter a valid multiplier / target qty','error');return;}
+  const btn=document.getElementById('ps-save-btn');
+  const origTxt=btn?.textContent;
+  if(btn){btn.disabled=true;btn.style.opacity='0.5';btn.textContent='⏳ Saving…';}
+  const row=[site,actCode,actName,qty,unit,'',''];
+  try{
+    let res;
+    if(editKey){
+      res=await apiPost('updateMasterRow',row,{sheet:'SiteScope',key:editKey});
+    } else {
+      res=await apiPost('SiteScope',[row]);
+    }
+    if(res.success){
+      toast('✅ Scope saved','success');
+      cancelProjectScopeEdit();
+      await initApp();
+      renderProjectScope();
+    } else toast(res.error||'Failed to save','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent=origTxt||'+ Save Scope';}}
+}
+
+// ══════════════════════════════════════════════════════
+//  SUBCON WORK
+// ══════════════════════════════════════════════════════
+let SW_DATA = [];
+
+async function loadSubconWork(){
+  const el=document.getElementById('sw-content');
+  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading subcontractor work data...</div>';
+  try{
+    const data=await api({action:'subconWork'});
+    SW_DATA=Array.isArray(data)?data:[];
+    renderSubconWork(SW_DATA);
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadSubconWork()">🔄 Retry</button></div>`;
+  }
+}
+
+function renderSubconWork(data){
+  const el=document.getElementById('sw-content'); if(!el) return;
+  const filterSub=document.getElementById('sw-subcon-filter')?.value||'';
+  const filterSite=document.getElementById('sw-site-filter')?.value||'';
+
+  const rows=data.filter(r=>{
+    if(filterSub && r.subcon!==filterSub) return false;
+    if(filterSite && r.site!==filterSite) return false;
+    return true;
+  });
+
+  if(!rows.length){
+    el.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">No subcontractor allocations found.<br><small>Add allocations in Settings → Scope → Subcon Scope.</small></div></div>';
+    return;
+  }
+
+  // Group by subcontractor
+  const bySubcon={};
+  rows.forEach(r=>{
+    if(!bySubcon[r.subcon]) bySubcon[r.subcon]=[];
+    bySubcon[r.subcon].push(r);
+  });
+
+  el.innerHTML=Object.keys(bySubcon).sort().map(sub=>{
+    const acts=bySubcon[sub];
+    // Summary totals across all activities for this subcon
+    let totReq=0,totIssued=0,totConsumed=0,totPending=0;
+    acts.forEach(a=>(a.materials||[]).forEach(m=>{
+      totReq+=m.required||0; totIssued+=m.issued||0;
+      totConsumed+=m.consumed||0; totPending+=m.yetToIssue||0;
+    }));
+
+    return `<div class="card" style="margin-bottom:16px">
+      <div class="card-header" style="padding:14px 16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <h2 style="font-size:15px">👷 ${esc(sub)}</h2>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${acts.length} activit${acts.length===1?'y':'ies'} allocated</div>
+        </div>
+        <div style="display:flex;gap:16px;font-size:12px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-weight:700;color:var(--accent)">${rnd(totReq)}</div><div style="color:var(--text3)">Required</div></div>
+          <div style="text-align:center"><div style="font-weight:700;color:var(--green)">${rnd(totIssued)}</div><div style="color:var(--text3)">Issued</div></div>
+          <div style="text-align:center"><div style="font-weight:700;color:var(--text2)">${rnd(totConsumed)}</div><div style="color:var(--text3)">Consumed</div></div>
+          <div style="text-align:center"><div style="font-weight:700;color:${totPending>0?'var(--red)':'var(--green)'}">${rnd(totPending)}</div><div style="color:var(--text3)">Yet to Issue</div></div>
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:0">
+        ${acts.map(a=>{
+          const hasMat=(a.materials||[]).length>0;
+          const issPct=a.materials&&a.materials.reduce((s,m)=>s+(m.required||0),0)>0
+            ? Math.min(100,Math.round(a.materials.reduce((s,m)=>s+(m.issued||0),0)/a.materials.reduce((s,m)=>s+(m.required||0),0)*100))
+            : 0;
+          return `<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+              <div>
+                <span style="font-size:13px;font-weight:700;color:var(--accent)">${esc(a.activityCode)}</span>
+                <span style="font-size:12px;color:var(--text3);margin-left:6px">${esc(a.activityName||'')}</span>
+                <span style="background:var(--bg3);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px">🏗️ ${esc(a.site)}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:12px;color:var(--text3)">Allocated: <strong style="color:var(--text1)">${(a.allocatedQty||0).toLocaleString('en-IN')} ${esc(a.unit||'')}</strong></span>
+                ${hasMat?`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)">
+                  <div style="width:80px;height:5px;background:var(--bg3);border-radius:3px">
+                    <div style="height:5px;background:${issPct>=100?'var(--green)':'var(--accent)'};border-radius:3px;width:${issPct}%"></div>
+                  </div>${issPct}% issued</div>`:''}
+              </div>
+            </div>
+            ${hasMat
+              ? `<div class="tbl-wrap"><table>
+                  <thead><tr>
+                    <th>Material</th>
+                    <th class="r" style="width:80px">BOM/Unit</th>
+                    <th class="r" style="width:90px">Total Required</th>
+                    <th class="r" style="width:80px">Issued</th>
+                    <th class="r" style="width:80px">Consumed</th>
+                    <th class="r" style="width:90px">Yet to Issue</th>
+                  </tr></thead>
+                  <tbody>${(a.materials||[]).map(m=>{
+                    const pct=m.required>0?Math.min(100,Math.round(m.issued/m.required*100)):0;
+                    const surplus=m.issued>m.required;
+                    return `<tr>
+                      <td>
+                        <div style="font-weight:600">${esc(m.item)}</div>
+                        <div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:3px;width:100px">
+                          <div style="height:3px;background:${surplus?'var(--yellow)':pct>=100?'var(--green)':pct>0?'var(--accent)':'var(--border)'};border-radius:2px;width:${Math.min(100,pct)}%"></div>
+                        </div>
+                      </td>
+                      <td class="r" style="color:var(--text3)">${rnd(m.bomQtyPerUnit)} <span style="font-size:10px">${esc(m.unit||'')}</span></td>
+                      <td class="r" style="font-weight:700">${rnd(m.required)} <span style="font-size:10px;color:var(--text3)">${esc(m.unit||'')}</span></td>
+                      <td class="r" style="color:var(--green);font-weight:600">${rnd(m.issued)}</td>
+                      <td class="r" style="color:var(--text2)">${rnd(m.consumed)}</td>
+                      <td class="r" style="font-weight:700;color:${m.yetToIssue>0?'var(--red)':surplus?'var(--yellow)':'var(--green)'}">
+                        ${m.yetToIssue>0?rnd(m.yetToIssue):surplus?`+${rnd(m.issued-m.required)} surplus`:'✅ Done'}
+                      </td>
+                    </tr>`;
+                  }).join('')}
+                  </tbody>
+                </table></div>`
+              : `<div style="padding:12px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text3)">⚠️ No BOM defined for activity <strong>${esc(a.activityCode)}</strong>. Add BOM in Settings → BOM.</div>`
+            }
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function rnd(v){ return Math.round((v||0)*100)/100; }
 
 function renderSiteTable() {
   const sites = MASTERS.sites||[];
@@ -1290,20 +1808,10 @@ function renderDashboard(dash) {
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi"><div class="label">Sites</div><div class="value">${(MASTERS.sites||[]).length||s.totalSites||0}</div></div>
     <div class="kpi"><div class="label">Items</div><div class="value">${(MASTERS.items||[]).length||s.totalItems||0}</div></div>
-    <div class="kpi ${s.outOfStock>0?'danger':s.lowStock>0?'warn':'ok'}">
-      <div class="label">Low / Out</div><div class="value">${s.lowStock||0} / ${s.outOfStock||0}</div></div>
     <div class="kpi"><div class="label">Poles Done</div><div class="value">${donePoles}</div><div class="sub">of ${totalPoles} (${overallPolePct}%)</div></div>
     <div class="kpi"><div class="label">KMs Done</div><div class="value">${doneKms}</div><div class="sub">of ${totalKms} KM (${overallKmPct}%)</div></div>
     <div class="kpi"><div class="label">Subcons</div><div class="value">${s.totalSubcons||0}</div></div>`;
 
-  const alerts=dash.alerts||[];
-  document.getElementById('dash-alerts').innerHTML = alerts.length
-    ? alerts.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span class="status ${a.status}">${a.status==='out'?'⛔ Out':'⚠ Low'}</span>
-        <span style="flex:1;font-weight:500">${esc(a.item)}</span>
-        <span style="font-size:12px;color:var(--text3)">${a.total||0} ${esc(a.unit||'')}</span>
-      </div>`).join('')
-    : '<p style="color:var(--text3)">✅ All items in stock</p>';
 
   // Show all SiteMaster sites (merge with WP data); sites with no WP show 0%
   const allSites = (MASTERS.sites||[]).map(ms => {
@@ -1380,6 +1888,8 @@ function showTab(name, link) {
   }
 
   if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
+  if(name==='project')      loadProjectTab();
+  if(name==='subconwork')   loadSubconWork();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
   if(name==='subconledger') loadSubconLedger();
@@ -2421,14 +2931,12 @@ function renderStockView(data){
     if(loc==='All'){
       rows=stock.map(s=>{
         const total=(s.main||0)+sites.reduce((a,st)=>a+((s.sites&&s.sites[st])||0),0);
-        const cls=total<=0?'out':(s.minStock>0&&total<=s.minStock?'low':'ok');
         return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
           <td style="font-weight:600">${s.main||0}</td>${sites.map(st=>`<td>${(s.sites&&s.sites[st])||0}</td>`).join('')}
-          <td style="font-size:15px;font-weight:600">${total}</td><td>${s.minStock||'—'}</td>
-          <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
+          <td style="font-size:15px;font-weight:600">${total}</td></tr>`;
       });
       return`<div id="sloc-0" style="display:block">
-        <table><thead><tr><th>Item</th><th>Unit</th><th>Main Store</th>${sites.map(st=>`<th>${esc(st)}</th>`).join('')}<th>Total</th><th>Min Stock</th><th>Status</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Unit</th><th>Main Store</th>${sites.map(st=>`<th>${esc(st)}</th>`).join('')}<th>Total</th></tr></thead>
         <tbody>${rows.join('')}</tbody></table></div>`;
     } else if(loc==='By Subcon'){
       const subconStock=data.subconStock||{};
@@ -2450,13 +2958,11 @@ function renderStockView(data){
     } else {
       rows=stock.map(s=>{
         const qty=loc==='Main Store'?(s.main||0):((s.sites&&s.sites[loc])||0);
-        const cls=qty<=0?'out':(s.minStock>0&&qty<=s.minStock?'low':'ok');
         return`<tr><td style="font-weight:500">${esc(s.item)}</td><td style="color:var(--text3)">${esc(s.unit||'')}</td>
-          <td style="font-size:15px;font-weight:600">${qty}</td><td>${s.minStock||'—'}</td>
-          <td><span class="status ${cls}">${cls==='out'?'⛔ Out':cls==='low'?'⚠ Low':'✓ OK'}</span></td></tr>`;
+          <td style="font-size:15px;font-weight:600">${qty}</td></tr>`;
       });
       return`<div id="sloc-${i}" style="display:none">
-        <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th><th>Min Stock</th><th>Status</th></tr></thead>
+        <table><thead><tr><th>Item</th><th>Unit</th><th>Qty</th></tr></thead>
         <tbody>${rows.join('')}</tbody></table></div>`;
     }
   }).join('');
@@ -2613,6 +3119,7 @@ function showSettingsTab(key,tab){
     if(el) el.style.display=(k===key?'block':'none');
   });
   if(key==='bom') renderBOMSettings();
+  if(key==='scope'){ renderProjectScope(); renderScopeList(); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2739,7 +3246,7 @@ async function saveMaster(sheet){
   let row, editKey='';
   if(sheet==='ItemMaster'){
     const n=v('im-name');if(!n){toast('Name required','error');return;}
-    row=[n,v('im-unit'),parseFloat(v('im-min'))||0,v('im-remarks')];
+    row=[n,v('im-unit'),v('im-remarks')];
     editKey=v('im-edit-key');
   } else if(sheet==='SubcontractorMaster'){
     const n=v('sub-name');if(!n){toast('Name required','error');return;}
