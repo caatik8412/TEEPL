@@ -2225,7 +2225,15 @@ async function saveTxn(type){
   try{
     const res=await apiPost(c.sheet,rows);
     if(res.success){
-      toast(`✅ ${rows.length} row(s) saved`,'success');
+      // Server assigns the final voucher number at save (prevents duplicates) —
+      // update the form so the print + toast show the real number
+      if(res.voucher){
+        const vf={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
+          consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'}[type];
+        const vEl=document.getElementById(vf);
+        if(vEl) vEl.value=res.voucher;
+      }
+      toast(`✅ ${rows.length} row(s) saved${res.voucher?' — '+res.voucher:''}`,'success');
       const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
         consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
       if(printTypeMap[type]){
