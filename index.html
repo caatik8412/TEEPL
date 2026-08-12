@@ -1026,7 +1026,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
 // ══════════════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbxQ_LrO87enosfKVhqFizBTmiO0Pusmu7X7iWRbvFhVJsXxzd3C3YcHkWiGoiUtapqh/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwab7eBGWQUnX3V4j2JUSa_Z0VR2feM__-ZzekZxFSaV1Sr1nv8p8T5yEFtwiNrOE53/exec';
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
   consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn'
@@ -1046,6 +1046,7 @@ const VSTORE = {}; // voucher data store for reversal
 //  API
 // ══════════════════════════════════════════════════════
 async function api(params) {
+  params._t = Date.now(); // bust redirect cache
   const r = await fetch(API + '?' + new URLSearchParams(params));
   if(!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
