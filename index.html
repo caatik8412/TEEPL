@@ -1066,17 +1066,13 @@ async function apiPost(action, data, extraParams) {
 //  INIT
 // ══════════════════════════════════════════════════════
 async function initApp() {
-  setConn(false);
+  setConn('loading');
   try {
-    const [masters, dash, stockData] = await Promise.all([
-      api({action:'masters'}),
-      api({action:'dashboard'}),
-      api({action:'stock'})
-    ]);
-    MASTERS = masters;
-    STOCK   = stockData;
+    const result = await api({action:'init'});
+    MASTERS = result.masters;
+    STOCK   = result.stock;
     buildDropdowns();
-    renderDashboard(dash);
+    renderDashboard(result.dashboard);
     setConn(true);
   } catch(e) {
     toast('Connection failed: ' + e.message, 'error');
@@ -1084,9 +1080,19 @@ async function initApp() {
   }
 }
 
-function setConn(ok) {
-  document.getElementById('conn-dot').className = 'dot' + (ok ? '' : ' offline');
-  document.getElementById('conn-txt').textContent = ok ? 'Online' : 'Offline';
+function setConn(state) {
+  const dot = document.getElementById('conn-dot');
+  const txt = document.getElementById('conn-txt');
+  if (state === 'loading') {
+    dot.className = 'dot'; dot.style.background = 'var(--yellow)';
+    txt.textContent = 'Loading…';
+  } else if (state) {
+    dot.className = 'dot'; dot.style.background = '';
+    txt.textContent = 'Online';
+  } else {
+    dot.className = 'dot offline'; dot.style.background = '';
+    txt.textContent = 'Offline';
+  }
 }
 
 // ══════════════════════════════════════════════════════
