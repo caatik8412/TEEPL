@@ -279,9 +279,12 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a onclick="showTab('consumption',this)"><span class="icon">🔧</span>Consumption</a>
     <a onclick="showTab('returns',this)"><span class="icon">↩️</span>Returns</a>
     <a onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
+    <a onclick="showTab('conversion',this)"><span class="icon">⚗️</span>Conversion</a>
+    <a id="approvals-link" onclick="showTab('approvals',this)" style="display:none"><span class="icon">✅</span>Approvals <span id="appr-badge" style="margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;font-weight:700;display:none"></span></a>
 
     <div class="section-label">Field</div>
     <a onclick="showTab('project',this)"><span class="icon">🎯</span>Project Scope</a>
+    <a onclick="showTab('siteprogress',this)"><span class="icon">🚧</span>Site Progress</a>
     <a onclick="showTab('subconwork',this)"><span class="icon">👷</span>Subcon Work</a>
     <a onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
     <a onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
@@ -307,6 +310,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <div class="dir-brand"><div class="logo">T</div><span>SiteFlow</span></div>
     <div class="dir-tabs">
       <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
+      <div class="dir-tab" onclick="dirTab('siteprogress',this)">🚧 Site Progress</div>
       <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
     </div>
     <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
@@ -458,7 +462,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-grid">
             <div class="form-group"><label>Date</label><input type="date" id="iss-date"></div>
             <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="iss-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
-            <div class="form-group"><label>Site</label><select id="iss-site" onchange="onIssSiteChange()"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Site</label><select id="iss-site" onchange="onIssSiteChange();fillVillages('iss')"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Village</label><select id="iss-village"><option value="">— Select Village —</option></select></div>
             <div class="form-group"><label>Subcontractor</label><select id="iss-subcon"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Issued By</label><input type="text" id="iss-issuedby" placeholder="Store in-charge name"></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="iss-remarks"></div>
@@ -510,7 +515,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-grid">
             <div class="form-group"><label>Date</label><input type="date" id="con-date"></div>
             <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="con-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
-            <div class="form-group"><label>Site</label><select id="con-site"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Site</label><select id="con-site" onchange="fillVillages('con')"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Village</label><select id="con-village"><option value="">— Select Village —</option></select></div>
             <div class="form-group"><label>Subcontractor</label><select id="con-subcon" onchange="onSubconChange('consumption')"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Remarks</label><input type="text" id="con-remarks"></div>
           </div>
@@ -599,7 +605,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="form-grid">
             <div class="form-group"><label>Date</label><input type="date" id="sr-date"></div>
             <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="sr-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
-            <div class="form-group"><label>Site</label><select id="sr-site"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Site</label><select id="sr-site" onchange="fillVillages('sr')"><option value="">Select Site</option></select></div>
+            <div class="form-group"><label>Village</label><select id="sr-village"><option value="">— Select Village —</option></select></div>
             <div class="form-group"><label>Subcontractor</label><select id="sr-subcon" onchange="onSubconChange('subconreturn')"><option value="">Select Subcon</option></select></div>
             <div class="form-group"><label>Reason</label><input type="text" id="sr-reason" placeholder="Work complete / excess material…"></div>
           </div>
@@ -647,6 +654,70 @@ tr:hover td{background:rgba(0,0,0,.025)}
       <div id="proj-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading project scope...</div></div>
     </div>
 
+    <!-- CONVERSION -->
+    <div id="tab-conversion" class="tab-pane">
+      <div class="card">
+        <div class="card-header"><h2>⚗️ Material Conversion</h2></div>
+        <div class="card-body">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Convert one material into another (e.g. cutting a coil into pieces). Stock of the source item reduces and the converted item increases at the same location.</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Date</label><input type="date" id="cnv-date"></div>
+            <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="cnv-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
+            <div class="form-group"><label>Location</label><select id="cnv-location"><option value="Main Store">Main Store</option></select></div>
+            <div class="form-group"><label>Remarks</label><input type="text" id="cnv-remarks" placeholder="Reason for conversion"></div>
+          </div>
+          <div class="tbl-wrap" style="margin-top:12px"><table>
+            <thead><tr><th>#</th><th>From Item</th><th>Available</th><th>Qty Out</th><th>Unit</th><th>To Item</th><th>Qty In</th><th>Unit</th><th></th></tr></thead>
+            <tbody id="cnv-rows"></tbody>
+          </table></div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="addConvRow()">+ Add Row</button>
+            <button class="btn btn-primary" onclick="saveConversion()">💾 Save Conversion</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>📋 Past Records</h2></div>
+        <div class="fetch-bar">
+          <div class="form-group"><label>From</label><input type="date" id="cnv-from"></div>
+          <div class="form-group"><label>To</label><input type="date" id="cnv-to"></div>
+          <div class="form-group"><label>Voucher / Item</label><input type="text" id="cnv-search" placeholder="Search…"></div>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('conversion')">🔍 Fetch</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('conversion',false,true)">📋 All</button>
+        </div>
+        <div class="card-body" id="cnv-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div id="tab-approvals" class="tab-pane">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:700">✅ Pending Approvals</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Entries stay on hold and do not affect stock until approved</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadApprovals()">🔄 Refresh</button>
+      </div>
+      <div id="appr-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
+    </div>
+
+    <!-- SITE PROGRESS -->
+    <div id="tab-siteprogress" class="tab-pane">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:700">🚧 Site Progress</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Scope → Allocated → Unallocated → Completed (auto-linked to consumption)</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="sp-site-filter" onchange="renderSiteProgress()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Sites</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadSiteProgress()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div id="sp-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
+    </div>
+
     <!-- SUBCON WORK -->
     <div id="tab-subconwork" class="tab-pane">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -683,7 +754,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group"><label>Date</label><input type="date" id="wp-date"></div>
-              <div class="form-group"><label>Site</label><select id="wp-site"><option value="">Select Site</option></select></div>
+              <div class="form-group"><label>Site</label><select id="wp-site" onchange="fillVillages('wp')"><option value="">Select Site</option></select></div>
+              <div class="form-group"><label>Village</label><select id="wp-village"><option value="">— Select Village —</option></select></div>
               <div class="form-group"><label>Subcontractor</label><select id="wp-subcon"><option value="">Select Subcon</option></select></div>
               <div class="form-group"><label>Poles Done</label><input type="number" id="wp-poles" min="0" placeholder="0"></div>
               <div class="form-group"><label>Wire Done (KM)</label><input type="number" id="wp-kms" min="0" step="0.01" placeholder="0.00"></div>
@@ -875,6 +947,28 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div id="sub-list" style="margin-top:12px"></div>
           </div>
         </div>
+
+        <!-- VILLAGE MASTER (sub-sites) -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h2>🏘️ Village Master</h2>
+            <span id="vm-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Villages are sub-sites under a site. They appear as a dropdown on Issue, Consumption, Subcon Return and Work Progress.</div>
+            <input type="hidden" id="vm-edit-key">
+            <div class="form-grid">
+              <div class="form-group"><label>Village Name</label><input type="text" id="vm-name" placeholder="Village name"></div>
+              <div class="form-group"><label>Site</label><select id="vm-site"><option value="">Select Site</option></select></div>
+              <div class="form-group"><label>Remarks</label><input type="text" id="vm-remarks"></div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="vm-save-btn" onclick="saveVillage()">+ Add Village</button>
+              <button class="btn btn-ghost btn-sm" id="vm-cancel-btn" style="display:none" onclick="cancelVillageEdit()">✕ Cancel</button>
+            </div>
+            <div id="vm-list" style="margin-top:12px"></div>
+          </div>
+        </div>
       </div>
 
       <div id="stab-scope" style="display:none">
@@ -1035,7 +1129,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
 const API = 'https://script.google.com/macros/s/AKfycbwzRSY7uVaXizhqv17PoIQmWGwDUosc_H4eI220MvsflOK0XP5cuOlmEMoCq75eatFbGQ/exec';
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
-  consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn'
+  consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn',
+  conversion:'Conversion'
 };
 const STATUS_LABEL = {
   complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed', noscope:'⚪ No Scope'
@@ -1077,6 +1172,9 @@ async function apiPost(action, data, extraParams) {
   const fd = new FormData();
   fd.append('action', action);
   fd.append('data', JSON.stringify(data));
+  // identity travels with every write — drives approval + audit trail
+  fd.append('user', CURRENT_USER ? CURRENT_USER.name : '');
+  fd.append('role', CURRENT_USER ? CURRENT_USER.role : '');
   if(extraParams) Object.entries(extraParams).forEach(([k,v])=>fd.append(k,v));
   const r = await fetch(API, {method:'POST', body:fd});
   if(!r.ok) throw new Error('HTTP ' + r.status);
@@ -1105,6 +1203,7 @@ async function initApp() {
   try {
     const result = await api({action:'init'});
     applyInit(result);
+    if(isAdmin()) loadApprovals();
     try { localStorage.setItem('sf_init', JSON.stringify(result)); } catch(e) {}
     setConn(true);
   } catch(e) {
@@ -1187,7 +1286,15 @@ function buildDropdowns() {
   const conF=document.getElementById('con-filter'); if(conF) conF.innerHTML=subFilter;
   const srF =document.getElementById('sr-filter');  if(srF)  srF.innerHTML=subFilter;
 
+  // Conversion location + village dropdowns
+  const cnvLoc=document.getElementById('cnv-location');
+  if(cnvLoc){const cur=cnvLoc.value; cnvLoc.innerHTML=locOpts; if(cur) cnvLoc.value=cur;}
+  const vmSite=document.getElementById('vm-site');
+  if(vmSite){const cur=vmSite.value; vmSite.innerHTML=siteOpts; if(cur) vmSite.value=cur;}
+  ['iss','con','sr','wp'].forEach(pfx=>fillVillages(pfx));
+
   renderItemList();
+  renderVillageList();
   renderSiteTable();
   renderSubconList();
   renderScopeList();
@@ -1624,6 +1731,282 @@ async function saveProjectScope(){
   finally{if(btn){btn.disabled=false;btn.style.opacity='';btn.textContent=origTxt||'+ Save Scope';}}
 }
 
+
+// ══════════════════════════════════════════════════════
+//  VILLAGES (sub-sites)
+// ══════════════════════════════════════════════════════
+function fillVillages(pfx){
+  const sel=document.getElementById(pfx+'-village'); if(!sel) return;
+  const site=document.getElementById(pfx+'-site')?.value||'';
+  const prev=sel.value;
+  const list=(MASTERS.villages||[]).filter(v=>!site||v.site===site);
+  sel.innerHTML='<option value="">— Select Village —</option>'+
+    list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+  if(prev&&list.some(v=>v.name===prev)) sel.value=prev;
+}
+
+function renderVillageList(){
+  const el=document.getElementById('vm-list'); if(!el) return;
+  const list=MASTERS.villages||[];
+  if(!list.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No villages added yet.</p>';return;}
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${list.length} Villages</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Village</th><th>Site</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${list.map((r,i)=>`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td>${esc(r.site||'—')}</td>
+      <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editVillage(${JSON.stringify(r)})'>✏ Edit</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function editVillage(r){
+  document.getElementById('vm-edit-key').value=r.name;
+  document.getElementById('vm-name').value=r.name||'';
+  document.getElementById('vm-site').value=r.site||'';
+  document.getElementById('vm-remarks').value=r.remarks||'';
+  document.getElementById('vm-save-btn').textContent='💾 Update Village';
+  document.getElementById('vm-cancel-btn').style.display='';
+  document.getElementById('vm-edit-label').textContent='Editing: '+r.name;
+  document.getElementById('vm-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelVillageEdit(){
+  ['vm-edit-key','vm-name','vm-remarks'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const st=document.getElementById('vm-site'); if(st) st.value='';
+  document.getElementById('vm-save-btn').textContent='+ Add Village';
+  document.getElementById('vm-cancel-btn').style.display='none';
+  document.getElementById('vm-edit-label').textContent='';
+}
+
+async function saveVillage(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
+  const name=v('vm-name'), site=v('vm-site');
+  if(!name){toast('Village name required','error');return;}
+  if(!site){toast('Select the site this village belongs to','error');return;}
+  const editKey=v('vm-edit-key');
+  const row=[name,site,v('vm-remarks')];
+  try{
+    const res=editKey
+      ? await apiPost('updateMasterRow',row,{sheet:'VillageMaster',key:editKey})
+      : await apiPost('VillageMaster',[row]);
+    if(res.success){ toast(editKey?'✅ Village updated':'✅ Village added','success'); cancelVillageEdit(); await initApp(); }
+    else toast(res.error||'Failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ══════════════════════════════════════════════════════
+//  MATERIAL CONVERSION
+// ══════════════════════════════════════════════════════
+function addConvRow(prefill){
+  const tbody=document.getElementById('cnv-rows'); if(!tbody) return;
+  const items=MASTERS.items||[];
+  const opts='<option value="">Select Item</option>'+items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+  const idx=tbody.children.length+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${idx}</td>
+    <td><select class="cnv-from" onchange="onConvFromChange(this)">${opts}</select></td>
+    <td class="cnv-avail" style="font-size:11px;color:var(--text3);text-align:right">—</td>
+    <td><input type="number" class="cnv-outqty" min="0" step="0.01" placeholder="0"></td>
+    <td><input type="text" class="cnv-outunit" style="width:64px" placeholder="Unit"></td>
+    <td><select class="cnv-to" onchange="onConvToChange(this)">${opts}</select></td>
+    <td><input type="number" class="cnv-inqty" min="0" step="0.01" placeholder="0"></td>
+    <td><input type="text" class="cnv-inunit" style="width:64px" placeholder="Unit"></td>
+    <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+  if(prefill&&prefill.from){const f=tr.querySelector('.cnv-from');f.value=prefill.from;onConvFromChange(f);}
+}
+
+function unitOf(item){ return (MASTERS.items||[]).find(i=>i.name===item)?.unit||''; }
+
+function onConvFromChange(sel){
+  const tr=sel.closest('tr');
+  tr.querySelector('.cnv-outunit').value=unitOf(sel.value);
+  const loc=document.getElementById('cnv-location')?.value||'Main Store';
+  const st=(STOCK.stock||[]).find(s=>s.item===sel.value);
+  const avail=st?(loc==='Main Store'?st.main:(st.sites?.[loc]||0)):0;
+  const cell=tr.querySelector('.cnv-avail');
+  cell.textContent=st?avail:'—';
+  cell.style.color=avail>0?'var(--green)':'var(--red)';
+  tr.querySelector('.cnv-outqty').dataset.available=avail;
+}
+
+function onConvToChange(sel){
+  sel.closest('tr').querySelector('.cnv-inunit').value=unitOf(sel.value);
+}
+
+async function saveConversion(){
+  const date=v('cnv-date'); if(!date){toast('Date required','error');return;}
+  const loc=v('cnv-location')||'Main Store';
+  const remarks=v('cnv-remarks');
+  const user=CURRENT_USER?CURRENT_USER.name:'';
+  const rows=[];
+  for(const tr of document.getElementById('cnv-rows').rows){
+    const from=tr.querySelector('.cnv-from').value;
+    const to=tr.querySelector('.cnv-to').value;
+    const oq=parseFloat(tr.querySelector('.cnv-outqty').value)||0;
+    const iq=parseFloat(tr.querySelector('.cnv-inqty').value)||0;
+    if(!from&&!to) continue;
+    if(!from||!to){toast('Each row needs both a From item and a To item','error');return;}
+    if(from===to){toast('From and To item cannot be the same','error');return;}
+    if(!oq||!iq){toast('Enter both Qty Out and Qty In','error');return;}
+    const av=parseFloat(tr.querySelector('.cnv-outqty').dataset.available);
+    if(!isNaN(av)&&oq>av){toast(`❌ Only ${av} of "${from}" available at ${loc}`,'error');return;}
+    rows.push([date,'',loc,from,oq,tr.querySelector('.cnv-outunit').value,
+               to,iq,tr.querySelector('.cnv-inunit').value,loc,remarks,user]);
+  }
+  if(!rows.length){toast('No valid rows','error');return;}
+  try{
+    const res=await apiPost('Conversion',rows);
+    if(res.success){
+      toast(`✅ Conversion saved${res.voucher?' — '+res.voucher:''}${res.status==='Pending'?' (awaiting approval)':''}`,'success');
+      if(res.voucher){const el=document.getElementById('cnv-voucher'); if(el) el.value=res.voucher;}
+      document.getElementById('cnv-rows').innerHTML=''; addConvRow();
+      const rm=document.getElementById('cnv-remarks'); if(rm) rm.value='';
+      fetchRecords('conversion',true); refreshStock(); autoVoucher('Conversion','cnv-voucher');
+    } else toast(res.error||'Save failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ══════════════════════════════════════════════════════
+//  APPROVALS
+// ══════════════════════════════════════════════════════
+let APPR_DATA=[];
+
+function isAdmin(){ return CURRENT_USER && CURRENT_USER.role==='admin'; }
+
+async function loadApprovals(){
+  const el=document.getElementById('appr-content');
+  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading pending approvals...</div>';
+  try{
+    const d=await api({action:'pendingApprovals'});
+    APPR_DATA=d.pending||[];
+    updateApprBadge(APPR_DATA.length);
+    renderApprovals();
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadApprovals()">🔄 Retry</button></div>`;
+  }
+}
+
+function updateApprBadge(n){
+  const b=document.getElementById('appr-badge'); if(!b) return;
+  b.textContent=n; b.style.display=n>0?'':'none';
+}
+
+function renderApprovals(){
+  const el=document.getElementById('appr-content'); if(!el) return;
+  if(!APPR_DATA.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--green)">✅ Nothing pending — all entries are approved.</div>';
+    return;
+  }
+  el.innerHTML=APPR_DATA.map(a=>`<div class="voucher-card">
+    <div class="voucher-header">
+      <span class="voucher-num">${esc(a.voucher)}</span>
+      <span class="voucher-date">${esc(a.date||'')}</span>
+    </div>
+    <div class="voucher-meta">${esc(a.sheet)} · ${esc(a.info||'')} · ${a.lines} line(s)${a.savedBy?' · entered by <strong>'+esc(a.savedBy)+'</strong>':''}${a.savedAt?' on '+esc(a.savedAt):''}</div>
+    <div class="voucher-items"><table><thead><tr><th>Item</th><th style="text-align:right">Qty</th><th>Unit</th></tr></thead>
+      <tbody>${(a.items||[]).map(i=>`<tr><td>${esc(i.item)}</td><td style="text-align:right">${i.qty}</td><td>${esc(i.unit||'')}</td></tr>`).join('')}</tbody></table></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-primary btn-sm" style="font-size:11px;padding:3px 10px" onclick="decideApproval('${esc(a.sheet)}','${esc(a.voucher)}',true)">✅ Approve</button>
+      <button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 10px" onclick="decideApproval('${esc(a.sheet)}','${esc(a.voucher)}',false)">✕ Reject</button>
+    </div>
+  </div>`).join('');
+}
+
+// Approve/reject directly from a Past Records card, then refresh that list
+async function decideApprovalFromCard(sheet, voucher, type, approve){
+  await decideApproval(sheet, voucher, approve);
+  fetchRecords(type, false, true);
+}
+
+async function decideApproval(sheet, voucher, approve){
+  if(!isAdmin()){toast('Only Sagar or Atik can approve entries','error');return;}
+  if(!approve && !confirm(`Reject ${voucher}?\n\nIt will stay in the sheet as a record but will NOT count towards stock or progress.`)) return;
+  try{
+    const res=await apiPost(approve?'approveVoucher':'rejectVoucher',[],{sheet,voucher});
+    if(res.success){
+      toast(approve?`✅ ${voucher} approved`:`✕ ${voucher} rejected`,'success');
+      APPR_DATA=APPR_DATA.filter(a=>!(a.sheet===sheet&&a.voucher===voucher));
+      updateApprBadge(APPR_DATA.length); renderApprovals(); refreshStock();
+    } else toast(res.error||'Failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ══════════════════════════════════════════════════════
+//  SITE PROGRESS (Scope → Allocated → Unallocated → Completed)
+// ══════════════════════════════════════════════════════
+let SP_DATA = [];
+
+async function loadSiteProgress(){
+  const el=document.getElementById('sp-content');
+  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading site progress...</div>';
+  try{
+    const data=await api({action:'projectProgress'});
+    SP_DATA=data.sites||[];
+    const f=document.getElementById('sp-site-filter');
+    if(f){const cur=f.value;f.innerHTML='<option value="">All Sites</option>'+SP_DATA.map(s=>`<option value="${esc(s.site)}">${esc(s.site)}</option>`).join('');f.value=cur;}
+    renderSiteProgress();
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadSiteProgress()">🔄 Retry</button></div>`;
+  }
+}
+
+function spBar(pct){
+  const color = pct>=100?'var(--green)':pct>=60?'var(--accent)':pct>=30?'var(--yellow)':'var(--red)';
+  return `<div style="display:flex;align-items:center;gap:8px;min-width:120px">
+    <div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100,pct)}%;height:100%;background:${color}"></div></div>
+    <span style="font-size:11px;font-weight:600;color:${color};min-width:32px;text-align:right">${pct}%</span></div>`;
+}
+
+function renderSiteProgress(){
+  const el=document.getElementById('sp-content'); if(!el) return;
+  const filter=document.getElementById('sp-site-filter')?.value||'';
+  const sites=SP_DATA.filter(s=>!filter||s.site===filter);
+  if(!sites.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">No site scope defined yet.<br><span style="font-size:12px">Define activities per site in Settings → Project Scope, then allocate them to subcontractors.</span></div>';return;}
+
+  el.innerHTML=sites.map(s=>{
+    const sum=s.summary||{};
+    return `<div class="card" style="margin-bottom:16px">
+      <div class="card-body" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:700">📍 ${esc(s.site)}</div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--text3)">
+            <span>${sum.activities||0} activities</span>
+            <span>Overall: <strong style="color:var(--text)">${sum.avgPct||0}%</strong></span>
+            ${sum.unallocatedCount?`<span style="color:var(--yellow)">⚠ ${sum.unallocatedCount} with unallocated scope</span>`:''}
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Activity</th><th>Unit</th><th style="text-align:right">Scope</th><th style="text-align:right">Allocated</th><th style="text-align:right">Unallocated</th><th style="text-align:right">Completed</th><th>Progress</th></tr></thead>
+          <tbody>${s.activities.map(a=>{
+            const subRows=(a.subcons||[]).map(sc=>`<tr style="background:var(--bg3)">
+              <td style="padding-left:28px;font-size:12px;color:var(--text3)">↳ ${esc(sc.subcon)}${sc.hasBOM?'':' <span style="color:var(--yellow)" title="No BOM defined — progress cannot be calculated from consumption">⚠ no BOM</span>'}</td>
+              <td style="font-size:12px;color:var(--text3)">${esc(sc.unit||a.unit||'')}</td>
+              <td></td>
+              <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.allocated}</td>
+              <td></td>
+              <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.completed}</td>
+              <td>${spBar(sc.pct||0)}</td>
+            </tr>`).join('');
+            return `<tr>
+              <td><strong>${esc(a.code)}</strong> <span style="color:var(--text3);font-size:12px">${esc(a.name!==a.code?a.name:'')}</span></td>
+              <td>${esc(a.unit||'')}</td>
+              <td style="text-align:right;font-weight:600">${a.scope}</td>
+              <td style="text-align:right">${a.allocated}</td>
+              <td style="text-align:right;${a.unallocated>0?'color:var(--yellow);font-weight:600':'color:var(--text3)'}">${a.unallocated}</td>
+              <td style="text-align:right;font-weight:600">${a.completed}</td>
+              <td>${spBar(a.pct||0)}</td>
+            </tr>`+subRows;
+          }).join('')}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ══════════════════════════════════════════════════════
 //  SUBCON WORK
 // ══════════════════════════════════════════════════════
@@ -1914,11 +2297,13 @@ function showTab(name, link) {
   document.getElementById('topbar-title').textContent = link ? link.textContent.trim() : name;
 
   const dateMap={purchase:'pur-date',transfer:'trn-date',issue:'iss-date',
-    consumption:'con-date',returns:'ret-date',subconreturn:'sr-date',workprogress:'wp-date'};
+    consumption:'con-date',returns:'ret-date',subconreturn:'sr-date',workprogress:'wp-date',
+    conversion:'cnv-date'};
   if(dateMap[name]){const el=document.getElementById(dateMap[name]);if(el&&!el.value)el.value=today();}
 
   const vMap={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
-    consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher'};
+    consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher',
+    conversion:'cnv-voucher'};
   if(vMap[name]) autoVoucher(SHEET[name], vMap[name]);
 
   const rMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
@@ -1930,7 +2315,14 @@ function showTab(name, link) {
   }
 
   if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
+  if(name==='conversion'){
+    const tb=document.getElementById('cnv-rows');
+    if(tb&&!tb.children.length){ for(let i=0;i<3;i++) addConvRow(); }
+    refreshStock();
+  }
+  if(name==='approvals')    loadApprovals();
   if(name==='project')      loadProjectTab();
+  if(name==='siteprogress') loadSiteProgress();
   if(name==='subconwork')   loadSubconWork();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
@@ -2217,9 +2609,20 @@ async function saveTxn(type){
   }
   if(abort) return;
   if(!rows.length){toast('No valid rows','error');return;}
-  // Add logged-in user to each row as last column (audit trail)
+  // Audit + village land in FIXED columns so sheet layout never shifts:
+  //   SavedBy at SAVEDBY_COL, Village immediately after it.
   const user = CURRENT_USER ? CURRENT_USER.name : '';
-  if(user) rows = rows.map(r => [...r, user]);
+  const SAVEDBY_COL={purchase:11,transfer:15,issue:9,consumption:9,returns:8,subconreturn:8};
+  const VILLAGE_PFX={issue:'iss',consumption:'con',subconreturn:'sr'};
+  const sbc=SAVEDBY_COL[type];
+  const village=VILLAGE_PFX[type]?v(VILLAGE_PFX[type]+'-village'):'';
+  rows = rows.map(r=>{
+    const out=[...r];
+    while(out.length<sbc) out.push('');
+    out[sbc]=user;
+    if(VILLAGE_PFX[type]) out[sbc+1]=village;
+    return out;
+  });
 
   setTxnBusy(type,true);
   try{
@@ -2233,7 +2636,9 @@ async function saveTxn(type){
         const vEl=document.getElementById(vf);
         if(vEl) vEl.value=res.voucher;
       }
-      toast(`✅ ${rows.length} row(s) saved${res.voucher?' — '+res.voucher:''}`,'success');
+      toast(`✅ ${rows.length} row(s) saved${res.voucher?' — '+res.voucher:''}${res.status==='Pending'?' · awaiting approval':''}`,
+            res.status==='Pending'?'info':'success');
+      if(res.status==='Pending') toast('⏳ Held for approval by Sagar / Atik — stock updates once approved','info');
       const printTypeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
         consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
       if(printTypeMap[type]){
@@ -2293,7 +2698,8 @@ async function fetchRecords(type, autoToday=false, fetchAll=false){
     issue:       {sheet:'Issue',       from:'iss-from',to:'iss-to',search:'iss-search',filter:'iss-filter',out:'iss-records'},
     consumption: {sheet:'Consumption', from:'con-from',to:'con-to',search:'con-search',filter:'con-filter',out:'con-records'},
     returns:     {sheet:'Returns',     from:'ret-from',to:'ret-to',search:'ret-search',filter:null,        out:'ret-records'},
-    subconreturn:{sheet:'SubconReturn',from:'sr-from', to:'sr-to', search:'sr-search', filter:'sr-filter', out:'sr-records'}
+    subconreturn:{sheet:'SubconReturn',from:'sr-from', to:'sr-to', search:'sr-search', filter:'sr-filter', out:'sr-records'},
+    conversion:  {sheet:'Conversion',  from:'cnv-from',to:'cnv-to',search:'cnv-search',filter:null,        out:'cnv-records'}
   };
   const c=cfg[type]; if(!c) return;
   if(autoToday){const t=today();document.getElementById(c.from).value=t;document.getElementById(c.to).value=t;}
@@ -2323,8 +2729,10 @@ function renderVoucherCard(g,type){
   if(meta.supplier)metaParts.push('Supplier: '+esc(meta.supplier));
   if(meta.from&&meta.to)metaParts.push(esc(meta.from)+' → '+esc(meta.to));
   if(meta.site)metaParts.push('Site: '+esc(meta.site));
+  if(meta.village)metaParts.push('Village: '+esc(meta.village));
   if(meta.subcon)metaParts.push('Subcon: '+esc(meta.subcon));
   if(meta.location)metaParts.push('To: '+esc(meta.location));
+  if(meta.savedBy)metaParts.push('By: '+esc(meta.savedBy));
 
   // Store group for reversal lookup
   const storeKey = type+'|'+(g.voucher||'');
@@ -2354,27 +2762,49 @@ function renderVoucherCard(g,type){
     consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
 
   const revBtn = isReversal ? '' :
-    `<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px"
+    g.reversed
+    ? `<span style="font-size:11px;padding:3px 9px;margin-top:8px;display:inline-block;color:var(--red);background:rgba(207,34,46,.08);border:1px solid rgba(207,34,46,.25);border-radius:6px">↩ Reversed</span>`
+    : `<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px"
       onclick="reverseTxn('${esc(type)}','${esc(g.voucher||'')}')">↩ Reverse</button>`;
   const printBtn = canPrint
     ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px;color:var(--accent)"
         onclick="reprintVoucher('${esc(type)}','${esc(g.voucher||'')}')">🖨 Print</button>`
     : '';
 
-  return`<div class="voucher-card">
+  // Approval status pill
+  const st=g.status||'Approved';
+  const pill = st==='Pending'
+    ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(154,103,0,.12);color:var(--yellow);border:1px solid rgba(154,103,0,.3)">⏳ PENDING APPROVAL</span>`
+    : st==='Rejected'
+    ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(207,34,46,.1);color:var(--red);border:1px solid rgba(207,34,46,.3)">✕ REJECTED</span>`
+    : `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(26,127,55,.1);color:var(--green);border:1px solid rgba(26,127,55,.3)">✓ APPROVED${g.approvedBy?' · '+esc(g.approvedBy):''}</span>`;
+
+  // Admin approve/reject straight from the record card
+  const apprBtns = (st==='Pending' && isAdmin())
+    ? `<button class="btn btn-primary btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px" onclick="decideApprovalFromCard('${esc(SHEET[type]||type)}','${esc(g.voucher||'')}','${esc(type)}',true)">✅ Approve</button>
+       <button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 9px;margin-top:8px" onclick="decideApprovalFromCard('${esc(SHEET[type]||type)}','${esc(g.voucher||'')}','${esc(type)}',false)">✕ Reject</button>`
+    : '';
+
+  const revNote = g.reversed
+    ? `<div style="font-size:11px;color:var(--red);margin-top:4px">↩ Reversed${g.reversedBy?' by <strong>'+esc(g.reversedBy)+'</strong>':''}${g.reversedDate?' on '+esc(g.reversedDate):''}</div>`
+    : '';
+
+  return`<div class="voucher-card"${st==='Pending'?' style="border-left:3px solid var(--yellow)"':st==='Rejected'?' style="border-left:3px solid var(--red);opacity:.75"':''}>
     <div class="voucher-header">
       <span class="voucher-num">${esc(g.voucher||'—')}</span>
-      <span class="voucher-date">${esc(g.date||'')}</span>
+      <span style="display:flex;align-items:center;gap:8px">${pill}<span class="voucher-date">${esc(g.date||'')}</span></span>
     </div>
     ${metaParts.length?`<div class="voucher-meta">${metaParts.join(' · ')}</div>`:''}
+    ${revNote}
     <div class="voucher-items">${tableHtml}</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${printBtn}${revBtn}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${printBtn}${revBtn}${apprBtns}</div>
   </div>`;
 }
 
 async function reverseTxn(type, voucher) {
   const g = VSTORE[type+'|'+voucher];
   if(!g){ toast('Voucher data not found — re-fetch records first','error'); return; }
+  if(g.reversed){ toast('This voucher is already reversed','error'); return; }
   if(!confirm(`Reverse voucher ${voucher}?\n\nThis posts negative offsetting entries to cancel the original transaction.`)) return;
 
   const sheetMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
@@ -2389,19 +2819,22 @@ async function reverseTxn(type, voucher) {
   const revVoucher='REV-'+voucher;
   const revRemark='REVERSAL of '+voucher;
 
+  // Audit: record WHO reversed. User name goes in the SavedBy (last) column,
+  // remark goes in each sheet's actual Remarks column.
+  const revUser = CURRENT_USER ? CURRENT_USER.name : '';
   let rows=[];
   if(type==='purchase'){
-    rows=items.map(it=>[revDate,revVoucher,meta.supplier||'',it.item||'',-(it.qty||0),it.unit||'',it.rate||0,-(it.amount||0),meta.location||'Main Store','',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.supplier||'',it.item||'',-(it.qty||0),it.unit||'',it.rate||0,-(it.amount||0),meta.location||'Main Store','',revRemark,revUser]);
   } else if(type==='transfer'){
-    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'','','','','','','','',revRemark,revUser]);
   } else if(type==='issue'){
-    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'','',revRemark,revUser]);
   } else if(type==='consumption'){
-    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'','',revRemark,revUser]);
   } else if(type==='returns'){
-    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.from||'',meta.to||'',it.item||'',-(it.qty||0),it.unit||'',revRemark,revUser]);
   } else if(type==='subconreturn'){
-    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark]);
+    rows=items.map(it=>[revDate,revVoucher,meta.site||'',meta.subcon||'',it.item||'',-(it.qty||0),it.unit||'',revRemark,revUser]);
   }
 
   try{
@@ -2554,7 +2987,8 @@ async function saveWP(){
   const btn=document.querySelector('#wptab-log .btn-primary');
   if(btn){btn.disabled=true;btn.style.opacity='0.5';btn.dataset.orig=btn.innerHTML;btn.innerHTML='⏳ Saving…';}
   try{
-    const res=await apiPost('WorkProgress',[[date,site,sub,'Both',poles,kms,v('wp-remarks')]]);
+    const wpUser=CURRENT_USER?CURRENT_USER.name:'';
+    const res=await apiPost('WorkProgress',[[date,site,sub,'Both',poles,kms,v('wp-remarks'),wpUser,v('wp-village')]]);
     if(res.success){
       toast('✅ Progress saved','success');
       document.getElementById('wp-poles').value='';
@@ -3349,6 +3783,12 @@ function applyUser(user) {
   document.getElementById('user-name-tag').textContent = '👤 ' + user.name;
   const sl = document.getElementById('settings-link');
   if(sl) sl.style.display = user.role === 'admin' ? '' : 'none';
+  // Approvals queue is admin-only (Sagar / Atik)
+  const al = document.getElementById('approvals-link');
+  if(al){
+    al.style.display = user.role === 'admin' ? '' : 'none';
+    if(user.role === 'admin') loadApprovals();
+  }
 
   if(user.role === 'director'){
     document.body.classList.add('director-mode');
@@ -3427,6 +3867,33 @@ function toast(msg,type='info'){
   setTimeout(()=>el.remove(),3500);
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+
+// ══════════════════════════════════════════════════════
+//  DOUBLE-SUBMIT PROTECTION
+//  Wraps every save/reverse function: while one call is running,
+//  repeat clicks are ignored and its buttons are disabled.
+// ══════════════════════════════════════════════════════
+const _busyKeys=new Set();
+function lockAsync(fnName){
+  const orig=window[fnName];
+  if(typeof orig!=='function') return;
+  window[fnName]=async function(...args){
+    const key=fnName+':'+(args[0]??'');
+    if(_busyKeys.has(key)) return;               // already running — ignore repeat click
+    _busyKeys.add(key);
+    const btns=[...document.querySelectorAll('button')]
+      .filter(b=>(b.getAttribute('onclick')||'').includes(fnName+'('));
+    btns.forEach(b=>{b.disabled=true;b.style.opacity='.55';b.style.cursor='not-allowed';});
+    try{ return await orig.apply(this,args); }
+    finally{
+      _busyKeys.delete(key);
+      btns.forEach(b=>{b.disabled=false;b.style.opacity='';b.style.cursor='';});
+    }
+  };
+}
+['saveTxn','saveMaster','saveSiteMaster','saveProjectScope','saveSubconScope',
+ 'saveBOMRow','saveWP','saveWPEdit','reverseTxn',
+ 'saveConversion','saveVillage','decideApproval','decideApprovalFromCard'].forEach(lockAsync);
 </script>
 </body>
 </html>
