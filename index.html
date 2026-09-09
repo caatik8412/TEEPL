@@ -648,32 +648,27 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div class="form-group"><label>Remarks</label><input type="text" id="cnv-remarks" placeholder="Reason for conversion"></div>
           </div>
           <!-- MATERIALS OUT -->
-          <div style="margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:8px;border-left:3px solid var(--red)">
-            <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--red)">➡ Materials Consumed (OUT)</div>
-            <div class="tbl-wrap"><table>
-              <thead><tr><th>#</th><th>Item</th><th style="text-align:right">Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+          <div style="font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-top:14px;margin-bottom:6px">➡ Materials Consumed (Out)</div>
+          <div class="tbl-wrap">
+            <table class="row-table">
+              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
               <tbody id="cnv-out-rows"></tbody>
-            </table></div>
-            <div class="btn-row" style="margin-top:8px">
-              <button class="btn btn-ghost btn-sm" onclick="addConvRow('out')">+ Add Material Out</button>
-            </div>
+            </table>
           </div>
-
-          <div style="text-align:center;font-size:20px;color:var(--text4);margin:8px 0">↓</div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="addConvRow('out')">+ Add Material Out</button>
+          </div>
 
           <!-- MATERIALS IN -->
-          <div style="padding:12px;border:1px solid var(--border);border-radius:8px;border-left:3px solid var(--green)">
-            <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--green)">⬅ Materials Produced (IN)</div>
-            <div class="tbl-wrap"><table>
+          <div style="font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-top:16px;margin-bottom:6px">⬅ Materials Produced (In)</div>
+          <div class="tbl-wrap">
+            <table class="row-table">
               <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
               <tbody id="cnv-in-rows"></tbody>
-            </table></div>
-            <div class="btn-row" style="margin-top:8px">
-              <button class="btn btn-ghost btn-sm" onclick="addConvRow('in')">+ Add Material In</button>
-            </div>
+            </table>
           </div>
-
-          <div class="btn-row" style="margin-top:14px">
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="addConvRow('in')">+ Add Material In</button>
             <button class="btn btn-primary" onclick="saveConversion()">💾 Save Conversion</button>
           </div>
         </div>
@@ -1699,16 +1694,16 @@ function addConvRow(dir){
   const tr=document.createElement('tr');
   if(dir==='in'){
     tr.innerHTML=`<td>${idx}</td>
-      <td><select class="cnv-item" onchange="onConvItemChange(this,'in')">${opts}</select></td>
-      <td><input type="number" class="cnv-qty" min="0" step="0.01" placeholder="0"></td>
-      <td><input type="text" class="cnv-unit" style="width:70px" placeholder="Unit"></td>
+      <td><select class="cnv-item item-sel" onchange="onConvItemChange(this,'in')">${opts}</select></td>
+      <td><input type="number" class="cnv-qty qty-input" min="0" step="0.01" placeholder="0"></td>
+      <td><input type="text" class="cnv-unit unit-inp" style="width:70px" placeholder="Unit"></td>
       <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
   } else {
     tr.innerHTML=`<td>${idx}</td>
-      <td><select class="cnv-item" onchange="onConvItemChange(this,'out')">${opts}</select></td>
-      <td class="cnv-avail" style="font-size:11px;color:var(--text3);text-align:right">—</td>
-      <td><input type="number" class="cnv-qty" min="0" step="0.01" placeholder="0"></td>
-      <td><input type="text" class="cnv-unit" style="width:70px" placeholder="Unit"></td>
+      <td><select class="cnv-item item-sel" onchange="onConvItemChange(this,'out')">${opts}</select></td>
+      <td class="cnv-avail" style="font-size:12px;color:var(--text3);white-space:nowrap">—</td>
+      <td><input type="number" class="cnv-qty qty-input" min="0" step="0.01" placeholder="0" oninput="checkConvStock(this)"></td>
+      <td><input type="text" class="cnv-unit unit-inp" style="width:70px" placeholder="Unit"></td>
       <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
   }
   tbody.appendChild(tr);
@@ -1727,6 +1722,13 @@ function onConvItemChange(sel, dir){
   cell.textContent=st?avail:'—';
   cell.style.color=avail>0?'var(--green)':'var(--red)';
   tr.querySelector('.cnv-qty').dataset.available=avail;
+}
+
+// Flag an OUT qty that exceeds what is available
+function checkConvStock(inp){
+  const av=parseFloat(inp.dataset.available);
+  const q=parseFloat(inp.value)||0;
+  inp.classList.toggle('over-stock', !isNaN(av) && q>av);
 }
 
 // Re-check availability of every OUT row when the location changes
