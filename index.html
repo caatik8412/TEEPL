@@ -283,13 +283,11 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a id="approvals-link" onclick="showTab('approvals',this)" style="display:none"><span class="icon">✅</span>Approvals <span id="appr-badge" style="margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;font-weight:700;display:none"></span></a>
 
     <div class="section-label">Field</div>
-    <a onclick="showTab('project',this)"><span class="icon">🎯</span>Project Scope</a>
-    <a onclick="showTab('siteprogress',this)"><span class="icon">🚧</span>Site Progress</a>
+    <a onclick="showTab('activitystatus',this)"><span class="icon">📌</span>Project Status</a>
     <a onclick="showTab('subconwork',this)"><span class="icon">👷</span>Subcon Work</a>
     <a onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
     <a onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
     <a onclick="showTab('subconledger',this)"><span class="icon">📋</span>Subcon Ledger</a>
-    <a onclick="showTab('cvc',this)"><span class="icon">⚖️</span>CvC</a>
 
     <div class="section-label">Reports</div>
     <a onclick="showTab('reports',this)"><span class="icon">📑</span>Reports</a>
@@ -310,7 +308,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <div class="dir-brand"><div class="logo">T</div><span>SiteFlow</span></div>
     <div class="dir-tabs">
       <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
-      <div class="dir-tab" onclick="dirTab('siteprogress',this)">🚧 Site Progress</div>
+      <div class="dir-tab" onclick="dirTab('activitystatus',this)">📌 Project Status</div>
       <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
     </div>
     <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
@@ -328,13 +326,13 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <div id="tab-dashboard" class="tab-pane active">
       <div class="kpi-grid" id="kpi-grid">
         <div class="kpi"><div class="label">Sites</div><div class="value skeleton" style="width:40px;height:28px;display:block"></div></div>
-        <div class="kpi"><div class="label">Items</div><div class="value skeleton" style="width:40px;height:28px;display:block"></div></div>
-        <div class="kpi"><div class="label">Low / Out</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
-        <div class="kpi"><div class="label">Poles Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
-        <div class="kpi"><div class="label">KMs Done</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Activities Allocated</div><div class="value skeleton" style="width:40px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Completed</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Pending</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
+        <div class="kpi"><div class="label">Overall Progress</div><div class="value skeleton" style="width:60px;height:28px;display:block"></div></div>
       </div>
       <div class="card" style="margin-bottom:14px">
-        <div class="card-header"><h2>👷 Subcontractor Progress</h2></div>
+        <div class="card-header"><h2>👷 Subcontractor Progress <span style="font-size:11px;font-weight:400;color:var(--text3)">· activity-wise, from consumption</span></h2></div>
         <div class="card-body" id="dash-subcons"><div class="skeleton" style="height:14px"></div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -637,24 +635,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
       </div>
     </div>
 
-    <!-- PROJECT SCOPE TAB -->
-    <div id="tab-project" class="tab-pane">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div>
-          <div style="font-size:18px;font-weight:700">🎯 Project Scope Overview</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">Total scope vs allocated to subcontractors vs completed</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="proj-site-filter" onchange="renderProjectTab()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
-            <option value="">All Sites</option>
-          </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadProjectTab()">🔄 Refresh</button>
-        </div>
-      </div>
-      <div id="proj-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading project scope...</div></div>
-    </div>
-
-    <!-- CONVERSION -->
+<!-- CONVERSION -->
     <div id="tab-conversion" class="tab-pane">
       <div class="card">
         <div class="card-header"><h2>⚗️ Material Conversion</h2></div>
@@ -722,24 +703,31 @@ tr:hover td{background:rgba(0,0,0,.025)}
       <div id="appr-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
     </div>
 
-    <!-- SITE PROGRESS -->
-    <div id="tab-siteprogress" class="tab-pane">
+    <!-- ACTIVITY STATUS -->
+    <div id="tab-activitystatus" class="tab-pane">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
         <div>
-          <div style="font-size:18px;font-weight:700">🚧 Site Progress</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">Scope → Allocated → Unallocated → Completed (auto-linked to consumption)</div>
+          <div style="font-size:18px;font-weight:700">📌 Project Status</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Scope → Allocated → Completed, per activity and village · progress from consumption vs BOM</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select id="sp-site-filter" onchange="renderSiteProgress()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+          <select id="as-site-filter" onchange="renderActivityStatus()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
             <option value="">All Sites</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadSiteProgress()">🔄 Refresh</button>
+          <select id="as-status-filter" onchange="renderActivityStatus()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Statuses</option>
+            <option value="notalloc">Not Allocated</option>
+            <option value="pending">Pending</option>
+            <option value="complete">Completed</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadActivityStatus()">🔄 Refresh</button>
         </div>
       </div>
-      <div id="sp-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
+      <div id="as-kpis" class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px"></div>
+      <div id="as-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
     </div>
 
-    <!-- SUBCON WORK -->
+<!-- SUBCON WORK -->
     <div id="tab-subconwork" class="tab-pane">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
         <div>
@@ -847,17 +835,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
       </div>
     </div>
 
-    <!-- CvC -->
-    <div id="tab-cvc" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px">
-        <div style="font-size:48px;margin-bottom:16px">⚖️</div>
-        <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Consumed vs Completed</div>
-        <div style="font-size:14px;color:var(--text3);margin-bottom:4px">This report compares material consumed against work completed per site.</div>
-        <div style="display:inline-block;margin-top:20px;padding:6px 18px;background:rgba(31,111,235,.1);color:var(--accent);border-radius:20px;font-size:13px;font-weight:600">🚧 Coming Soon</div>
-      </div>
-    </div>
-
-    <!-- REPORTS -->
+<!-- REPORTS -->
     <div id="tab-reports" class="tab-pane">
       <div class="card">
         <div class="card-header">
@@ -927,8 +905,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <div class="form-group"><label>Site Name</label><input type="text" id="sm-name" placeholder="Site name"></div>
               <div class="form-group"><label>Location</label><input type="text" id="sm-location"></div>
               <div class="form-group"><label>Contract No</label><input type="text" id="sm-contract"></div>
-              <div class="form-group"><label>Total Poles (Scope)</label><input type="number" id="sm-poles" placeholder="0" min="0"></div>
-              <div class="form-group"><label>Wire Scope (KM)</label><input type="number" id="sm-kms" placeholder="0.00" min="0" step="0.01"></div>
+
+
               <div class="form-group"><label>Start Date</label><input type="date" id="sm-start"></div>
               <div class="form-group"><label>End Date</label><input type="date" id="sm-end"></div>
             </div>
@@ -941,6 +919,27 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">All Sites</div>
               <div class="tbl-wrap" id="sm-table-wrap"><p style="color:var(--text4);font-size:12px">No sites yet.</p></div>
             </div>
+          </div>
+        </div>
+        <!-- VILLAGE MASTER (sub-sites) -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h2>🏘️ Village Master</h2>
+            <span id="vm-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Villages are sub-sites under a site. They appear as a dropdown on Issue, Consumption, Subcon Return, Work Progress, and on Project Scope / Subcontractor Allocation.</div>
+            <input type="hidden" id="vm-edit-key">
+            <div class="form-grid">
+              <div class="form-group"><label>Village Name</label><input type="text" id="vm-name" placeholder="Village name"></div>
+              <div class="form-group"><label>Site</label><select id="vm-site"><option value="">Select Site</option></select></div>
+              <div class="form-group"><label>Remarks</label><input type="text" id="vm-remarks"></div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="vm-save-btn" onclick="saveVillage()">+ Add Village</button>
+              <button class="btn btn-ghost btn-sm" id="vm-cancel-btn" style="display:none" onclick="cancelVillageEdit()">✕ Cancel</button>
+            </div>
+            <div id="vm-list" style="margin-top:12px"></div>
           </div>
         </div>
       </div>
@@ -969,27 +968,6 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
         </div>
 
-        <!-- VILLAGE MASTER (sub-sites) -->
-        <div class="card" style="margin-top:16px">
-          <div class="card-header">
-            <h2>🏘️ Village Master</h2>
-            <span id="vm-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
-          </div>
-          <div class="card-body">
-            <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Villages are sub-sites under a site. They appear as a dropdown on Issue, Consumption, Subcon Return and Work Progress.</div>
-            <input type="hidden" id="vm-edit-key">
-            <div class="form-grid">
-              <div class="form-group"><label>Village Name</label><input type="text" id="vm-name" placeholder="Village name"></div>
-              <div class="form-group"><label>Site</label><select id="vm-site"><option value="">Select Site</option></select></div>
-              <div class="form-group"><label>Remarks</label><input type="text" id="vm-remarks"></div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-primary btn-sm" id="vm-save-btn" onclick="saveVillage()">+ Add Village</button>
-              <button class="btn btn-ghost btn-sm" id="vm-cancel-btn" style="display:none" onclick="cancelVillageEdit()">✕ Cancel</button>
-            </div>
-            <div id="vm-list" style="margin-top:12px"></div>
-          </div>
-        </div>
       </div>
 
       <div id="stab-scope" style="display:none">
@@ -1168,7 +1146,7 @@ const STATUS_LABEL = {
 // ══════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════
-let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{}, siteScope:[] };
+let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{}, siteScope:[], villages:[] };
 let STOCK = {};
 const VSTORE = {}; // voucher data store for reversal
 
@@ -1282,9 +1260,6 @@ function buildDropdowns() {
       return `<option value="${esc(code)}">${esc(label)}</option>`;
     }).join('');
 
-  // Populate Project scope site filter
-  const projFilter=document.getElementById('proj-site-filter');
-  if(projFilter){projFilter.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');}
   // Subcon Work filters
   const swSubF=document.getElementById('sw-subcon-filter');
   if(swSubF) swSubF.innerHTML='<option value="">All Subcontractors</option>'+subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
@@ -1546,131 +1521,6 @@ function cancelScopeEdit() {
 // ══════════════════════════════════════════════════════
 //  PROJECT SCOPE TAB
 // ══════════════════════════════════════════════════════
-async function loadProjectTab(){
-  const el=document.getElementById('proj-content');
-  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading project scope...</div>';
-  // Use MASTERS data (already loaded); just re-render
-  renderProjectTab();
-}
-
-function renderProjectTab(){
-  const el=document.getElementById('proj-content'); if(!el) return;
-  const siteScope=MASTERS.siteScope||[];
-  const subconScope=MASTERS.subconScope||[];
-  const filterSite=document.getElementById('proj-site-filter')?.value||'';
-
-  if(!siteScope.length){
-    el.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">No project scope defined yet.<br><small>Go to Settings → Scope → Project Scope to add activities.</small></div></div>';
-    return;
-  }
-
-  // Group SiteScope by site
-  const bySite={};
-  siteScope.forEach(s=>{
-    if(filterSite && s.site!==filterSite) return;
-    if(!bySite[s.site]) bySite[s.site]=[];
-    bySite[s.site].push(s);
-  });
-
-  // Build allocated map: site||actCode → total allocated qty
-  const allocMap={};
-  // Build subcon-level map: site||actCode → [{subcon, qty}]
-  const subconMap={};
-  subconScope.forEach(r=>{
-    const key=r.site+'||'+r.activityCode;
-    allocMap[key]=(allocMap[key]||0)+(r.allocatedQty||0);
-    if(!subconMap[key]) subconMap[key]=[];
-    subconMap[key].push({subcon:r.subcon,qty:r.allocatedQty||0,unit:r.unit||''});
-  });
-
-  if(!Object.keys(bySite).length){
-    el.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:24px;color:var(--text3)">No scope data for selected site.</div></div>';
-    return;
-  }
-
-  // Summary cards
-  const totalScope=siteScope.filter(s=>!filterSite||s.site===filterSite).reduce((a,s)=>a+(s.scopeQty||0),0);
-  const totalAlloc=Object.values(allocMap).reduce((a,v)=>a+v,0);
-  const totalNonAlloc=Math.max(0,totalScope-totalAlloc);
-
-  let html=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
-    <div class="card" style="margin:0;padding:16px;text-align:center">
-      <div style="font-size:22px;font-weight:800;color:var(--accent)">${totalScope.toLocaleString('en-IN')}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Total Scope</div>
-    </div>
-    <div class="card" style="margin:0;padding:16px;text-align:center">
-      <div style="font-size:22px;font-weight:800;color:var(--green)">${totalAlloc.toLocaleString('en-IN')}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Allocated</div>
-    </div>
-    <div class="card" style="margin:0;padding:16px;text-align:center">
-      <div style="font-size:22px;font-weight:800;color:var(--yellow)">${totalNonAlloc.toLocaleString('en-IN')}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Non-Allocated</div>
-    </div>
-    <div class="card" style="margin:0;padding:16px;text-align:center">
-      <div style="font-size:22px;font-weight:800;color:var(--text3)">—</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Completed</div>
-      <div style="font-size:10px;color:var(--text4);margin-top:2px">From Work Progress</div>
-    </div>
-  </div>`;
-
-  // Per-site breakdown
-  html+=Object.keys(bySite).sort().map(site=>{
-    const acts=bySite[site];
-    const siteTotal=acts.reduce((a,s)=>a+(s.scopeQty||0),0);
-    const siteAlloc=acts.reduce((a,s)=>a+(allocMap[site+'||'+s.activityCode]||0),0);
-    const sitePct=siteTotal>0?Math.round(siteAlloc/siteTotal*100):0;
-    return `<div class="card" style="margin-bottom:14px">
-      <div class="card-header" style="padding:14px 16px">
-        <div>
-          <h2 style="font-size:14px">🏗️ ${esc(site)}</h2>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${acts.length} activit${acts.length===1?'y':'ies'} · Allocated ${sitePct}% of scope</div>
-        </div>
-        <div style="text-align:right;font-size:12px;color:var(--text3)">
-          <div style="font-weight:700;color:var(--accent);font-size:16px">${siteAlloc.toLocaleString('en-IN')} <span style="font-size:11px;font-weight:400">/ ${siteTotal.toLocaleString('en-IN')} allocated</span></div>
-        </div>
-      </div>
-      <div class="card-body" style="padding-top:0">
-        <div class="tbl-wrap"><table>
-          <thead><tr>
-            <th>Activity</th><th class="r">Total Scope</th><th class="r">Allocated</th>
-            <th class="r">Non-Allocated</th><th class="r">Completed</th>
-            <th class="r">Pending (Alloc)</th><th class="r">Pending (Non-Alloc)</th><th>Subcontractors</th>
-          </tr></thead>
-          <tbody>${acts.map(s=>{
-            const key=site+'||'+s.activityCode;
-            const alloc=allocMap[key]||0;
-            const nonAlloc=Math.max(0,(s.scopeQty||0)-alloc);
-            const completed=0; // will come from WP once activity-based
-            const pendingAlloc=Math.max(0,alloc-completed);
-            const pendingNonAlloc=nonAlloc;
-            const allocPct=s.scopeQty>0?Math.round(alloc/s.scopeQty*100):0;
-            const subs=(subconMap[key]||[]).map(x=>`<span style="background:var(--bg3);padding:1px 6px;border-radius:10px;font-size:10px;margin:1px;display:inline-block">${esc(x.subcon)} (${x.qty.toLocaleString('en-IN')})</span>`).join(' ');
-            return `<tr>
-              <td>
-                <div style="font-weight:600">${esc(s.activityCode)}</div>
-                <div style="font-size:11px;color:var(--text3)">${esc(s.activityName||'')}</div>
-                <div style="height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;width:80px">
-                  <div style="height:4px;background:${allocPct>=100?'var(--green)':allocPct>0?'var(--accent)':'var(--border)'};border-radius:2px;width:${Math.min(100,allocPct)}%"></div>
-                </div>
-              </td>
-              <td class="r" style="font-weight:700">${(s.scopeQty||0).toLocaleString('en-IN')} <span style="font-size:10px;color:var(--text3)">${esc(s.unit||'')}</span></td>
-              <td class="r" style="color:var(--green);font-weight:600">${alloc.toLocaleString('en-IN')}</td>
-              <td class="r" style="color:${nonAlloc>0?'var(--yellow)':'var(--text3)'};font-weight:600">${nonAlloc.toLocaleString('en-IN')}</td>
-              <td class="r" style="color:var(--text4)">—</td>
-              <td class="r" style="color:var(--accent)">${pendingAlloc.toLocaleString('en-IN')}</td>
-              <td class="r" style="color:${pendingNonAlloc>0?'var(--red)':'var(--green)'}">${pendingNonAlloc.toLocaleString('en-IN')}</td>
-              <td>${subs||'<span style="color:var(--text4);font-size:11px">None assigned</span>'}</td>
-            </tr>`;
-          }).join('')}
-          </tbody>
-        </table></div>
-      </div>
-    </div>`;
-  }).join('');
-
-  el.innerHTML=html;
-}
-
 // ══════════════════════════════════════════════════════
 //  PROJECT SCOPE
 // ══════════════════════════════════════════════════════
@@ -2014,78 +1864,110 @@ async function decideApproval(sheet, voucher, approve){
 }
 
 // ══════════════════════════════════════════════════════
-//  SITE PROGRESS (Scope → Allocated → Unallocated → Completed)
+//  ACTIVITY STATUS — Allocated / Not Allocated / Completed / Pending
 // ══════════════════════════════════════════════════════
-let SP_DATA = [];
-
-async function loadSiteProgress(){
-  const el=document.getElementById('sp-content');
-  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading site progress...</div>';
-  try{
-    const data=await api({action:'projectProgress'});
-    SP_DATA=data.sites||[];
-    const f=document.getElementById('sp-site-filter');
-    if(f){const cur=f.value;f.innerHTML='<option value="">All Sites</option>'+SP_DATA.map(s=>`<option value="${esc(s.site)}">${esc(s.site)}</option>`).join('');f.value=cur;}
-    renderSiteProgress();
-  }catch(e){
-    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadSiteProgress()">🔄 Retry</button></div>`;
-  }
-}
+let AS_DATA=[];
 
 function spBar(pct){
   const color = pct>=100?'var(--green)':pct>=60?'var(--accent)':pct>=30?'var(--yellow)':'var(--red)';
-  return `<div style="display:flex;align-items:center;gap:8px;min-width:120px">
+  return `<div style="display:flex;align-items:center;gap:8px;min-width:110px">
     <div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100,pct)}%;height:100%;background:${color}"></div></div>
     <span style="font-size:11px;font-weight:600;color:${color};min-width:32px;text-align:right">${pct}%</span></div>`;
 }
 
-function renderSiteProgress(){
-  const el=document.getElementById('sp-content'); if(!el) return;
-  const filter=document.getElementById('sp-site-filter')?.value||'';
-  const sites=SP_DATA.filter(s=>!filter||s.site===filter);
-  if(!sites.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">No site scope defined yet.<br><span style="font-size:12px">Define activities per site in Settings → Project Scope, then allocate them to subcontractors.</span></div>';return;}
-
-  el.innerHTML=sites.map(s=>{
-    const sum=s.summary||{};
-    return `<div class="card" style="margin-bottom:16px">
-      <div class="card-body" style="padding:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-          <div style="font-size:15px;font-weight:700">📍 ${esc(s.site)}</div>
-          <div style="display:flex;gap:14px;font-size:12px;color:var(--text3)">
-            <span>${sum.activities||0} activities</span>
-            <span>Overall: <strong style="color:var(--text)">${sum.avgPct||0}%</strong></span>
-            ${sum.unallocatedCount?`<span style="color:var(--yellow)">⚠ ${sum.unallocatedCount} with unallocated scope</span>`:''}
-          </div>
-        </div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>Activity</th><th>Village</th><th>Unit</th><th style="text-align:right">Scope</th><th style="text-align:right">Allocated</th><th style="text-align:right">Unallocated</th><th style="text-align:right">Completed</th><th>Progress</th></tr></thead>
-          <tbody>${s.activities.map(a=>{
-            const subRows=(a.subcons||[]).map(sc=>`<tr style="background:var(--bg3)">
-              <td style="padding-left:28px;font-size:12px;color:var(--text3)">↳ ${esc(sc.subcon)}${sc.hasBOM?'':' <span style="color:var(--yellow)" title="No BOM defined — progress cannot be calculated from consumption">⚠ no BOM</span>'}</td>
-              <td style="font-size:11px;color:var(--text4)">${esc(sc.village||'')}</td>
-              <td style="font-size:12px;color:var(--text3)">${esc(sc.unit||a.unit||'')}</td>
-              <td></td>
-              <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.allocated}</td>
-              <td></td>
-              <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.completed}</td>
-              <td>${spBar(sc.pct||0)}</td>
-            </tr>`).join('');
-            return `<tr>
-              <td><strong>${esc(a.code)}</strong> <span style="color:var(--text3);font-size:12px">${esc(a.name!==a.code?a.name:'')}</span></td>
-              <td style="font-size:11px;color:${a.village?'var(--accent)':'var(--text4)'}">${esc(a.village||'Whole Site')}</td>
-              <td>${esc(a.unit||'')}</td>
-              <td style="text-align:right;font-weight:600">${a.scope}</td>
-              <td style="text-align:right">${a.allocated}</td>
-              <td style="text-align:right;${a.unallocated>0?'color:var(--yellow);font-weight:600':'color:var(--text3)'}">${a.unallocated}</td>
-              <td style="text-align:right;font-weight:600">${a.completed}</td>
-              <td>${spBar(a.pct||0)}</td>
-            </tr>`+subRows;
-          }).join('')}</tbody>
-        </table></div>
-      </div>
-    </div>`;
-  }).join('');
+async function loadActivityStatus(){
+  const el=document.getElementById('as-content');
+  if(el) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading activity status...</div>';
+  try{
+    const d=await api({action:'projectProgress'});
+    AS_DATA=d.sites||[];
+    const f=document.getElementById('as-site-filter');
+    if(f){const cur=f.value;f.innerHTML='<option value="">All Sites</option>'+AS_DATA.map(x=>`<option value="${esc(x.site)}">${esc(x.site)}</option>`).join('');f.value=cur;}
+    renderActivityStatus();
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadActivityStatus()">🔄 Retry</button></div>`;
+  }
 }
+
+// One activity's state: not allocated → pending → complete
+function asState(a){
+  if(!a.allocated) return 'notalloc';
+  return (a.pct||0)>=100 ? 'complete' : 'pending';
+}
+const AS_LABEL={notalloc:'⚪ Not Allocated', pending:'🟡 Pending', complete:'✅ Completed'};
+const AS_COLOR={notalloc:'var(--text3)', pending:'var(--yellow)', complete:'var(--green)'};
+
+function renderActivityStatus(){
+  const el=document.getElementById('as-content'); if(!el) return;
+  const siteF=document.getElementById('as-site-filter')?.value||'';
+  const statF=document.getElementById('as-status-filter')?.value||'';
+  const sites=AS_DATA.filter(x=>!siteF||x.site===siteF);
+
+  // Totals across the visible sites
+  let tot=0,alloc=0,notAlloc=0,done=0,pend=0,partly=0;
+  sites.forEach(sp=>(sp.activities||[]).forEach(a=>{
+    tot++;
+    const st=asState(a);
+    if(st==='notalloc') notAlloc++; else alloc++;
+    if(st==='complete') done++;
+    if(st==='pending')  pend++;
+    if(a.allocated>0&&a.unallocated>0) partly++;
+  }));
+  const kp=document.getElementById('as-kpis');
+  if(kp) kp.innerHTML=`
+    <div class="kpi"><div class="label">Total Activities</div><div class="value">${tot}</div><div class="sub">across ${sites.length} site(s)</div></div>
+    <div class="kpi"><div class="label">Allocated</div><div class="value" style="color:var(--accent)">${alloc}</div><div class="sub">${partly?partly+' partly allocated':'to subcontractors'}</div></div>
+    <div class="kpi"><div class="label">Not Allocated</div><div class="value" style="color:var(--text3)">${notAlloc}</div><div class="sub">no subcontractor yet</div></div>
+    <div class="kpi"><div class="label">Completed</div><div class="value" style="color:var(--green)">${done}</div><div class="sub">100% consumed vs BOM</div></div>
+    <div class="kpi"><div class="label">Pending</div><div class="value" style="color:var(--yellow)">${pend}</div><div class="sub">work in progress</div></div>`;
+
+  const blocks=sites.map(sp=>{
+    const acts=(sp.activities||[]).filter(a=>!statF||asState(a)===statF);
+    if(!acts.length) return '';
+    return `<div class="card" style="margin-bottom:16px"><div class="card-body" style="padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700">📍 ${esc(sp.site)}</div>
+        <div style="display:flex;gap:14px;font-size:12px;color:var(--text3);align-items:center">
+          <span>${(sp.activities||[]).length} activities</span>
+          <span>Overall: <strong style="color:var(--text)">${sp.summary?.avgPct||0}%</strong></span>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Activity</th><th>Village</th><th>Status</th><th style="text-align:right">Scope</th><th style="text-align:right">Allocated</th><th style="text-align:right">Not Allocated</th><th style="text-align:right">Completed</th><th style="text-align:right">Pending</th><th>Progress</th></tr></thead>
+        <tbody>${acts.map(a=>{
+          const st=asState(a);
+          const pendQty=Math.max(0,Math.round(((a.allocated||0)-(a.completed||0))*100)/100);
+          // Indented row per subcontractor holding this activity
+          const subRows=(a.subcons||[]).map(sc=>`<tr style="background:var(--bg3)">
+            <td style="padding-left:26px;font-size:12px;color:var(--text3)">↳ ${esc(sc.subcon)}${sc.hasBOM?'':' <span style="color:var(--yellow)" title="No BOM defined — progress cannot be derived from consumption">⚠ no BOM</span>'}</td>
+            <td style="font-size:11px;color:var(--text4)">${esc(sc.village||'')}</td>
+            <td></td><td></td>
+            <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.allocated}</td>
+            <td></td>
+            <td style="text-align:right;font-size:12px;color:var(--text3)">${sc.completed}</td>
+            <td style="text-align:right;font-size:12px;color:var(--text3)">${Math.max(0,Math.round(((sc.allocated||0)-(sc.completed||0))*100)/100)}</td>
+            <td>${spBar(sc.pct||0)}</td>
+          </tr>`).join('');
+          const noSub=(a.subcons||[]).length?'':`<tr style="background:var(--bg3)"><td colspan="9" style="padding-left:26px;font-size:11px;color:var(--red)">↳ not allocated to any subcontractor yet</td></tr>`;
+          return `<tr>
+            <td><strong>${esc(a.code)}</strong> <span style="color:var(--text3);font-size:11px">${esc(a.name!==a.code?a.name:'')}</span></td>
+            <td style="font-size:11px;color:${a.village?'var(--accent)':'var(--text4)'}">${esc(a.village||'Whole Site')}</td>
+            <td><span style="font-size:11px;font-weight:600;color:${AS_COLOR[st]}">${AS_LABEL[st]}</span></td>
+            <td style="text-align:right;font-weight:600">${a.scope}</td>
+            <td style="text-align:right">${a.allocated}</td>
+            <td style="text-align:right;${a.unallocated>0?'color:var(--yellow);font-weight:600':'color:var(--text3)'}">${a.unallocated}</td>
+            <td style="text-align:right;color:var(--green);font-weight:600">${a.completed}</td>
+            <td style="text-align:right;color:${pendQty>0?'var(--yellow)':'var(--text3)'}">${pendQty}</td>
+            <td>${spBar(a.pct||0)}</td>
+          </tr>`+subRows+noSub;
+        }).join('')}</tbody>
+      </table></div>
+    </div></div>`;
+  }).filter(Boolean).join('');
+
+  el.innerHTML = blocks || '<div style="text-align:center;padding:40px;color:var(--text3)">No activities match this filter.<br><span style="font-size:12px">Define activities per site in Settings → Scope, then allocate them to subcontractors.</span></div>';
+}
+
 
 // ══════════════════════════════════════════════════════
 //  SUBCON WORK
@@ -2217,12 +2099,12 @@ function renderSiteTable() {
   const el = document.getElementById('sm-table-wrap'); if(!el) return;
   if(!sites.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No sites yet.</p>';return;}
   el.innerHTML=`<table>
-    <thead><tr><th>Site</th><th>Location</th><th>Poles (Scope)</th><th>Wire KM (Scope)</th><th></th></tr></thead>
+    <thead><tr><th>Site</th><th>Location</th><th>Villages</th><th>Activities</th><th></th></tr></thead>
     <tbody>${sites.map(s=>`<tr>
       <td style="font-weight:500">${esc(s.name)}</td>
       <td style="color:var(--text3)">${esc(s.location||'—')}</td>
-      <td>${s.totalPoles||0}</td>
-      <td>${s.totalKms||0}</td>
+      <td>${(MASTERS.villages||[]).filter(x=>x.site===s.name).length||'—'}</td>
+      <td>${(MASTERS.siteScope||[]).filter(x=>x.site===s.name).length||'—'}</td>
       <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" onclick='editSite(${JSON.stringify(s)})'>✏️ Edit Scope</button></td>
     </tr>`).join('')}</tbody>
   </table>`;
@@ -2233,8 +2115,7 @@ function editSite(s) {
   document.getElementById('sm-name').value      = s.name;
   document.getElementById('sm-location').value  = s.location||'';
   document.getElementById('sm-contract').value  = s.contractNo||'';
-  document.getElementById('sm-poles').value     = s.totalPoles||0;
-  document.getElementById('sm-kms').value       = s.totalKms||0;
+  // poles/kms retired — scope is defined per activity in Project Scope
   document.getElementById('sm-start').value     = s.startDate||'';
   document.getElementById('sm-end').value       = s.endDate||'';
   document.getElementById('sm-save-btn').textContent = '💾 Update Site';
@@ -2254,8 +2135,11 @@ function cancelSiteEdit() {
 
 async function saveSiteMaster() {
   const name = v('sm-name'); if(!name){toast('Site name required','error');return;}
+  // Columns 4/5 (legacy poles / wire scope) are preserved as-is — scope now lives
+  // in Project Scope per activity, so these are no longer edited from the UI.
+  const prev = (MASTERS.sites||[]).find(x=>x.name===v('sm-edit-key')) || {};
   const row = [name, v('sm-location'), v('sm-contract'),
-    parseFloat(v('sm-poles'))||0, parseFloat(v('sm-kms'))||0,
+    prev.totalPoles||0, prev.totalKms||0,
     v('sm-start'), v('sm-end')];
   const editKey = v('sm-edit-key');
   try {
@@ -2290,42 +2174,36 @@ function renderDashboard(dash) {
   // Valid site names from MASTERS (filter out ghost entries like "Site" from bad WP rows)
   const validSiteNames = new Set((MASTERS.sites||[]).map(ms=>ms.name));
 
-  // Filtered WP sites — only real sites from SiteMaster
-  const wpSites = (dash.sites||[]).filter(ds => validSiteNames.has(ds.site));
-
-  // Build a map of WP data by site name for quick lookup
-  const wpMap = {};
-  wpSites.forEach(ds => { wpMap[ds.site] = ds; });
-
   // Recalculate totals from SiteMaster (scope) + WP data (done),
   // so sites with no WP yet still contribute their scope to the totals
-  let totalPoles=0, totalKms=0, donePoles=0, doneKms=0;
-  (MASTERS.sites||[]).forEach(ms => {
-    totalPoles += ms.totalPoles||0;
-    totalKms   += ms.totalKms||0;
-    const wp = wpMap[ms.name]||{};
-    donePoles += wp.polesErected||0;
-    doneKms   += wp.kmsStrung||0;
-  });
-  const overallPolePct = totalPoles>0 ? Math.round(donePoles/totalPoles*100) : 0;
-  const overallKmPct  = totalKms>0   ? Math.round(doneKms/totalKms*100)     : 0;
+  // Progress is activity-based: each site's % comes from Site Progress
+  // (consumption vs BOM per allocation), not from pole/wire counts.
+  const progMap={};
+  (dash.siteProgress||[]).forEach(x=>{progMap[x.site]=x;});
+  const progList=Object.values(progMap);
+  const sum=k=>progList.reduce((a,x)=>a+(x.summary?.[k]||0),0);
+  const totalActs=sum('activities'), allocActs=sum('allocated');
+  const doneActs=sum('completed'), pendActs=sum('pending');
+  const overallPct=progList.length
+    ? Math.round(progList.reduce((a,x)=>a+(x.summary?.avgPct||0),0)/progList.length) : 0;
+  const openAlloc=sum('unallocatedCount');
 
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi"><div class="label">Sites</div><div class="value">${(MASTERS.sites||[]).length||s.totalSites||0}</div></div>
-    <div class="kpi"><div class="label">Items</div><div class="value">${(MASTERS.items||[]).length||s.totalItems||0}</div></div>
-    <div class="kpi"><div class="label">Poles Done</div><div class="value">${donePoles}</div><div class="sub">of ${totalPoles} (${overallPolePct}%)</div></div>
-    <div class="kpi"><div class="label">KMs Done</div><div class="value">${doneKms}</div><div class="sub">of ${totalKms} KM (${overallKmPct}%)</div></div>
-    <div class="kpi"><div class="label">Subcons</div><div class="value">${s.totalSubcons||0}</div></div>`;
+    <div class="kpi"><div class="label">Activities Allocated</div><div class="value">${allocActs}</div><div class="sub">of ${totalActs} in scope${openAlloc?' · '+openAlloc+' partly unallocated':''}</div></div>
+    <div class="kpi"><div class="label">Completed</div><div class="value" style="color:var(--green)">${doneActs}</div><div class="sub">activities at 100%</div></div>
+    <div class="kpi"><div class="label">Pending</div><div class="value" style="color:var(--yellow)">${pendActs}</div><div class="sub">still in progress</div></div>
+    <div class="kpi"><div class="label">Overall Progress</div><div class="value">${overallPct}%</div><div class="sub">${(MASTERS.subcons||[]).length||s.totalSubcons||0} subcontractor(s)</div></div>`;
 
 
   // Show all SiteMaster sites (merge with WP data); sites with no WP show 0%
   const allSites = (MASTERS.sites||[]).map(ms => {
-    const wp = wpMap[ms.name] || {};
-    const pct = wp.overallPct || 0;
+    const pr = progMap[ms.name];
+    const pct = pr ? (pr.summary?.avgPct||0) : 0;
     const status = pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed';
-    return {site:ms.name, totalPoles:ms.totalPoles||0, totalKms:ms.totalKms||0,
-      polesErected:wp.polesErected||0, kmsStrung:wp.kmsStrung||0,
-      overallPct:pct, status:wp.status||status};
+    return {site:ms.name, overallPct:pct, status,
+      acts: pr ? (pr.summary?.activities||0) : 0,
+      unalloc: pr ? (pr.summary?.unallocatedCount||0) : 0};
   }).slice(0,6);
 
   document.getElementById('dash-sites').innerHTML = allSites.length
@@ -2335,30 +2213,46 @@ function renderDashboard(dash) {
           <span class="status ${s.status}">${STATUS_LABEL[s.status]||s.status}</span>
         </div>
         <div class="progress-bar"><div class="progress-fill ${s.status}" style="width:${Math.min(s.overallPct||0,100)}%"></div></div>
-        <div class="pct-label">${s.overallPct||0}% · ${s.polesErected||0}/${s.totalPoles||0} poles · ${s.kmsStrung||0}/${s.totalKms||0} km</div>
+        <div class="pct-label">${s.overallPct||0}% · ${s.acts} activit${s.acts===1?'y':'ies'}${s.unalloc?' · <span style="color:var(--yellow)">'+s.unalloc+' unallocated</span>':''}</div>
       </div>`).join('')
     : '<p style="color:var(--text3)">No progress logged yet.</p>';
 
-  // Subcontractor Progress table
-  const subcons = (dash.subcons||[]).filter(sc => validSiteNames.has(sc.site));
+  // Subcontractor Progress — activity-wise, rolled up from Site Progress
+  const rollup={};
+  (dash.siteProgress||[]).forEach(sp=>{
+    (sp.activities||[]).forEach(a=>{
+      (a.subcons||[]).forEach(sc=>{
+        const k=sc.subcon+'||'+sp.site;
+        if(!rollup[k]) rollup[k]={name:sc.subcon,site:sp.site,acts:0,done:0,alloc:0,completed:0};
+        const r=rollup[k];
+        r.acts++;
+        if((sc.pct||0)>=100) r.done++;
+        r.alloc+=sc.allocated||0;
+        r.completed+=sc.completed||0;
+      });
+    });
+  });
+  const subcons=Object.values(rollup).sort((a,b)=>a.name.localeCompare(b.name));
   const subconEl = document.getElementById('dash-subcons');
   if(subconEl){
     if(!subcons.length){
-      subconEl.innerHTML='<p style="color:var(--text3)">No subcontractor progress yet.</p>';
+      subconEl.innerHTML='<p style="color:var(--text3)">No activities allocated to subcontractors yet.</p>';
     } else {
       subconEl.innerHTML=`<div class="tbl-wrap"><table>
-        <thead><tr><th>Subcon</th><th>Site</th><th>Poles Done</th><th>Poles Scope</th><th>KMs Done</th><th>KMs Scope</th><th>%</th><th>Status</th></tr></thead>
+        <thead><tr><th>Subcon</th><th>Site</th><th>Activities</th><th>Completed</th><th>Pending</th><th>Allocated Qty</th><th>Done Qty</th><th>%</th><th>Status</th></tr></thead>
         <tbody>${subcons.map(sc=>{
-          const noScope=!sc.scopePoles&&!sc.scopeKms;
+          const pct=sc.alloc>0?Math.min(100,Math.round(sc.completed/sc.alloc*100)):0;
+          const status=pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed';
           return`<tr>
             <td><strong>${esc(sc.name)}</strong></td>
             <td>${esc(sc.site)}</td>
-            <td>${sc.poles||0}</td>
-            <td>${noScope?'—':sc.scopePoles||0}</td>
-            <td>${sc.kms||0}</td>
-            <td>${noScope?'—':sc.scopeKms||0}</td>
-            <td><strong>${noScope?'—':(sc.overallPct||0)+'%'}</strong></td>
-            <td><span class="status ${sc.status||'delayed'}">${STATUS_LABEL[sc.status]||sc.status||'—'}</span></td>
+            <td>${sc.acts}</td>
+            <td style="color:var(--green);font-weight:600">${sc.done}</td>
+            <td style="color:${sc.acts-sc.done?'var(--yellow)':'var(--text3)'};font-weight:600">${sc.acts-sc.done}</td>
+            <td>${Math.round(sc.alloc*100)/100}</td>
+            <td>${Math.round(sc.completed*100)/100}</td>
+            <td><strong>${pct}%</strong></td>
+            <td><span class="status ${status}">${STATUS_LABEL[status]||status}</span></td>
           </tr>`;
         }).join('')}</tbody>
       </table></div>`;
@@ -2401,8 +2295,7 @@ function showTab(name, link) {
     refreshStock();
   }
   if(name==='approvals')    loadApprovals();
-  if(name==='project')      loadProjectTab();
-  if(name==='siteprogress') loadSiteProgress();
+  if(name==='activitystatus') loadActivityStatus();
   if(name==='subconwork')   loadSubconWork();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
@@ -3025,16 +2918,15 @@ function renderWPSites(sites){
   const validNames=new Set((MASTERS.sites||[]).map(s=>s.name));
   const filtered=sites.filter(s=>validNames.has(s.site));
   if(!filtered.length){el.innerHTML='<p style="color:var(--text3)">No progress yet.</p>';return;}
+  // Field-logged totals only. Percentage completion lives in Project Status,
+  // where it is derived from consumption against the BOM.
   el.innerHTML=filtered.map(s=>`<div class="wp-card">
     <div class="wp-card-header">
       <div class="wp-card-title">${esc(s.site)}</div>
-      <span class="status ${s.status||'ontrack'}">${STATUS_LABEL[s.status]||s.status}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill ${s.status||'ontrack'}" style="width:${Math.min(s.overallPct||0,100)}%"></div></div>
-    <div class="pct-label">${s.overallPct||0}%</div>
     <div class="wp-grid">
-      <div class="wp-stat"><div class="s-label">Poles Done</div><div class="s-val">${s.polesErected||0} <small style="font-size:12px;color:var(--text3)">/ ${s.totalPoles||0}</small></div></div>
-      <div class="wp-stat"><div class="s-label">KMs Done</div><div class="s-val">${s.kmsStrung||0} <small style="font-size:12px;color:var(--text3)">/ ${s.totalKms||0}</small></div></div>
+      <div class="wp-stat"><div class="s-label">Poles Erected</div><div class="s-val">${s.polesErected||0}</div></div>
+      <div class="wp-stat"><div class="s-label">Wire Strung (KM)</div><div class="s-val">${s.kmsStrung||0}</div></div>
     </div>
   </div>`).join('');
 }
@@ -3043,17 +2935,12 @@ function renderWPSubcons(subcons){
   const el=document.getElementById('wp-subcon-cards');
   if(!subcons.length){el.innerHTML='<p style="color:var(--text3)">No subcon progress.</p>';return;}
   el.innerHTML=`<div class="tbl-wrap"><table>
-    <thead><tr><th>Subcon</th><th>Site</th><th>Poles Done</th><th>Poles Scope</th><th>KMs Done</th><th>KMs Scope</th><th>%</th><th>Status</th></tr></thead>
-    <tbody>${subcons.map(s=>{
-      const noScope=!s.scopePoles&&!s.scopeKms;
-      return`<tr>
+    <thead><tr><th>Subcon</th><th>Site</th><th>Poles Erected</th><th>Wire Strung (KM)</th></tr></thead>
+    <tbody>${subcons.map(s=>`<tr>
         <td style="font-weight:500">${esc(s.name)}</td><td>${esc(s.site||'')}</td>
-        <td>${s.poles||0}</td><td style="color:var(--text3)">${s.scopePoles||'—'}</td>
-        <td>${s.kms||0}</td><td style="color:var(--text3)">${s.scopeKms||'—'}</td>
-        <td><strong>${noScope?'—':(s.overallPct||0)+'%'}</strong></td>
-        <td><span class="status ${s.status||'delayed'}">${STATUS_LABEL[s.status]||s.status||'—'}</span></td>
-      </tr>`;
-    }).join('')}</tbody>
+        <td>${s.poles||0}</td>
+        <td>${s.kms||0}</td>
+      </tr>`).join('')}</tbody>
   </table></div>`;
 }
 
@@ -3566,13 +3453,16 @@ async function loadSubconLedger(){
 // ══════════════════════════════════════════════════════
 //  REPORTS
 // ══════════════════════════════════════════════════════
+let RPT_PROGRESS=[];
+
 async function loadReports(){
   ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
     const el=document.getElementById('report-'+k);
     if(el) el.innerHTML='<p style="color:var(--text3)">Loading…</p>';
   });
   try{
-    const data=await api({action:'reportData'});
+    const [data,prog]=await Promise.all([api({action:'reportData'}),api({action:'projectProgress'})]);
+    RPT_PROGRESS=prog.sites||[];
     renderReports(data);
   } catch(e){
     ['variance','leakage','efficiency','movement','exception'].forEach(k=>{
@@ -3629,17 +3519,30 @@ function renderReports(d){
     tbl(['Material','Issued','Consumed','Balance','Bal%','₹ at Risk'],varRows,
       r=>parseInt(r['Bal%'])>25?'color:var(--red)':parseInt(r['Bal%'])>15?'color:var(--yellow)':'');
 
-  // 2. SITE LEAKAGE — use wpBySite from GAS (correctly keyed per site)
-  const leakRows=Object.entries(siteScope).map(([site,sc])=>{
-    const done=wpBySiteFromGAS[site]||{poles:0,kms:0};
-    const pPct=sc.poles>0?Math.round(done.poles/sc.poles*100):0;
-    const kPct=sc.kms>0?Math.round(done.kms/sc.kms*100):0;
-    const status=pPct>=100&&kPct>=100?'✅ Complete':pPct>=60?'🟡 On Track':pPct>=30?'🟠 Slow':'🔴 Delayed';
-    return{Site:site,Contract:sc.contract||'—','Poles Done':done.poles,'Poles Scope':sc.poles,'Poles%':pPct+'%','KMs Done':done.kms,'KMs Scope':sc.kms,'KMs%':kPct+'%',Status:status};
+  // 2. SITE-WISE PROGRESS — activity scope vs allocation vs completion,
+  //    with the field log alongside it as a cross-check.
+  const leakRows=(RPT_PROGRESS||[]).map(sp=>{
+    const acts=sp.activities||[];
+    const sum=k=>acts.reduce((a,x)=>a+(x[k]||0),0);
+    const wp=wpBySiteFromGAS[sp.site]||{poles:0,kms:0};
+    const pct=sp.summary?.avgPct||0;
+    const status=pct>=100?'✅ Complete':pct>=60?'🟡 On Track':pct>=30?'🟠 Slow':'🔴 Delayed';
+    return{Site:sp.site,
+      'Activities':acts.length,
+      'Completed':sp.summary?.completed||0,
+      'Pending':sp.summary?.pending||0,
+      'Scope Qty':Math.round(sum('scope')*100)/100,
+      'Allocated':Math.round(sum('allocated')*100)/100,
+      'Not Allocated':Math.round(sum('unallocated')*100)/100,
+      'Done Qty':Math.round(sum('completed')*100)/100,
+      'Progress':pct+'%',
+      'Field: Poles':wp.poles||0,
+      'Field: KM':wp.kms||0,
+      Status:status};
   });
   document.getElementById('report-leakage').innerHTML=
-    '<h3 style="font-size:14px;margin-bottom:12px">Site-wise Progress Report</h3>'+
-    tbl(['Site','Contract','Poles Done','Poles Scope','Poles%','KMs Done','KMs Scope','KMs%','Status'],leakRows);
+    '<h3 style="font-size:14px;margin-bottom:12px">Site-wise Progress Report <span style="font-size:11px;font-weight:400;color:var(--text3)">· activity-based, with field log for comparison</span></h3>'+
+    tbl(['Site','Activities','Completed','Pending','Scope Qty','Allocated','Not Allocated','Done Qty','Progress','Field: Poles','Field: KM','Status'],leakRows);
 
   // 3. SUBCON EFFICIENCY (qty-based)
   const effRows=Object.entries(issuedBySubcon).map(([sub,items])=>{
@@ -3650,11 +3553,11 @@ function renderReports(d){
     const eff=issQty>0?Math.round(conQty/issQty*100):0;
     const wp=wpBySubcon[sub]||{};
     const risk=eff<50?'🔴 High Risk':eff<75?'🟠 Medium':eff<90?'🟡 Watch':'✅ Good';
-    return{Subcontractor:sub,Site:site,'Issued (Qty)':issQty,'Consumed (Qty)':conQty,'Balance (Qty)':bal,'Poles Done':wp.poles||0,'KMs Done':wp.kms||0,'Efficiency%':eff+'%',Risk:risk};
+    return{Subcontractor:sub,Site:site,'Issued (Qty)':issQty,'Consumed (Qty)':conQty,'Balance (Qty)':bal,'Field: Poles':wp.poles||0,'Field: KM':wp.kms||0,'Efficiency%':eff+'%',Risk:risk};
   });
   document.getElementById('report-efficiency').innerHTML=
     '<h3 style="font-size:14px;margin-bottom:12px">Subcontractor Efficiency Report</h3>'+
-    tbl(['Subcontractor','Site','Issued (Qty)','Consumed (Qty)','Balance (Qty)','Poles Done','KMs Done','Efficiency%','Risk'],effRows);
+    tbl(['Subcontractor','Site','Issued (Qty)','Consumed (Qty)','Balance (Qty)','Field: Poles','Field: KM','Efficiency%','Risk'],effRows);
 
   // 4. MOVEMENT
   const movItems=new Set([...Object.keys(purchased),...Object.keys(issuedTotal),...Object.keys(consumedTotal)]);
