@@ -280,6 +280,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a onclick="showTab('returns',this)"><span class="icon">↩️</span>Returns</a>
     <a onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
     <a onclick="showTab('conversion',this)"><span class="icon">⚗️</span>Conversion</a>
+    <a onclick="showTab('fabrication',this)"><span class="icon">⚒️</span>Fabrication</a>
     <a id="approvals-link" onclick="showTab('approvals',this)" style="display:none"><span class="icon">✅</span>Approvals <span id="appr-badge" style="margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;font-weight:700;display:none"></span></a>
 
     <div class="section-label">Field</div>
@@ -683,6 +684,57 @@ tr:hover td{background:rgba(0,0,0,.025)}
           <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('conversion',false,true)">📋 All</button>
         </div>
         <div class="card-body" id="cnv-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
+      </div>
+    </div>
+
+    <!-- FABRICATION -->
+    <div id="tab-fabrication" class="tab-pane">
+      <div class="report-tabs" style="margin-bottom:14px">
+        <div class="report-tab active" onclick="showFabTab('produce',this)">⚒️ Fabrication Produced</div>
+        <div class="report-tab" onclick="showFabTab('list',this)">📋 Created &amp; Allocated <span id="fab-pending-badge" style="margin-left:6px;background:var(--yellow);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;font-weight:700;display:none"></span></div>
+      </div>
+
+      <!-- PRODUCE -->
+      <div id="fabtab-produce">
+        <div class="card">
+          <div class="card-header"><h2>⚒️ Fabrication Produced</h2></div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Record what was fabricated. Stock of the produced item increases straight away — the materials it consumed can be allocated later under <strong>Created &amp; Allocated</strong>.</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Date</label><input type="date" id="fab-date"></div>
+              <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="fab-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
+              <div class="form-group"><label>Location</label><select id="fab-location"><option value="Main Store">Main Store</option></select></div>
+              <div class="form-group"><label>Remarks</label><input type="text" id="fab-remarks" placeholder="e.g. monthly fabrication batch"></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-top:14px;margin-bottom:6px">⬅ Items Fabricated (In)</div>
+            <div class="tbl-wrap">
+              <table class="row-table">
+                <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+                <tbody id="fab-rows"></tbody>
+              </table>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-sm" onclick="addFabRow()">+ Add Item</button>
+              <button class="btn btn-primary" onclick="saveFabrication()">💾 Save Fabrication</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATED & ALLOCATED -->
+      <div id="fabtab-list" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+          <div style="font-size:12px;color:var(--text3)">Allocate the materials each fabrication consumed. Allocating reduces stock of those materials.</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="fab-filter" onchange="renderFabrications()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+              <option value="">All</option>
+              <option value="pending">Not Allocated</option>
+              <option value="done">Allocated</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadFabrications()">🔄 Refresh</button>
+          </div>
+        </div>
+        <div id="fab-list"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
       </div>
     </div>
 
@@ -1132,7 +1184,7 @@ const API = 'https://script.google.com/macros/s/AKfycbwzRSY7uVaXizhqv17PoIQmWGwD
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
   consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn',
-  conversion:'Conversion'
+  conversion:'Conversion', fabrication:'Fabrication'
 };
 const STATUS_LABEL = {
   complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed', noscope:'⚪ No Scope'
@@ -1288,6 +1340,8 @@ function buildDropdowns() {
   // Conversion location + village dropdowns
   const cnvLoc=document.getElementById('cnv-location');
   if(cnvLoc){const cur=cnvLoc.value; cnvLoc.innerHTML=locOpts; if(cur) cnvLoc.value=cur;}
+  const fabLoc=document.getElementById('fab-location');
+  if(fabLoc){const cur=fabLoc.value; fabLoc.innerHTML=locOpts; if(cur) fabLoc.value=cur;}
   const vmSite=document.getElementById('vm-site');
   if(vmSite){const cur=vmSite.value; vmSite.innerHTML=siteOpts; if(cur) vmSite.value=cur;}
   ['iss','con','sr','wp','ps','sc'].forEach(pfx=>fillVillages(pfx));
@@ -1716,9 +1770,14 @@ function onConvItemChange(sel, dir){
   tr.querySelector('.cnv-unit').value=unitOf(sel.value);
   if(dir!=='out') return;
   const loc=document.getElementById('cnv-location')?.value||'Main Store';
+  const cell=tr.querySelector('.cnv-avail');
+  if(!STOCK || !STOCK.stock){
+    cell.innerHTML='<span style="font-size:11px;color:var(--text3)">loading…</span>';
+    refreshStock().then(()=>onConvItemChange(sel,dir)); // retry once stock arrives
+    return;
+  }
   const st=(STOCK.stock||[]).find(s=>s.item===sel.value);
   const avail=st?(loc==='Main Store'?st.main:(st.sites?.[loc]||0)):0;
-  const cell=tr.querySelector('.cnv-avail');
   cell.textContent=st?avail:'—';
   cell.style.color=avail>0?'var(--green)':'var(--red)';
   tr.querySelector('.cnv-qty').dataset.available=avail;
@@ -1798,6 +1857,186 @@ function resetConversionForm(){
   for(let i=0;i<3;i++) addConvRow('out');
   addConvRow('in');
   const rm=document.getElementById('cnv-remarks'); if(rm) rm.value='';
+}
+
+
+// ══════════════════════════════════════════════════════
+//  FABRICATION
+//  Stage 1: record what was produced (stock goes up now)
+//  Stage 2: allocate the materials it consumed, later
+// ══════════════════════════════════════════════════════
+let FAB_DATA=[];
+
+function showFabTab(key,tab){
+  document.querySelectorAll('#tab-fabrication .report-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  ['produce','list'].forEach(k=>{
+    const el=document.getElementById('fabtab-'+k);
+    if(el) el.style.display=(k===key?'block':'none');
+  });
+  if(key==='list') loadFabrications();
+}
+
+function addFabRow(){
+  const tbody=document.getElementById('fab-rows'); if(!tbody) return;
+  const items=MASTERS.items||[];
+  const opts='<option value="">Select Item</option>'+items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${tbody.children.length+1}</td>
+    <td><select class="fab-item item-sel" onchange="this.closest('tr').querySelector('.fab-unit').value=unitOf(this.value)">${opts}</select></td>
+    <td><input type="number" class="fab-qty qty-input" min="0" step="0.01" placeholder="0"></td>
+    <td><input type="text" class="fab-unit unit-inp" style="width:70px" placeholder="Unit"></td>
+    <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+async function saveFabrication(){
+  const date=v('fab-date'); if(!date){toast('Date required','error');return;}
+  const loc=v('fab-location')||'Main Store';
+  const remarks=v('fab-remarks');
+  const user=CURRENT_USER?CURRENT_USER.name:'';
+  const rows=[];
+  for(const tr of document.getElementById('fab-rows').rows){
+    const item=tr.querySelector('.fab-item').value;
+    const qty=parseFloat(tr.querySelector('.fab-qty').value)||0;
+    if(!item&&!qty) continue;
+    if(!item){toast('Select an item in every filled row','error');return;}
+    if(!qty||qty<=0){toast(`Enter a quantity for "${item}"`,'error');return;}
+    rows.push([date,'','IN',item,qty,tr.querySelector('.fab-unit').value,loc,remarks,user]);
+  }
+  if(!rows.length){toast('Add at least one fabricated item','error');return;}
+  try{
+    const res=await apiPost('Fabrication',rows);
+    if(res.success){
+      toast(`✅ Fabrication saved${res.voucher?' — '+res.voucher:''}${res.status==='Pending'?' · awaiting approval':''}`,
+            res.status==='Pending'?'info':'success');
+      if(res.voucher){const el=document.getElementById('fab-voucher'); if(el) el.value=res.voucher;}
+      document.getElementById('fab-rows').innerHTML='';
+      for(let i=0;i<3;i++) addFabRow();
+      const rm=document.getElementById('fab-remarks'); if(rm) rm.value='';
+      autoVoucher('Fabrication','fab-voucher');
+      refreshStock(); loadFabrications();
+    } else toast(res.error||'Save failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+async function loadFabrications(){
+  const el=document.getElementById('fab-list');
+  if(el&&!FAB_DATA.length) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading fabrications...</div>';
+  try{
+    const d=await api({action:'fabrications'});
+    FAB_DATA=d.fabrications||[];
+    const b=document.getElementById('fab-pending-badge');
+    if(b){ b.textContent=d.pendingAllocation||0; b.style.display=(d.pendingAllocation>0)?'':'none'; }
+    renderFabrications();
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadFabrications()">🔄 Retry</button></div>`;
+  }
+}
+
+function renderFabrications(){
+  const el=document.getElementById('fab-list'); if(!el) return;
+  const f=document.getElementById('fab-filter')?.value||'';
+  const list=FAB_DATA.filter(x=>!f||(f==='pending'?!x.allocated:x.allocated));
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Nothing to show here.</div>';
+    return;
+  }
+  el.innerHTML=list.map(x=>{
+    const pill=x.allocated
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(26,127,55,.1);color:var(--green);border:1px solid rgba(26,127,55,.3)">✓ ALLOCATED</span>'
+      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(154,103,0,.12);color:var(--yellow);border:1px solid rgba(154,103,0,.3)">⏳ NOT ALLOCATED</span>';
+    const prod=(x.produced||[]).map(i=>`${esc(i.item)} <strong>${i.qty}</strong> ${esc(i.unit||'')}`).join(' · ')||'—';
+    const cons=(x.consumed||[]).length
+      ? `<div class="tbl-wrap" style="margin-top:6px"><table><thead><tr><th>Material Consumed</th><th style="text-align:right">Qty</th><th>Unit</th></tr></thead>
+         <tbody>${x.consumed.map(i=>`<tr><td>${esc(i.item)}</td><td style="text-align:right">${i.qty}</td><td>${esc(i.unit||'')}</td></tr>`).join('')}</tbody></table></div>`
+      : '<div style="font-size:12px;color:var(--yellow);margin-top:6px">No materials allocated to this fabrication yet.</div>';
+    return `<div class="voucher-card"${x.allocated?'':' style="border-left:3px solid var(--yellow)"'}>
+      <div class="voucher-header">
+        <span class="voucher-num">${esc(x.voucher)}</span>
+        <span style="display:flex;align-items:center;gap:8px">${pill}<span class="voucher-date">${esc(x.date||'')}</span></span>
+      </div>
+      <div class="voucher-meta">Produced: ${prod}${x.location?' · at '+esc(x.location):''}${x.savedBy?' · by '+esc(x.savedBy):''}${x.remarks?' · '+esc(x.remarks):''}</div>
+      ${cons}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-secondary btn-sm" style="font-size:11px;padding:3px 10px" onclick="openAllocate('${esc(x.voucher)}')">➕ Allocate Materials</button>
+      </div>
+      <div id="alloc-${esc(x.voucher)}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)"></div>
+    </div>`;
+  }).join('');
+}
+
+// Inline form to book the materials a fabrication consumed
+function openAllocate(voucher){
+  const box=document.getElementById('alloc-'+voucher); if(!box) return;
+  if(box.style.display!=='none'){ box.style.display='none'; return; }
+  const fab=FAB_DATA.find(x=>x.voucher===voucher)||{};
+  box.style.display='block';
+  box.innerHTML=`
+    <div style="font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">➡ Materials Consumed (Out)</div>
+    <div class="tbl-wrap"><table class="row-table">
+      <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+      <tbody id="allocrows-${esc(voucher)}"></tbody>
+    </table></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="addAllocRow('${esc(voucher)}')">+ Add Material</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAllocation('${esc(voucher)}','${esc(fab.location||'Main Store')}')">💾 Save Allocation</button>
+      <button class="btn btn-ghost btn-sm" onclick="openAllocate('${esc(voucher)}')">✕ Cancel</button>
+    </div>`;
+  for(let i=0;i<3;i++) addAllocRow(voucher);
+}
+
+function addAllocRow(voucher){
+  const tbody=document.getElementById('allocrows-'+voucher); if(!tbody) return;
+  const items=MASTERS.items||[];
+  const opts='<option value="">Select Item</option>'+items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${tbody.children.length+1}</td>
+    <td><select class="al-item item-sel" onchange="onAllocItemChange(this,'${esc(voucher)}')">${opts}</select></td>
+    <td class="al-avail" style="font-size:12px;color:var(--text3);white-space:nowrap">—</td>
+    <td><input type="number" class="al-qty qty-input" min="0" step="0.01" placeholder="0" oninput="checkConvStock(this)"></td>
+    <td><input type="text" class="al-unit unit-inp" style="width:70px" placeholder="Unit"></td>
+    <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function onAllocItemChange(sel,voucher){
+  const tr=sel.closest('tr');
+  tr.querySelector('.al-unit').value=unitOf(sel.value);
+  const fab=FAB_DATA.find(x=>x.voucher===voucher)||{};
+  const loc=fab.location||'Main Store';
+  const cell=tr.querySelector('.al-avail');
+  if(!sel.value){ cell.innerHTML='—'; tr.querySelector('.al-qty').dataset.available=''; return; }
+  const st=(STOCK.stock||[]).find(s=>s.item===sel.value);
+  const avail=st?(loc==='Main Store'?st.main:(st.sites?.[loc]||0)):0;
+  cell.innerHTML=`<span class="stock-badge ${avail<=0?'out':'ok'}">${avail}</span>`;
+  tr.querySelector('.al-qty').dataset.available=avail;
+}
+
+async function saveAllocation(voucher,loc){
+  const tbody=document.getElementById('allocrows-'+voucher); if(!tbody) return;
+  const user=CURRENT_USER?CURRENT_USER.name:'';
+  const date=today();
+  const rows=[];
+  for(const tr of tbody.rows){
+    const item=tr.querySelector('.al-item').value;
+    const qty=parseFloat(tr.querySelector('.al-qty').value)||0;
+    if(!item&&!qty) continue;
+    if(!item){toast('Select an item in every filled row','error');return;}
+    if(!qty||qty<=0){toast(`Enter a quantity for "${item}"`,'error');return;}
+    const av=parseFloat(tr.querySelector('.al-qty').dataset.available);
+    if(!isNaN(av)&&qty>av){toast(`❌ Only ${av} of "${item}" available at ${loc}`,'error');return;}
+    rows.push([date,voucher,'OUT',item,qty,tr.querySelector('.al-unit').value,loc,'Allocated to '+voucher,user]);
+  }
+  if(!rows.length){toast('Add at least one material','error');return;}
+  try{
+    // keepVoucher tells the server to attach these to the SAME fabrication voucher
+    const res=await apiPost('Fabrication',rows,{keepVoucher:'1'});
+    if(res.success){
+      toast(`✅ ${rows.length} material(s) allocated to ${voucher}`,'success');
+      refreshStock(); await loadFabrications();
+    } else toast(res.error||'Save failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2274,12 +2513,12 @@ function showTab(name, link) {
 
   const dateMap={purchase:'pur-date',transfer:'trn-date',issue:'iss-date',
     consumption:'con-date',returns:'ret-date',subconreturn:'sr-date',workprogress:'wp-date',
-    conversion:'cnv-date'};
+    conversion:'cnv-date',fabrication:'fab-date'};
   if(dateMap[name]){const el=document.getElementById(dateMap[name]);if(el&&!el.value)el.value=today();}
 
   const vMap={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
     consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher',
-    conversion:'cnv-voucher'};
+    conversion:'cnv-voucher',fabrication:'fab-voucher'};
   if(vMap[name]) autoVoucher(SHEET[name], vMap[name]);
 
   const rMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
@@ -2295,6 +2534,11 @@ function showTab(name, link) {
     const tb=document.getElementById('cnv-out-rows');
     if(tb&&!tb.children.length) resetConversionForm();
     refreshStock();
+  }
+  if(name==='fabrication'){
+    const tb=document.getElementById('fab-rows');
+    if(tb&&!tb.children.length){ for(let i=0;i<3;i++) addFabRow(); }
+    loadFabrications(); refreshStock();
   }
   if(name==='approvals')    loadApprovals();
   if(name==='activitystatus') loadActivityStatus();
@@ -2423,6 +2667,16 @@ function updateStock(sel,type){
     const site=v('iss-site');
     if(!site){ cell.innerHTML='<span class="stock-badge out">Select site first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
     avail=getStock(item,site);
+    // Issue draws from the SITE store. If it's empty but Main Store has the
+    // material, say so — it needs a Transfer first.
+    if(avail<=0 && item){
+      const atMain=getStock(item,'Main Store');
+      if(atMain>0){
+        cell.innerHTML=`<span class="stock-badge out">0 here</span> <span style="font-size:10px;color:var(--text3)">· ${atMain} at Main Store — transfer first</span>`;
+        tr.querySelector('.qty-input').dataset.available=0;
+        return;
+      }
+    }
   } else if(type==='consumption'){
     const subcon=v('con-subcon');
     if(!subcon){ cell.innerHTML='<span class="stock-badge out">Select subcon first</span>'; tr.querySelector('.qty-input').dataset.available=-1; return; }
@@ -2439,6 +2693,7 @@ function updateStock(sel,type){
 
 function getStock(item,loc,locType){
   if(!STOCK) return 0;
+  if(locType==='subcon' && !STOCK.subconStock) return 0;
   if(locType==='subcon'){
     if(!STOCK.subconStock) return 0;
     return (STOCK.subconStock[loc]&&STOCK.subconStock[loc][item])||0;
@@ -3167,6 +3422,7 @@ function buildVoucherHtml(type, data){
     const date=data.date||v('iss-date');
     const site=data.site||document.getElementById('iss-site')?.options[document.getElementById('iss-site')?.selectedIndex]?.text||'';
     const subcon=data.subcon||document.getElementById('iss-subcon')?.options[document.getElementById('iss-subcon')?.selectedIndex]?.text||'';
+    const village=data.village||v('iss-village');
     const issuedBy=data.issuedBy||v('iss-issuedby')||user;
     const remarks=data.remarks||v('iss-remarks');
     const rows=data.rows||(getFormRows('issue').rows);
@@ -3178,6 +3434,7 @@ function buildVoucherHtml(type, data){
       <div class="meta-grid cols3">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Site</label><span>${esc(site)}</span></div>
+        ${village?`<div class="meta-item"><label>Village</label><span>${esc(village)}</span></div>`:''}
         <div class="meta-item"><label>Issued To (Subcon)</label><span>${esc(subcon)}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${remarks}</span></div>`:''}
         ${(data.activity||document.getElementById('iss-activity-name')?.textContent)?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('iss-activity-name')?.textContent||'')}</span></div>`:''}
@@ -3202,6 +3459,7 @@ function buildVoucherHtml(type, data){
     const date=data.date||v('con-date');
     const site=data.site||document.getElementById('con-site')?.options[document.getElementById('con-site')?.selectedIndex]?.text||'';
     const subcon=data.subcon||document.getElementById('con-subcon')?.options[document.getElementById('con-subcon')?.selectedIndex]?.text||'';
+    const village=data.village||v('con-village');
     const remarks=data.remarks||v('con-remarks');
     const rows=data.rows||(getFormRows('consumption').rows);
     return`<div class="page">
@@ -3212,6 +3470,7 @@ function buildVoucherHtml(type, data){
       <div class="meta-grid cols3">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Site</label><span>${site}</span></div>
+        ${village?`<div class="meta-item"><label>Village</label><span>${esc(village)}</span></div>`:''}
         <div class="meta-item"><label>Subcontractor</label><span>${subcon}</span></div>
         ${remarks?`<div class="meta-item" style="grid-column:1/-1"><label>Remarks</label><span>${esc(remarks)}</span></div>`:''}
         ${(data.activity||document.getElementById('con-activity-name')?.textContent)?`<div class="meta-item" style="grid-column:1/-1"><label>Activity (BOM)</label><span style="color:var(--accent);font-weight:600">${esc(data.activity||document.getElementById('con-activity-name')?.textContent||'')}</span></div>`:''}
@@ -3269,6 +3528,7 @@ function buildVoucherHtml(type, data){
     const date=data.date||v('sr-date');
     const site=data.site||document.getElementById('sr-site')?.options[document.getElementById('sr-site')?.selectedIndex]?.text||'';
     const subcon=data.subcon||document.getElementById('sr-subcon')?.options[document.getElementById('sr-subcon')?.selectedIndex]?.text||'';
+    const village=data.village||v('sr-village');
     const reason=data.reason||v('sr-reason');
     const rows=data.rows||(getFormRows('subconreturn').rows);
     return`<div class="page">
@@ -3279,6 +3539,7 @@ function buildVoucherHtml(type, data){
       <div class="meta-grid cols3">
         <div class="meta-item"><label>Date</label><span>${date}</span></div>
         <div class="meta-item"><label>Site</label><span>${site||'—'}</span></div>
+        ${village?`<div class="meta-item"><label>Village</label><span>${esc(village)}</span></div>`:''}
         <div class="meta-item"><label>Subcontractor</label><span>${subcon||'—'}</span></div>
         ${reason?`<div class="meta-item" style="grid-column:1/-1"><label>Reason</label><span>${reason}</span></div>`:''}
       </div>
@@ -3325,7 +3586,7 @@ function reprintVoucher(type, voucher){
     rate:it.rate||0,amount:it.amount||0,notes:it.notes||it.remarks||''}));
   const typeMap={purchase:'Purchase',transfer:'Transfer',issue:'Issue',
     consumption:'Consumption',returns:'Returns',subconreturn:'SubconReturn'};
-  const data={voucher:g.voucher,date:g.date,rows,
+  const data={voucher:g.voucher,date:g.date,rows,village:meta.village,
     supplier:meta.supplier,invoice:meta.invoice,loc:meta.location,
     from:meta.from,to:meta.to,site:meta.site,subcon:meta.subcon,
     vehicle:meta.vehicle,driver:meta.driver,
@@ -3878,7 +4139,8 @@ function lockAsync(fnName){
 }
 ['saveTxn','saveMaster','saveSiteMaster','saveProjectScope','saveSubconScope',
  'saveBOMRow','saveWP','saveWPEdit','reverseTxn',
- 'saveConversion','saveVillage','decideApproval','decideApprovalFromCard'].forEach(lockAsync);
+ 'saveConversion','saveVillage','decideApproval','decideApprovalFromCard',
+ 'saveFabrication','saveAllocation'].forEach(lockAsync);
 </script>
 </body>
 </html>
