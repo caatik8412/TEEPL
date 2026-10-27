@@ -277,9 +277,8 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <a onclick="showTab('transfer',this)"><span class="icon">↔️</span>Transfer</a>
     <a onclick="showTab('issue',this)"><span class="icon">📤</span>Issue</a>
     <a onclick="showTab('consumption',this)"><span class="icon">🔧</span>Consumption</a>
-    <a onclick="showTab('returns',this)"><span class="icon">↩️</span>Returns</a>
+    <a onclick="showTab('returns',this)"><span class="icon">↩️</span>Return to Mohol</a>
     <a onclick="showTab('subconreturn',this)"><span class="icon">🔄</span>Subcon Return</a>
-    <a onclick="showTab('conversion',this)"><span class="icon">⚗️</span>Conversion</a>
     <a onclick="showTab('fabrication',this)"><span class="icon">⚒️</span>Fabrication</a>
     <a id="approvals-link" onclick="showTab('approvals',this)" style="display:none"><span class="icon">✅</span>Approvals <span id="appr-badge" style="margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;font-weight:700;display:none"></span></a>
 
@@ -561,7 +560,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <!-- RETURNS -->
     <div id="tab-returns" class="tab-pane">
       <div class="card">
-        <div class="card-header"><h2>↩️ New Return</h2></div>
+        <div class="card-header"><h2>↩️ New Return to Mohol</h2></div>
         <div class="card-body">
           <div class="form-grid">
             <div class="form-group"><label>Date</label><input type="date" id="ret-date"></div>
@@ -578,7 +577,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="addRow('returns')">+ Add Row</button>
-            <button class="btn btn-primary" onclick="saveTxn('returns')">💾 Save Return</button>
+            <button class="btn btn-primary" onclick="saveTxn('returns')">💾 Save Return to Mohol</button>
             <button class="btn btn-ghost btn-sm" onclick="printVoucher('Returns')" style="color:var(--accent)">🖨 Print</button>
           </div>
         </div>
@@ -636,58 +635,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
       </div>
     </div>
 
-<!-- CONVERSION -->
-    <div id="tab-conversion" class="tab-pane">
-      <div class="card">
-        <div class="card-header"><h2>⚗️ Material Conversion</h2></div>
-        <div class="card-body">
-          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Convert one material into another (e.g. cutting a coil into pieces). Stock of the source item reduces and the converted item increases at the same location.</div>
-          <div class="form-grid">
-            <div class="form-group"><label>Date</label><input type="date" id="cnv-date"></div>
-            <div class="form-group"><label>Voucher # (Auto)</label><input type="text" id="cnv-voucher" placeholder="Auto on save" readonly tabindex="-1" style="color:var(--text3);background:var(--bg3);cursor:default"></div>
-            <div class="form-group"><label>Location</label><select id="cnv-location" onchange="onConvLocationChange()"><option value="Main Store">Main Store</option></select></div>
-            <div class="form-group"><label>Remarks</label><input type="text" id="cnv-remarks" placeholder="Reason for conversion"></div>
-          </div>
-          <!-- MATERIALS OUT -->
-          <div style="font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-top:14px;margin-bottom:6px">➡ Materials Consumed (Out)</div>
-          <div class="tbl-wrap">
-            <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
-              <tbody id="cnv-out-rows"></tbody>
-            </table>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-ghost btn-sm" onclick="addConvRow('out')">+ Add Material Out</button>
-          </div>
-
-          <!-- MATERIALS IN -->
-          <div style="font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-top:16px;margin-bottom:6px">⬅ Materials Produced (In)</div>
-          <div class="tbl-wrap">
-            <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
-              <tbody id="cnv-in-rows"></tbody>
-            </table>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-ghost btn-sm" onclick="addConvRow('in')">+ Add Material In</button>
-            <button class="btn btn-primary" onclick="saveConversion()">💾 Save Conversion</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h2>📋 Past Records</h2></div>
-        <div class="fetch-bar">
-          <div class="form-group"><label>From</label><input type="date" id="cnv-from"></div>
-          <div class="form-group"><label>To</label><input type="date" id="cnv-to"></div>
-          <div class="form-group"><label>Voucher / Item</label><input type="text" id="cnv-search" placeholder="Search…"></div>
-          <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('conversion')">🔍 Fetch</button>
-          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('conversion',false,true)">📋 All</button>
-        </div>
-        <div class="card-body" id="cnv-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
-      </div>
-    </div>
-
-    <!-- FABRICATION -->
+<!-- FABRICATION -->
     <div id="tab-fabrication" class="tab-pane">
       <div class="report-tabs" style="margin-bottom:14px">
         <div class="report-tab active" onclick="showFabTab('produce',this)">⚒️ Fabrication Produced</div>
@@ -718,6 +666,18 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <button class="btn btn-primary" onclick="saveFabrication()">💾 Save Fabrication</button>
             </div>
           </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>📋 Past Records</h2></div>
+          <div class="fetch-bar">
+            <div class="form-group"><label>From</label><input type="date" id="fab-from"></div>
+            <div class="form-group"><label>To</label><input type="date" id="fab-to"></div>
+            <div class="form-group"><label>Voucher / Item</label><input type="text" id="fab-search" placeholder="Search…"></div>
+            <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="fetchRecords('fabrication')">🔍 Fetch</button>
+            <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="fetchRecords('fabrication',false,true)">📋 All</button>
+          </div>
+          <div class="card-body" id="fab-records"><p style="color:var(--text3)">Set filters and click Fetch.</p></div>
         </div>
       </div>
 
@@ -1184,7 +1144,7 @@ const API = 'https://script.google.com/macros/s/AKfycbwzRSY7uVaXizhqv17PoIQmWGwD
 const SHEET = {
   purchase:'Purchase', transfer:'Transfer', issue:'Issue',
   consumption:'Consumption', returns:'Returns', subconreturn:'SubconReturn',
-  conversion:'Conversion', fabrication:'Fabrication'
+  fabrication:'Fabrication'
 };
 const STATUS_LABEL = {
   complete:'✅ Complete', ontrack:'🟢 On Track', slow:'🟡 Slow', delayed:'🔴 Delayed', noscope:'⚪ No Scope'
@@ -1338,8 +1298,6 @@ function buildDropdowns() {
   const srF =document.getElementById('sr-filter');  if(srF)  srF.innerHTML=subFilter;
 
   // Conversion location + village dropdowns
-  const cnvLoc=document.getElementById('cnv-location');
-  if(cnvLoc){const cur=cnvLoc.value; cnvLoc.innerHTML=locOpts; if(cur) cnvLoc.value=cur;}
   const fabLoc=document.getElementById('fab-location');
   if(fabLoc){const cur=fabLoc.value; fabLoc.innerHTML=locOpts; if(cur) fabLoc.value=cur;}
   const vmSite=document.getElementById('vm-site');
@@ -1737,51 +1695,7 @@ async function saveVillage(){
   }catch(e){ toast('Error: '+e.message,'error'); }
 }
 
-// ══════════════════════════════════════════════════════
-//  MATERIAL CONVERSION
-// ══════════════════════════════════════════════════════
-function addConvRow(dir){
-  const tbody=document.getElementById(dir==='in'?'cnv-in-rows':'cnv-out-rows'); if(!tbody) return;
-  const items=MASTERS.items||[];
-  const opts='<option value="">Select Item</option>'+items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
-  const idx=tbody.children.length+1;
-  const tr=document.createElement('tr');
-  if(dir==='in'){
-    tr.innerHTML=`<td>${idx}</td>
-      <td><select class="cnv-item item-sel" onchange="onConvItemChange(this,'in')">${opts}</select></td>
-      <td><input type="number" class="cnv-qty qty-input" min="0" step="0.01" placeholder="0"></td>
-      <td><input type="text" class="cnv-unit unit-inp" style="width:70px" placeholder="Unit"></td>
-      <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
-  } else {
-    tr.innerHTML=`<td>${idx}</td>
-      <td><select class="cnv-item item-sel" onchange="onConvItemChange(this,'out')">${opts}</select></td>
-      <td class="cnv-avail" style="font-size:12px;color:var(--text3);white-space:nowrap">—</td>
-      <td><input type="number" class="cnv-qty qty-input" min="0" step="0.01" placeholder="0" oninput="checkConvStock(this)"></td>
-      <td><input type="text" class="cnv-unit unit-inp" style="width:70px" placeholder="Unit"></td>
-      <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
-  }
-  tbody.appendChild(tr);
-}
-
 function unitOf(item){ return (MASTERS.items||[]).find(i=>i.name===item)?.unit||''; }
-
-function onConvItemChange(sel, dir){
-  const tr=sel.closest('tr');
-  tr.querySelector('.cnv-unit').value=unitOf(sel.value);
-  if(dir!=='out') return;
-  const loc=document.getElementById('cnv-location')?.value||'Main Store';
-  const cell=tr.querySelector('.cnv-avail');
-  if(!STOCK || !STOCK.stock){
-    cell.innerHTML='<span style="font-size:11px;color:var(--text3)">loading…</span>';
-    refreshStock().then(()=>onConvItemChange(sel,dir)); // retry once stock arrives
-    return;
-  }
-  const st=(STOCK.stock||[]).find(s=>s.item===sel.value);
-  const avail=st?(loc==='Main Store'?st.main:(st.sites?.[loc]||0)):0;
-  cell.textContent=st?avail:'—';
-  cell.style.color=avail>0?'var(--green)':'var(--red)';
-  tr.querySelector('.cnv-qty').dataset.available=avail;
-}
 
 // Flag an OUT qty that exceeds what is available
 function checkConvStock(inp){
@@ -1791,75 +1705,6 @@ function checkConvStock(inp){
 }
 
 // Re-check availability of every OUT row when the location changes
-function onConvLocationChange(){
-  document.querySelectorAll('#cnv-out-rows tr').forEach(tr=>{
-    const sel=tr.querySelector('.cnv-item');
-    if(sel&&sel.value) onConvItemChange(sel,'out');
-  });
-}
-
-function readConvRows(dir){
-  const tbody=document.getElementById(dir==='in'?'cnv-in-rows':'cnv-out-rows');
-  const out=[];
-  if(!tbody) return out;
-  for(const tr of tbody.rows){
-    const item=tr.querySelector('.cnv-item').value;
-    const qty=parseFloat(tr.querySelector('.cnv-qty').value)||0;
-    if(!item&&!qty) continue;
-    out.push({item,qty,unit:tr.querySelector('.cnv-unit').value,
-              available:parseFloat(tr.querySelector('.cnv-qty').dataset.available)});
-  }
-  return out;
-}
-
-async function saveConversion(){
-  const date=v('cnv-date'); if(!date){toast('Date required','error');return;}
-  const loc=v('cnv-location')||'Main Store';
-  const remarks=v('cnv-remarks');
-  const user=CURRENT_USER?CURRENT_USER.name:'';
-
-  const outs=readConvRows('out'), ins=readConvRows('in');
-  if(!outs.length){toast('Add at least one material consumed (OUT)','error');return;}
-  if(!ins.length){toast('Add at least one material produced (IN)','error');return;}
-
-  for(const r of outs.concat(ins)){
-    if(!r.item){toast('Select an item in every filled row','error');return;}
-    if(!r.qty||r.qty<=0){toast(`Enter a quantity for "${r.item}"`,'error');return;}
-  }
-  for(const r of outs){
-    if(!isNaN(r.available)&&r.qty>r.available){
-      toast(`❌ Only ${r.available} of "${r.item}" available at ${loc}`,'error');return;
-    }
-  }
-  const dup=outs.find(o=>ins.some(i=>i.item===o.item));
-  if(dup){toast(`"${dup.item}" is on both sides — an item cannot be consumed and produced in one voucher`,'error');return;}
-
-  // Rows: [Date, Voucher(auto), Direction, Item, Qty, Unit, Location, Remarks, SavedBy]
-  const rows=[
-    ...outs.map(r=>[date,'','OUT',r.item,r.qty,r.unit,loc,remarks,user]),
-    ...ins.map(r=>[date,'','IN', r.item,r.qty,r.unit,loc,remarks,user])
-  ];
-  try{
-    const res=await apiPost('Conversion',rows);
-    if(res.success){
-      toast(`✅ Conversion saved${res.voucher?' — '+res.voucher:''}${res.status==='Pending'?' · awaiting approval':''}`,
-            res.status==='Pending'?'info':'success');
-      if(res.status==='Pending') toast('⏳ Held for approval by Sagar / Atik — stock updates once approved','info');
-      if(res.voucher){const el=document.getElementById('cnv-voucher'); if(el) el.value=res.voucher;}
-      resetConversionForm();
-      fetchRecords('conversion',true); refreshStock(); autoVoucher('Conversion','cnv-voucher');
-    } else toast(res.error||'Save failed','error');
-  }catch(e){ toast('Error: '+e.message,'error'); }
-}
-
-function resetConversionForm(){
-  ['cnv-out-rows','cnv-in-rows'].forEach(id=>{const t=document.getElementById(id); if(t) t.innerHTML='';});
-  for(let i=0;i<3;i++) addConvRow('out');
-  addConvRow('in');
-  const rm=document.getElementById('cnv-remarks'); if(rm) rm.value='';
-}
-
-
 // ══════════════════════════════════════════════════════
 //  FABRICATION
 //  Stage 1: record what was produced (stock goes up now)
@@ -2513,12 +2358,12 @@ function showTab(name, link) {
 
   const dateMap={purchase:'pur-date',transfer:'trn-date',issue:'iss-date',
     consumption:'con-date',returns:'ret-date',subconreturn:'sr-date',workprogress:'wp-date',
-    conversion:'cnv-date',fabrication:'fab-date'};
+    fabrication:'fab-date'};
   if(dateMap[name]){const el=document.getElementById(dateMap[name]);if(el&&!el.value)el.value=today();}
 
   const vMap={purchase:'pur-voucher',transfer:'trn-voucher',issue:'iss-voucher',
     consumption:'con-voucher',returns:'ret-voucher',subconreturn:'sr-voucher',
-    conversion:'cnv-voucher',fabrication:'fab-voucher'};
+    fabrication:'fab-voucher'};
   if(vMap[name]) autoVoucher(SHEET[name], vMap[name]);
 
   const rMap={purchase:'pur-rows',transfer:'trn-rows',issue:'iss-rows',
@@ -2530,11 +2375,6 @@ function showTab(name, link) {
   }
 
   if(name==='issue'||name==='transfer'||name==='consumption'||name==='subconreturn') refreshStock();
-  if(name==='conversion'){
-    const tb=document.getElementById('cnv-out-rows');
-    if(tb&&!tb.children.length) resetConversionForm();
-    refreshStock();
-  }
   if(name==='fabrication'){
     const tb=document.getElementById('fab-rows');
     if(tb&&!tb.children.length){ for(let i=0;i<3;i++) addFabRow(); }
@@ -2929,7 +2769,7 @@ async function fetchRecords(type, autoToday=false, fetchAll=false){
     consumption: {sheet:'Consumption', from:'con-from',to:'con-to',search:'con-search',filter:'con-filter',out:'con-records'},
     returns:     {sheet:'Returns',     from:'ret-from',to:'ret-to',search:'ret-search',filter:null,        out:'ret-records'},
     subconreturn:{sheet:'SubconReturn',from:'sr-from', to:'sr-to', search:'sr-search', filter:'sr-filter', out:'sr-records'},
-    conversion:  {sheet:'Conversion',  from:'cnv-from',to:'cnv-to',search:'cnv-search',filter:null,        out:'cnv-records'}
+    fabrication: {sheet:'Fabrication', from:'fab-from',to:'fab-to',search:'fab-search',filter:null,        out:'fab-records'}
   };
   const c=cfg[type]; if(!c) return;
   if(autoToday){const t=today();document.getElementById(c.from).value=t;document.getElementById(c.to).value=t;}
@@ -4139,7 +3979,7 @@ function lockAsync(fnName){
 }
 ['saveTxn','saveMaster','saveSiteMaster','saveProjectScope','saveSubconScope',
  'saveBOMRow','saveWP','saveWPEdit','reverseTxn',
- 'saveConversion','saveVillage','decideApproval','decideApprovalFromCard',
+ 'saveVillage','decideApproval','decideApprovalFromCard',
  'saveFabrication','saveAllocation'].forEach(lockAsync);
 </script>
 </body>
