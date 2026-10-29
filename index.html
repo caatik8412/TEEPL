@@ -1631,15 +1631,25 @@ async function saveProjectScope(){
 // ══════════════════════════════════════════════════════
 //  VILLAGES (sub-sites)
 // ══════════════════════════════════════════════════════
+// Entry screens list EVERY village regardless of the division chosen —
+// day-to-day movements often cross divisions. Scope screens (ps, sc) stay
+// bound to their site, so Project Status and Reports group correctly.
+const VILLAGE_UNBOUND = ['iss', 'con', 'sr', 'wp'];
+
 function fillVillages(pfx){
   const sel=document.getElementById(pfx+'-village'); if(!sel) return;
   const site=document.getElementById(pfx+'-site')?.value||'';
   const prev=sel.value;
-  const list=(MASTERS.villages||[]).filter(v=>!site||v.site===site);
+  const unbound=VILLAGE_UNBOUND.indexOf(pfx)!==-1;
+  const list=(MASTERS.villages||[]).filter(v=>unbound||!site||v.site===site);
   // Scope screens allow a site-wide entry; transaction screens just pick a village
   const blank=(pfx==='ps'||pfx==='sc')?'— Whole Site —':'— Select Village —';
+  // When the list spans every site, show which site each village belongs to
   sel.innerHTML=`<option value="">${blank}</option>`+
-    list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+    list.map(v=>{
+      const label=(unbound&&v.site)?`${v.name} — ${v.site}`:v.name;
+      return `<option value="${esc(v.name)}">${esc(label)}</option>`;
+    }).join('');
   if(prev&&list.some(v=>v.name===prev)) sel.value=prev;
 }
 
