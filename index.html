@@ -1274,7 +1274,8 @@ function buildDropdowns() {
   if(swSubF) swSubF.innerHTML='<option value="">All Subcontractors</option>'+subcons.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
   const swSiteF=document.getElementById('sw-site-filter');
   if(swSiteF) swSiteF.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
-  ['iss-site','con-site','sr-site','wp-site','sub-site','sc-site','ps-site'].forEach(id=>{
+  // 'sub-site' is filled separately below — it may also be a Zone
+  ['iss-site','con-site','sr-site','wp-site','sc-site','ps-site'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=siteOpts;
   });
   ['pur-location','trn-from','trn-to','ret-from','ret-to'].forEach(id=>{
@@ -1286,6 +1287,15 @@ function buildDropdowns() {
   ['iss-subcon','con-subcon','sr-subcon','wp-subcon','sc-subcon'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=subOpts;
   });
+  // A subcontractor can be attached to the Zone itself — meaning they work
+  // across every division — so their own Site list includes zones.
+  const subSite=document.getElementById('sub-site');
+  if(subSite){
+    const cur=subSite.value;
+    subSite.innerHTML='<option value="">Select Site</option>'+
+      allSites.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}${x.type==='Zone'?' (works everywhere)':''}</option>`).join('');
+    if(cur) subSite.value=cur;
+  }
   ['pur-activity','trn-activity','iss-activity','con-activity'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.innerHTML=actOpts;
   });
@@ -1666,7 +1676,7 @@ function renderVillageList(){
     <tbody>${list.map((r,i)=>`<tr>
       <td style="color:var(--text3)">${i+1}</td>
       <td><strong>${esc(r.name)}</strong></td>
-      <td>${esc(r.site||'—')}</td>
+      <td>${esc(r.site||'—')}${r.zoneWide?' <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;color:var(--purple);border:1px solid var(--purple);opacity:.85">ALL DIVISIONS</span>':''}</td>
       <td style="color:var(--text3)">${esc(r.remarks||'—')}</td>
       <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editVillage(${JSON.stringify(r)})'>✏ Edit</button></td>
     </tr>`).join('')}</tbody>
