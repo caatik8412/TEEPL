@@ -1246,7 +1246,9 @@ function setConn(state) {
 //  DROPDOWNS
 // ══════════════════════════════════════════════════════
 function buildDropdowns() {
-  const sites   = MASTERS.sites   || [];
+  const allSites = MASTERS.sites || [];
+  // A Zone is the head project — reporting only, never a transaction location
+  const sites   = allSites.filter(s=>s.postable!==false && s.type!=='Zone');
   const subcons = MASTERS.subcons || [];
   const acts    = MASTERS.activities || [];
   const bom     = MASTERS.bom || {};
@@ -1304,6 +1306,7 @@ function buildDropdowns() {
   if(vmSite){const cur=vmSite.value; vmSite.innerHTML=siteOpts; if(cur) vmSite.value=cur;}
   ['iss','con','sr','wp','ps','sc'].forEach(pfx=>fillVillages(pfx));
 
+  // Site Master list shows everything, including the Zone
   renderItemList();
   renderVillageList();
   renderSiteTable();
@@ -2194,14 +2197,25 @@ function renderSiteTable() {
   const sites = MASTERS.sites||[];
   const el = document.getElementById('sm-table-wrap'); if(!el) return;
   if(!sites.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No sites yet.</p>';return;}
+  // Zone first (head project), then its Divisions, then Stores
+  const rank={Zone:0,Division:1,Store:2};
+  const ordered=[...sites].sort((a,b)=>(rank[a.type]??1)-(rank[b.type]??1)||a.name.localeCompare(b.name));
+  const chip=t=>{
+    const c=t==='Zone'?'var(--purple)':t==='Store'?'var(--yellow)':'var(--accent)';
+    return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:${c};border:1px solid ${c};opacity:.85">${esc(t||'Division')}</span>`;
+  };
   el.innerHTML=`<table>
-    <thead><tr><th>Site</th><th>Location</th><th>Villages</th><th>Activities</th><th></th></tr></thead>
-    <tbody>${sites.map(s=>`<tr>
-      <td style="font-weight:500">${esc(s.name)}</td>
+    <thead><tr><th>Site</th><th>Type</th><th>Under</th><th>Location</th><th>Villages</th><th>Activities</th><th></th></tr></thead>
+    <tbody>${ordered.map(s=>`<tr${s.type==='Zone'?' style="background:rgba(102,57,186,.05)"':''}>
+      <td style="font-weight:${s.type==='Zone'?'700':'500'}">${s.type!=='Zone'?'<span style="color:var(--text4)">↳ </span>':''}${esc(s.name)}</td>
+      <td>${chip(s.type)}</td>
+      <td style="color:var(--text3);font-size:11px">${esc(s.zone||'—')}</td>
       <td style="color:var(--text3)">${esc(s.location||'—')}</td>
       <td>${(MASTERS.villages||[]).filter(x=>x.site===s.name).length||'—'}</td>
       <td>${(MASTERS.siteScope||[]).filter(x=>x.site===s.name).length||'—'}</td>
-      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" onclick='editSite(${JSON.stringify(s)})'>✏️ Edit Scope</button></td>
+      <td>${s.type==='Zone'
+        ? '<span style="font-size:10px;color:var(--text4)">reporting only</span>'
+        : `<button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" onclick='editSite(${JSON.stringify(s)})'>✏️ Edit Scope</button>`}</td>
     </tr>`).join('')}</tbody>
   </table>`;
 }
@@ -3086,7 +3100,7 @@ async function loadStock(){
 
 function printStockRegister(){
   if(!STOCK||!STOCK.stock){toast('Load stock first','warning');return;}
-  const sites=(MASTERS.sites||[]).map(s=>s.name);
+  const sites=(MASTERS.sites||[]).filter(s=>s.type!=='Zone').map(s=>s.name);
   const now=new Date().toLocaleString('en-IN');
   const rows=STOCK.stock.map((r,i)=>{
     const siteCells=sites.map(s=>`<td style="text-align:center">${(r.sites&&r.sites[s])||0}</td>`).join('');
@@ -3484,7 +3498,7 @@ async function refreshStock(){
 function renderStockView(data){
   const stock=data.stock||[];
   // Use MASTERS.sites as authoritative list — avoids ghost site tabs from stale data
-  const masterSiteNames=(MASTERS.sites||[]).map(s=>s.name);
+  const masterSiteNames=(MASTERS.sites||[]).filter(s=>s.type!=='Zone').map(s=>s.name);
   const sites=masterSiteNames.length ? masterSiteNames :
     [...new Set(stock.flatMap(s=>Object.keys(s.sites||{})))];
   const locs=['All','Main Store',...sites,'By Subcon'];
