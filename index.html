@@ -910,10 +910,20 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <input type="hidden" id="sm-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Site Name</label><input type="text" id="sm-name" placeholder="Site name"></div>
+              <div class="form-group">
+                <label>Type</label>
+                <select id="sm-type" onchange="onSiteTypeChange()">
+                  <option value="Division">Division — does the work</option>
+                  <option value="Store">Store — holds material</option>
+                  <option value="Zone">Zone — head project (reporting only)</option>
+                </select>
+              </div>
+              <div class="form-group" id="sm-zone-group">
+                <label>Under (Zone)</label>
+                <select id="sm-zone"><option value="">— None —</option></select>
+              </div>
               <div class="form-group"><label>Location</label><input type="text" id="sm-location"></div>
               <div class="form-group"><label>Contract No</label><input type="text" id="sm-contract"></div>
-
-
               <div class="form-group"><label>Start Date</label><input type="date" id="sm-start"></div>
               <div class="form-group"><label>End Date</label><input type="date" id="sm-end"></div>
             </div>
@@ -1289,6 +1299,17 @@ function buildDropdowns() {
   });
   // A subcontractor can be attached to the Zone itself — meaning they work
   // across every division — so their own Site list includes zones.
+  // "Under (Zone)" lists only zones
+  const smZone=document.getElementById('sm-zone');
+  if(smZone){
+    const cur=smZone.value;
+    const zones=allSites.filter(x=>x.type==='Zone');
+    smZone.innerHTML='<option value="">— None —</option>'+
+      zones.map(z=>`<option value="${esc(z.name)}">${esc(z.name)}</option>`).join('');
+    if(cur) smZone.value=cur;
+    else if(zones.length===1) smZone.value=zones[0].name; // sensible default
+  }
+
   const subSite=document.getElementById('sub-site');
   if(subSite){
     const cur=subSite.value;
@@ -2230,10 +2251,21 @@ function renderSiteTable() {
   </table>`;
 }
 
+// A Zone sits at the top, so it has nothing above it
+function onSiteTypeChange(){
+  const t=document.getElementById('sm-type')?.value;
+  const g=document.getElementById('sm-zone-group');
+  if(g) g.style.display=(t==='Zone')?'none':'';
+  if(t==='Zone'){const z=document.getElementById('sm-zone'); if(z) z.value='';}
+}
+
 function editSite(s) {
   document.getElementById('sm-edit-key').value  = s.name;
   document.getElementById('sm-name').value      = s.name;
   document.getElementById('sm-location').value  = s.location||'';
+  const tEl=document.getElementById('sm-type'); if(tEl) tEl.value = s.type||'Division';
+  const zEl=document.getElementById('sm-zone'); if(zEl) zEl.value = s.zone||'';
+  onSiteTypeChange();
   document.getElementById('sm-contract').value  = s.contractNo||'';
   // poles/kms retired — scope is defined per activity in Project Scope
   document.getElementById('sm-start').value     = s.startDate||'';
@@ -2248,6 +2280,9 @@ function cancelSiteEdit() {
   document.getElementById('sm-edit-key').value = '';
   ['sm-name','sm-location','sm-contract','sm-poles','sm-kms','sm-start','sm-end']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const tEl=document.getElementById('sm-type'); if(tEl) tEl.value='Division';
+  const zEl=document.getElementById('sm-zone'); if(zEl) zEl.value='';
+  onSiteTypeChange();
   document.getElementById('sm-save-btn').textContent = '+ Add Site';
   document.getElementById('sm-cancel-btn').style.display = 'none';
   document.getElementById('sm-edit-label').textContent = '';
@@ -2258,9 +2293,11 @@ async function saveSiteMaster() {
   // Columns 4/5 (legacy poles / wire scope) are preserved as-is — scope now lives
   // in Project Scope per activity, so these are no longer edited from the UI.
   const prev = (MASTERS.sites||[]).find(x=>x.name===v('sm-edit-key')) || {};
+  const type = v('sm-type') || 'Division';
+  const zone = (type==='Zone') ? '' : v('sm-zone');
   const row = [name, v('sm-location'), v('sm-contract'),
     prev.totalPoles||0, prev.totalKms||0,
-    v('sm-start'), v('sm-end')];
+    v('sm-start'), v('sm-end'), type, zone];
   const editKey = v('sm-edit-key');
   try {
     let res;
@@ -2309,7 +2346,7 @@ function renderDashboard(dash) {
   const openAlloc=sum('unallocatedCount');
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi"><div class="label">Sites</div><div class="value">${(MASTERS.sites||[]).length||s.totalSites||0}</div></div>
+    <div class="kpi"><div class="label">Divisions</div><div class="value">${(MASTERS.sites||[]).filter(x=>(x.type||'Division')==='Division').length||s.totalSites||0}</div><div class="sub">${(MASTERS.sites||[]).filter(x=>x.type==='Store').length} store(s)</div></div>
     <div class="kpi"><div class="label">Activities Allocated</div><div class="value">${allocActs}</div><div class="sub">of ${totalActs} in scope${openAlloc?' · '+openAlloc+' partly unallocated':''}</div></div>
     <div class="kpi"><div class="label">Completed</div><div class="value" style="color:var(--green)">${doneActs}</div><div class="sub">activities at 100%</div></div>
     <div class="kpi"><div class="label">Pending</div><div class="value" style="color:var(--yellow)">${pendActs}</div><div class="sub">still in progress</div></div>
@@ -2317,7 +2354,9 @@ function renderDashboard(dash) {
 
 
   // Show all SiteMaster sites (merge with WP data); sites with no WP show 0%
-  const allSites = (MASTERS.sites||[]).map(ms => {
+  // Divisions do the work. A Zone is reporting-only and a Store just holds
+  // material — neither has activity scope, so neither belongs in this list.
+  const allSites = (MASTERS.sites||[]).filter(ms=>(ms.type||'Division')==='Division').map(ms => {
     const pr = progMap[ms.name];
     const pct = pr ? (pr.summary?.avgPct||0) : 0;
     const status = pct>=100?'complete':pct>=60?'ontrack':pct>=30?'slow':'delayed';
