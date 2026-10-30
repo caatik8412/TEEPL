@@ -284,6 +284,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
 
     <div class="section-label">Field</div>
     <a onclick="showTab('activitystatus',this)"><span class="icon">📌</span>Project Status</a>
+    <a onclick="showTab('villagereport',this)"><span class="icon">🏘️</span>Substation Report</a>
     <a onclick="showTab('subconwork',this)"><span class="icon">👷</span>Subcon Work</a>
     <a onclick="showTab('workprogress',this)"><span class="icon">📈</span>Work Progress</a>
     <a onclick="showTab('stock',this)"><span class="icon">🗂️</span>Stock View</a>
@@ -309,6 +310,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
     <div class="dir-tabs">
       <div class="dir-tab active" onclick="dirTab('dashboard',this)">📊 Dashboard</div>
       <div class="dir-tab" onclick="dirTab('activitystatus',this)">📌 Project Status</div>
+      <div class="dir-tab" onclick="dirTab('villagereport',this)">🏘️ Substations</div>
       <div class="dir-tab" onclick="dirTab('reports',this)">📑 Reports</div>
     </div>
     <button class="dir-logout" onclick="doLogout()">⎋ Logout</button>
@@ -696,6 +698,29 @@ tr:hover td{background:rgba(0,0,0,.025)}
         </div>
         <div id="fab-list"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
       </div>
+    </div>
+
+    <!-- SUBSTATION (VILLAGE) REPORT -->
+    <div id="tab-villagereport" class="tab-pane">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:700">🏘️ Substation Report</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Material lying at each substation · activities · progress</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="vr-site-filter" onchange="renderVillageReport()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Divisions</option>
+          </select>
+          <select id="vr-filter" onchange="renderVillageReport()" style="border:1px solid var(--border);background:var(--bg2);color:var(--text1);border-radius:8px;padding:6px 10px;font-size:13px">
+            <option value="">All Substations</option>
+            <option value="stock">With material lying</option>
+            <option value="active">With activities</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadVillageReport()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div id="vr-kpis" class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"></div>
+      <div id="vr-content"><div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading...</div></div>
     </div>
 
     <!-- APPROVALS -->
@@ -1928,6 +1953,110 @@ async function saveAllocation(voucher,loc){
   }catch(e){ toast('Error: '+e.message,'error'); }
 }
 
+
+// ══════════════════════════════════════════════════════
+//  SUBSTATION REPORT
+//  Material balance at a substation is derived, not stored:
+//      issued to it − consumed there − returned from it
+// ══════════════════════════════════════════════════════
+let VR_DATA=[];
+
+async function loadVillageReport(){
+  const el=document.getElementById('vr-content');
+  if(el&&!VR_DATA.length) el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">⏳ Loading substation report...</div>';
+  try{
+    const d=await api({action:'villageReport'});
+    VR_DATA=d.villages||[];
+    const f=document.getElementById('vr-site-filter');
+    if(f){
+      const cur=f.value;
+      const sites=[...new Set(VR_DATA.map(v=>v.site).filter(Boolean))].sort();
+      f.innerHTML='<option value="">All Divisions</option>'+sites.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+      f.value=cur;
+    }
+    renderVillageReport();
+  }catch(e){
+    if(el) el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--red)">❌ Failed to load: ${esc(e.message)}<br><br><button class="btn btn-ghost btn-sm" onclick="loadVillageReport()">🔄 Retry</button></div>`;
+  }
+}
+
+function renderVillageReport(){
+  const el=document.getElementById('vr-content'); if(!el) return;
+  const siteF=document.getElementById('vr-site-filter')?.value||'';
+  const mode=document.getElementById('vr-filter')?.value||'';
+  let list=VR_DATA.filter(v=>!siteF||v.site===siteF);
+  if(mode==='stock')  list=list.filter(v=>v.summary.balanceItems>0);
+  if(mode==='active') list=list.filter(v=>v.summary.activities>0);
+
+  // Roll-up across what's shown
+  const tot=list.reduce((a,v)=>({
+    subs:a.subs+1,
+    withStock:a.withStock+(v.summary.balanceItems>0?1:0),
+    acts:a.acts+v.summary.activities,
+    done:a.done+v.summary.completed
+  }),{subs:0,withStock:0,acts:0,done:0});
+  const kp=document.getElementById('vr-kpis');
+  if(kp) kp.innerHTML=`
+    <div class="kpi"><div class="label">Substations</div><div class="value">${tot.subs}</div><div class="sub">${siteF||'all divisions'}</div></div>
+    <div class="kpi"><div class="label">Holding Material</div><div class="value" style="color:var(--yellow)">${tot.withStock}</div><div class="sub">balance still lying</div></div>
+    <div class="kpi"><div class="label">Activities</div><div class="value">${tot.acts}</div><div class="sub">scoped here</div></div>
+    <div class="kpi"><div class="label">Completed</div><div class="value" style="color:var(--green)">${tot.done}</div><div class="sub">activities at 100%</div></div>`;
+
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">No substations match this filter.<br><span style="font-size:12px">Add them under Settings → Sites → Village Master.</span></div>';
+    return;
+  }
+
+  el.innerHTML=list.map(v=>{
+    const sm=v.summary;
+    const matRows=(v.items||[]).map(i=>`<tr>
+      <td>${esc(i.item)}</td>
+      <td style="text-align:right">${i.issued}</td>
+      <td style="text-align:right">${i.consumed}</td>
+      <td style="text-align:right">${i.returned}</td>
+      <td style="text-align:right;font-weight:700;color:${i.balance>0.001?'var(--yellow)':i.balance<-0.001?'var(--red)':'var(--text3)'}">${i.balance}</td>
+    </tr>`).join('');
+    const material=(v.items||[]).length
+      ? `<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">Material</div>
+         <div class="tbl-wrap"><table>
+           <thead><tr><th>Item</th><th style="text-align:right">Issued</th><th style="text-align:right">Consumed</th><th style="text-align:right">Returned</th><th style="text-align:right">Lying Here</th></tr></thead>
+           <tbody>${matRows}</tbody></table></div>`
+      : '<div style="font-size:12px;color:var(--text4);margin-top:8px">No material issued here yet.</div>';
+
+    const actRows=(v.activities||[]).map(a=>`<tr>
+      <td><strong>${esc(a.code)}</strong> <span style="color:var(--text3);font-size:11px">${esc(a.name!==a.code?a.name:'')}</span></td>
+      <td style="text-align:right">${a.scope}</td>
+      <td style="text-align:right">${a.allocated}</td>
+      <td style="text-align:right;${a.unallocated>0?'color:var(--yellow);font-weight:600':'color:var(--text3)'}">${a.unallocated}</td>
+      <td style="text-align:right;color:var(--green);font-weight:600">${a.completed}</td>
+      <td>${spBar(a.pct||0)}</td>
+    </tr>`).join('');
+    const acts=(v.activities||[]).length
+      ? `<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px">Activities</div>
+         <div class="tbl-wrap"><table>
+           <thead><tr><th>Activity</th><th style="text-align:right">Scope</th><th style="text-align:right">Allocated</th><th style="text-align:right">Not Allocated</th><th style="text-align:right">Completed</th><th>Progress</th></tr></thead>
+           <tbody>${actRows}</tbody></table></div>`
+      : '<div style="font-size:12px;color:var(--text4);margin-top:8px">No activities scoped to this substation.</div>';
+
+    return `<div class="card" style="margin-bottom:16px"${v.unassigned?' style="border-left:3px solid var(--red)"':''}>
+      <div class="card-body" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+          <div style="font-size:15px;font-weight:700">🏘️ ${esc(v.village)}</div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--text3);align-items:center;flex-wrap:wrap">
+            ${v.site?`<span>${esc(v.site)}</span>`:''}
+            ${sm.activities?`<span>Progress: <strong style="color:var(--text)">${sm.avgPct}%</strong></span>`:''}
+            ${sm.balanceItems?`<span style="color:var(--yellow)">⚠ ${sm.balanceItems} item(s) lying here</span>`:''}
+            ${(v.poles||v.kms)?`<span>Field: ${v.poles} poles · ${v.kms} km</span>`:''}
+          </div>
+        </div>
+        ${(v.subcons||[]).length?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px">👷 ${v.subcons.map(esc).join(' · ')}</div>`:''}
+        ${material}
+        ${acts}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ══════════════════════════════════════════════════════
 //  APPROVALS
 // ══════════════════════════════════════════════════════
@@ -2455,6 +2584,7 @@ function showTab(name, link) {
   }
   if(name==='approvals')    loadApprovals();
   if(name==='activitystatus') loadActivityStatus();
+  if(name==='villagereport')  loadVillageReport();
   if(name==='subconwork')   loadSubconWork();
   if(name==='workprogress') loadWP();
   if(name==='stock')        loadStock();
