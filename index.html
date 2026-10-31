@@ -373,7 +373,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
               <tbody id="pur-rows"></tbody>
             </table>
           </div>
@@ -429,7 +429,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
               <tbody id="trn-rows"></tbody>
             </table>
           </div>
@@ -481,7 +481,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
               <tbody id="iss-rows"></tbody>
             </table>
           </div>
@@ -533,7 +533,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:10px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Used</th><th>Unit</th><th>Notes</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Used</th><th>Unit</th><th>In Stock Unit</th><th>Notes</th><th></th></tr></thead>
               <tbody id="con-rows"></tbody>
             </table>
           </div>
@@ -573,7 +573,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
               <tbody id="ret-rows"></tbody>
             </table>
           </div>
@@ -612,7 +612,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
           </div>
           <div class="tbl-wrap" style="margin-top:14px">
             <table class="row-table">
-              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Returned</th><th>Unit</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Item</th><th>Holding</th><th>Qty Returned</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
               <tbody id="sr-rows"></tbody>
             </table>
           </div>
@@ -659,7 +659,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <div style="font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-top:14px;margin-bottom:6px">⬅ Items Fabricated (In)</div>
             <div class="tbl-wrap">
               <table class="row-table">
-                <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+                <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
                 <tbody id="fab-rows"></tbody>
               </table>
             </div>
@@ -912,7 +912,7 @@ tr:hover td{background:rgba(0,0,0,.025)}
             <input type="hidden" id="im-edit-key">
             <div class="form-grid">
               <div class="form-group"><label>Item Name</label><input type="text" id="im-name" placeholder="Item name"></div>
-              <div class="form-group"><label>Unit</label><input type="text" id="im-unit" placeholder="Nos / Mtrs / KM"></div>
+              <div class="form-group"><label>Unit <span style="color:var(--text4);font-weight:400">(stock unit)</span></label><select id="im-unit"></select></div>
               <div class="form-group"><label>Remarks</label><input type="text" id="im-remarks"></div>
             </div>
             <div class="btn-row">
@@ -920,6 +920,46 @@ tr:hover td{background:rgba(0,0,0,.025)}
               <button class="btn btn-ghost btn-sm" id="im-cancel-btn" style="display:none" onclick="cancelItemEdit()">✕ Cancel</button>
             </div>
             <div id="im-list" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <!-- UNIT MASTER -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h2>📏 Unit Master</h2>
+            <span id="um-edit-label" style="font-size:11px;color:var(--accent);font-weight:500"></span>
+          </div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Units sharing a <strong>Base Unit</strong> convert automatically. <strong>Factor</strong> = how many base units make one of this unit — so MT has base Kg and factor 1000. Entries are always stored in the item's own stock unit.</div>
+            <input type="hidden" id="um-edit-key">
+            <div class="form-grid">
+              <div class="form-group"><label>Unit</label><input type="text" id="um-unit" placeholder="e.g. MT"></div>
+              <div class="form-group"><label>Base Unit</label><input type="text" id="um-base" placeholder="e.g. Kg"></div>
+              <div class="form-group"><label>Factor</label><input type="number" id="um-factor" step="0.0001" placeholder="1000"></div>
+              <div class="form-group"><label>Remarks</label><input type="text" id="um-remarks"></div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-sm" id="um-save-btn" onclick="saveUnit()">+ Add Unit</button>
+              <button class="btn btn-ghost btn-sm" id="um-cancel-btn" style="display:none" onclick="cancelUnitEdit()">✕ Cancel</button>
+            </div>
+            <div id="um-list" style="margin-top:12px"></div>
+
+            <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px">🔩 Item-specific conversions</div>
+              <div style="font-size:12px;color:var(--text3);margin-bottom:10px">For items where a unit only converts for that item — one RSJ 9 m piece weighs 207 Kg, so Kg ↔ Nos has no general rule. <strong>Qty per 1 stock unit</strong> = how many of the alt unit make one stock unit.</div>
+              <input type="hidden" id="iu-edit-key">
+              <div class="form-grid">
+                <div class="form-group"><label>Item</label><select id="iu-item"></select></div>
+                <div class="form-group"><label>Alt Unit</label><select id="iu-unit"></select></div>
+                <div class="form-group"><label>Qty per 1 stock unit</label><input type="number" id="iu-per" step="0.0001" placeholder="207"></div>
+                <div class="form-group"><label>Remarks</label><input type="text" id="iu-remarks" placeholder="9 m × 23 kg/m"></div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary btn-sm" id="iu-save-btn" onclick="saveItemUnit()">+ Add Conversion</button>
+                <button class="btn btn-ghost btn-sm" id="iu-cancel-btn" style="display:none" onclick="cancelItemUnitEdit()">✕ Cancel</button>
+              </div>
+              <div id="iu-list" style="margin-top:12px"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1188,7 +1228,7 @@ const STATUS_LABEL = {
 // ══════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════
-let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{}, siteScope:[], villages:[] };
+let MASTERS = { items:[], sites:[], subcons:[], subconScope:[], activities:[], bom:{}, siteScope:[], villages:[], units:[], itemUnits:[] };
 let STOCK = {};
 const VSTORE = {}; // voucher data store for reversal
 
@@ -1363,7 +1403,20 @@ function buildDropdowns() {
   ['iss','con','sr','wp','ps','sc'].forEach(pfx=>fillVillages(pfx));
 
   // Site Master list shows everything, including the Zone
+  // Unit dropdowns come from Unit Master
+  const imUnit=document.getElementById('im-unit');
+  if(imUnit){ const cur=imUnit.value; imUnit.innerHTML=unitOptions(cur); }
+
+  // Item-specific conversion pickers
+  const iuItem=document.getElementById('iu-item');
+  if(iuItem){const cur=iuItem.value; iuItem.innerHTML='<option value="">Select Item</option>'+
+    (MASTERS.items||[]).map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join(''); if(cur) iuItem.value=cur;}
+  const iuUnit=document.getElementById('iu-unit');
+  if(iuUnit){const cur=iuUnit.value; iuUnit.innerHTML=unitOptions(cur);}
+
   renderItemList();
+  renderUnitList();
+  renderItemUnitList();
   renderVillageList();
   renderSiteTable();
   renderSubconList();
@@ -1379,6 +1432,10 @@ function buildDropdowns() {
     const prev = sel.value;
     sel.innerHTML = itemOpts;
     if(prev) sel.value = prev;
+  });
+  // Unit dropdowns depend on Unit Master, which has just reloaded
+  document.querySelectorAll('tr').forEach(tr=>{
+    if(tr.querySelector('.unit-inp,.fab-unit,.al-unit')) fillUnitSelect(tr);
   });
 }
 
@@ -1403,7 +1460,7 @@ function renderItemList() {
 function editItem(r) {
   document.getElementById('im-edit-key').value  = r.name;
   document.getElementById('im-name').value      = r.name;
-  document.getElementById('im-unit').value      = r.unit||'';
+  document.getElementById('im-unit').innerHTML  = unitOptions(r.unit||'');
   document.getElementById('im-remarks').value   = r.remarks||'';
   document.getElementById('im-save-btn').textContent = '💾 Update Item';
   document.getElementById('im-cancel-btn').style.display = '';
@@ -1712,6 +1769,117 @@ function fillVillages(pfx){
   if(prev&&list.some(v=>v.name===prev)) sel.value=prev;
 }
 
+function renderUnitList(){
+  const el=document.getElementById('um-list'); if(!el) return;
+  const list=MASTERS.units||[];
+  if(!list.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No units defined.</p>';return;}
+  // group by base so related units sit together
+  const byBase={};
+  list.forEach(u=>{ (byBase[u.base]=byBase[u.base]||[]).push(u); });
+  el.innerHTML=`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${list.length} Units</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Unit</th><th>Base</th><th style="text-align:right">Factor</th><th>Converts to</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${Object.keys(byBase).sort().map(b=>byBase[b].map(u=>{
+      const peers=byBase[b].filter(x=>x.unit!==u.unit).map(x=>x.unit);
+      return `<tr>
+        <td><strong>${esc(u.unit)}</strong></td>
+        <td style="color:var(--text3)">${esc(u.base)}</td>
+        <td style="text-align:right">${u.factor}</td>
+        <td style="font-size:11px;color:var(--text3)">${peers.length?esc(peers.join(', ')):'—'}</td>
+        <td style="font-size:11px;color:var(--text3)">${esc(u.remarks||'')}</td>
+        <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editUnit(${JSON.stringify(u)})'>✏ Edit</button></td>
+      </tr>`;}).join('')).join('')}</tbody>
+  </table></div>`;
+}
+
+function editUnit(u){
+  document.getElementById('um-edit-key').value=u.unit;
+  document.getElementById('um-unit').value=u.unit||'';
+  document.getElementById('um-base').value=u.base||'';
+  document.getElementById('um-factor').value=u.factor||1;
+  document.getElementById('um-remarks').value=u.remarks||'';
+  document.getElementById('um-save-btn').textContent='💾 Update Unit';
+  document.getElementById('um-cancel-btn').style.display='';
+  document.getElementById('um-edit-label').textContent='Editing: '+u.unit;
+  document.getElementById('um-unit').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelUnitEdit(){
+  ['um-edit-key','um-unit','um-base','um-factor','um-remarks'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('um-save-btn').textContent='+ Add Unit';
+  document.getElementById('um-cancel-btn').style.display='none';
+  document.getElementById('um-edit-label').textContent='';
+}
+
+async function saveUnit(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
+  const u=v('um-unit'), b=v('um-base')||v('um-unit');
+  const f=parseFloat(v('um-factor'))||1;
+  if(!u){toast('Unit name required','error');return;}
+  if(f<=0){toast('Factor must be greater than zero','error');return;}
+  const editKey=v('um-edit-key');
+  const row=[u,b,f,v('um-remarks')];
+  try{
+    const res=editKey
+      ? await apiPost('updateMasterRow',row,{sheet:'UnitMaster',key:editKey})
+      : await apiPost('UnitMaster',[row]);
+    if(res.success){ toast(editKey?'✅ Unit updated':'✅ Unit added','success'); cancelUnitEdit(); await initApp(); }
+    else toast(res.error||'Failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+function renderItemUnitList(){
+  const el=document.getElementById('iu-list'); if(!el) return;
+  const list=MASTERS.itemUnits||[];
+  if(!list.length){el.innerHTML='<p style="color:var(--text4);font-size:12px">No item-specific conversions.</p>';return;}
+  el.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>Item</th><th>Alt Unit</th><th style="text-align:right">Per 1 Stock Unit</th><th>Stock Unit</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>${list.map(u=>`<tr>
+      <td>${esc(u.item)}</td>
+      <td><strong>${esc(u.unit)}</strong></td>
+      <td style="text-align:right">${u.per}</td>
+      <td style="color:var(--text3)">${esc(unitOf(u.item)||'—')}</td>
+      <td style="font-size:11px;color:var(--text3)">${esc(u.remarks||'')}</td>
+      <td><button class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 8px" onclick='editItemUnit(${JSON.stringify(u)})'>✏ Edit</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function editItemUnit(u){
+  document.getElementById('iu-edit-key').value=u.item;
+  document.getElementById('iu-item').value=u.item||'';
+  document.getElementById('iu-unit').innerHTML=unitOptions(u.unit||'');
+  document.getElementById('iu-per').value=u.per||'';
+  document.getElementById('iu-remarks').value=u.remarks||'';
+  document.getElementById('iu-save-btn').textContent='💾 Update Conversion';
+  document.getElementById('iu-cancel-btn').style.display='';
+  document.getElementById('iu-item').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelItemUnitEdit(){
+  ['iu-edit-key','iu-per','iu-remarks'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const i=document.getElementById('iu-item'); if(i) i.value='';
+  document.getElementById('iu-save-btn').textContent='+ Add Conversion';
+  document.getElementById('iu-cancel-btn').style.display='none';
+}
+
+async function saveItemUnit(){
+  if(!CURRENT_USER||CURRENT_USER.role!=='admin'){toast('Admin access only','error');return;}
+  const item=v('iu-item'), unit=v('iu-unit'), per=parseFloat(v('iu-per'))||0;
+  if(!item){toast('Select an item','error');return;}
+  if(!unit){toast('Select the alternate unit','error');return;}
+  if(per<=0){toast('Qty per stock unit must be greater than zero','error');return;}
+  const editKey=v('iu-edit-key');
+  const row=[item,unit,per,v('iu-remarks')];
+  try{
+    const res=editKey
+      ? await apiPost('updateMasterRow',row,{sheet:'ItemUnits',key:editKey})
+      : await apiPost('ItemUnits',[row]);
+    if(res.success){ toast(editKey?'✅ Conversion updated':'✅ Conversion added','success'); cancelItemUnitEdit(); await initApp(); }
+    else toast(res.error||'Failed','error');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
 function renderVillageList(){
   const el=document.getElementById('vm-list'); if(!el) return;
   const list=MASTERS.villages||[];
@@ -1766,6 +1934,90 @@ async function saveVillage(){
 
 function unitOf(item){ return (MASTERS.items||[]).find(i=>i.name===item)?.unit||''; }
 
+// ══════════════════════════════════════════════════════
+//  UNITS & CONVERSION
+//  Every unit maps to a Base Unit with a factor (1 MT = 1000 Kg).
+//  Units sharing a base convert automatically; others don't.
+// ══════════════════════════════════════════════════════
+function unitDef(u){
+  if(!u) return null;
+  const list=MASTERS.units||[];
+  const k=String(u).trim().toLowerCase().replace(/[. ]/g,'');
+  return list.find(x=>String(x.unit).trim().toLowerCase().replace(/[. ]/g,'')===k)||null;
+}
+
+function unitOptions(sel){
+  const list=MASTERS.units||[];
+  const cur=sel?String(sel).trim():'';
+  const known=list.some(x=>unitDef(cur)&&unitDef(cur).unit===x.unit);
+  return '<option value="">Unit</option>'+
+    list.map(u=>`<option value="${esc(u.unit)}"${unitDef(cur)&&unitDef(cur).unit===u.unit?' selected':''}>${esc(u.unit)}</option>`).join('')+
+    // keep an unrecognised legacy unit visible rather than silently blanking it
+    (cur&&!known?`<option value="${esc(cur)}" selected>${esc(cur)} (not in list)</option>`:'');
+}
+
+// Convert qty from one unit to another. Returns null when they don't share a base.
+function convertQty(qty,from,to){
+  if(!from||!to) return null;
+  const a=unitDef(from), b=unitDef(to);
+  if(!a||!b) return null;
+  if(a.unit===b.unit) return qty;
+  if(String(a.base).toLowerCase()!==String(b.base).toLowerCase()) return null;
+  if(!b.factor) return null;
+  return qty*a.factor/b.factor;
+}
+
+// Per-item rule for cases the unit table can't express — one RSJ 9 m piece
+// weighs 207 Kg, so Kg ↔ Nos only makes sense for that specific item.
+function itemUnitPer(item,unit){
+  if(!item||!unit) return 0;
+  const k=String(unit).trim().toLowerCase().replace(/[. ]/g,'');
+  const hit=(MASTERS.itemUnits||[]).find(x=>x.item===item &&
+    String(x.unit).trim().toLowerCase().replace(/[. ]/g,'')===k);
+  return hit?hit.per:0;
+}
+
+function convertQtyForItem(qty,from,to,item){
+  const g=convertQty(qty,from,to);
+  if(g!==null) return g;
+  const perFrom=itemUnitPer(item,from), perTo=itemUnitPer(item,to);
+  if(perFrom) return qty/perFrom;   // alt → stock
+  if(perTo)   return qty*perTo;     // stock → alt
+  return null;
+}
+
+function fmtQty(n){
+  if(n===null||n===undefined||isNaN(n)) return '';
+  const r=Math.round(n*1000)/1000;
+  return r.toLocaleString('en-IN');
+}
+
+// Shows "= 41,250 Kg" beside the qty whenever the entered unit differs
+// from the item's stock unit, and flags units that cannot convert.
+function updateConv(tr){
+  const cell=tr.querySelector('.conv-cell'); if(!cell) return;
+  const itemSel=tr.querySelector('.item-sel,.fab-item,.al-item,.cnv-item');
+  const unitEl=tr.querySelector('.unit-inp,.fab-unit,.al-unit,.cnv-unit');
+  const qtyEl=tr.querySelector('.qty-input,.fab-qty,.al-qty,.cnv-qty');
+  if(!itemSel||!unitEl||!qtyEl){ cell.innerHTML=''; return; }
+  const item=itemSel.value, entered=unitEl.value, stock=unitOf(item);
+  const qty=parseFloat(qtyEl.value)||0;
+  tr.dataset.convQty=''; tr.dataset.convUnit='';
+  if(!item||!entered||!stock){ cell.innerHTML=''; return; }
+  if(unitDef(entered)&&unitDef(stock)&&unitDef(entered).unit===unitDef(stock).unit){
+    cell.innerHTML='<span style="font-size:11px;color:var(--text4)">—</span>'; return;
+  }
+  const conv=convertQtyForItem(qty,entered,stock,item);
+  if(conv===null){
+    cell.innerHTML=`<span class="stock-badge out" title="No conversion between these units for this item — add one in Settings → Units, or as an item rule">⚠ ${esc(entered)}→${esc(stock)}?</span>`;
+    return;
+  }
+  tr.dataset.convQty=conv; tr.dataset.convUnit=stock;
+  const per=itemUnitPer(item,entered);
+  const tip=per?`${per} ${entered} = 1 ${stock} for this item`:`Saved in the item's stock unit`;
+  cell.innerHTML=`<span class="stock-badge ok" title="${esc(tip)}">= ${fmtQty(conv)} ${esc(stock)}</span>`;
+}
+
 // Flag an OUT qty that exceeds what is available
 function checkConvStock(inp){
   const av=parseFloat(inp.dataset.available);
@@ -1797,11 +2049,21 @@ function addFabRow(){
   const opts='<option value="">Select Item</option>'+items.map(i=>`<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
   const tr=document.createElement('tr');
   tr.innerHTML=`<td>${tbody.children.length+1}</td>
-    <td><select class="fab-item item-sel" onchange="this.closest('tr').querySelector('.fab-unit').value=unitOf(this.value)">${opts}</select></td>
+    <td><select class="fab-item item-sel" onchange="onFabItemChange(this)">${opts}</select></td>
     <td><input type="number" class="fab-qty qty-input" min="0" step="0.01" placeholder="0"></td>
-    <td><input type="text" class="fab-unit unit-inp" style="width:70px" placeholder="Unit"></td>
+    <td><select class="fab-unit unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
     <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
   tbody.appendChild(tr);
+  fillUnitSelect(tr);
+  tr.querySelector('.fab-qty')?.addEventListener('input',function(){ updateConv(tr); });
+}
+
+function onFabItemChange(sel){
+  const tr=sel.closest('tr');
+  const u=tr.querySelector('.fab-unit');
+  if(u) u.innerHTML=unitOptions(unitOf(sel.value));
+  updateConv(tr);
 }
 
 async function saveFabrication(){
@@ -1816,7 +2078,10 @@ async function saveFabrication(){
     if(!item&&!qty) continue;
     if(!item){toast('Select an item in every filled row','error');return;}
     if(!qty||qty<=0){toast(`Enter a quantity for "${item}"`,'error');return;}
-    rows.push([date,'','IN',item,qty,tr.querySelector('.fab-unit').value,loc,remarks,user]);
+    const fu=tr.querySelector('.fab-unit').value;
+    const cv=resolveRowUnits(tr,item,qty,fu,0);
+    if(!cv.ok){toast(`❌ "${fu}" cannot be converted to ${cv.stock} for "${item}" — add a conversion in Settings → Units`,'error');return;}
+    rows.push([date,'','IN',item,cv.qty,cv.unit,loc,remarks,user]);
   }
   if(!rows.length){toast('Add at least one fabricated item','error');return;}
   try{
@@ -1889,7 +2154,7 @@ function openAllocate(voucher){
   box.innerHTML=`
     <div style="font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">➡ Materials Consumed (Out)</div>
     <div class="tbl-wrap"><table class="row-table">
-      <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>Item</th><th>Available</th><th>Qty</th><th>Unit</th><th>In Stock Unit</th><th></th></tr></thead>
       <tbody id="allocrows-${esc(voucher)}"></tbody>
     </table></div>
     <div class="btn-row">
@@ -1909,14 +2174,19 @@ function addAllocRow(voucher){
     <td><select class="al-item item-sel" onchange="onAllocItemChange(this,'${esc(voucher)}')">${opts}</select></td>
     <td class="al-avail" style="font-size:12px;color:var(--text3);white-space:nowrap">—</td>
     <td><input type="number" class="al-qty qty-input" min="0" step="0.01" placeholder="0" oninput="checkConvStock(this)"></td>
-    <td><input type="text" class="al-unit unit-inp" style="width:70px" placeholder="Unit"></td>
+    <td><select class="al-unit unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
     <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px" onclick="this.closest('tr').remove()">✕</button></td>`;
   tbody.appendChild(tr);
+  fillUnitSelect(tr);
+  tr.querySelector('.al-qty')?.addEventListener('input',function(){ updateConv(tr); });
 }
 
 function onAllocItemChange(sel,voucher){
   const tr=sel.closest('tr');
-  tr.querySelector('.al-unit').value=unitOf(sel.value);
+  const au=tr.querySelector('.al-unit');
+  if(au) au.innerHTML=unitOptions(unitOf(sel.value));
+  updateConv(tr);
   const fab=FAB_DATA.find(x=>x.voucher===voucher)||{};
   const loc=fab.location||'Main Store';
   const cell=tr.querySelector('.al-avail');
@@ -1938,9 +2208,12 @@ async function saveAllocation(voucher,loc){
     if(!item&&!qty) continue;
     if(!item){toast('Select an item in every filled row','error');return;}
     if(!qty||qty<=0){toast(`Enter a quantity for "${item}"`,'error');return;}
+    const au=tr.querySelector('.al-unit').value;
+    const cv=resolveRowUnits(tr,item,qty,au,0);
+    if(!cv.ok){toast(`❌ "${au}" cannot be converted to ${cv.stock} for "${item}" — add a conversion in Settings → Units`,'error');return;}
     const av=parseFloat(tr.querySelector('.al-qty').dataset.available);
-    if(!isNaN(av)&&qty>av){toast(`❌ Only ${av} of "${item}" available at ${loc}`,'error');return;}
-    rows.push([date,voucher,'OUT',item,qty,tr.querySelector('.al-unit').value,loc,'Allocated to '+voucher,user]);
+    if(!isNaN(av)&&cv.qty>av){toast(`❌ Only ${av} ${cv.unit} of "${item}" available at ${loc}`,'error');return;}
+    rows.push([date,voucher,'OUT',item,cv.qty,cv.unit,loc,'Allocated to '+voucher,user]);
   }
   if(!rows.length){toast('Add at least one material','error');return;}
   try{
@@ -2625,7 +2898,8 @@ function addRow(type, prefill) {
     cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'purchase')">${itemOpts}</select></td>
       <td><input type="number" class="qty-input" min="0" placeholder="0" oninput="calcAmt(this)"></td>
-      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><select class="unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
       <td><input type="number" class="rate-inp" min="0" step="0.01" placeholder="0.00" oninput="calcAmt(this)"></td>
       <td><input type="number" class="amt-inp" min="0" step="0.01" placeholder="0.00" readonly style="color:var(--text3)"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
@@ -2634,14 +2908,16 @@ function addRow(type, prefill) {
       <td><select class="item-sel" onchange="fillUnit(this,'${type}');updateStock(this,'${type}')">${itemOpts}</select></td>
       <td class="stock-cell">—</td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><select class="unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   } else if(type==='consumption'){
     cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'consumption');updateStock(this,'consumption')">${itemOpts}</select></td>
       <td class="stock-cell">—</td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><select class="unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
       <td><input type="text" class="note-inp" placeholder="Notes"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   } else if(type==='subconreturn'){
@@ -2649,13 +2925,15 @@ function addRow(type, prefill) {
       <td><select class="item-sel" onchange="fillUnit(this,'subconreturn');updateStock(this,'subconreturn')">${itemOpts}</select></td>
       <td class="stock-cell">—</td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><select class="unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('subconreturn')">×</button></td>`;
   } else {
     cells=`<td>${idx}</td>
       <td><select class="item-sel" onchange="fillUnit(this,'${type}')">${itemOpts}</select></td>
       <td><input type="number" class="qty-input" min="0" placeholder="0"></td>
-      <td><input type="text" class="unit-inp" style="width:70px" placeholder="Unit"></td>
+      <td><select class="unit-inp" style="width:84px" onchange="updateConv(this.closest('tr'))"></select></td>
+      <td class="conv-cell" style="white-space:nowrap"></td>
       <td><button class="rm-row" onclick="this.closest('tr').remove();renum('${type}')">×</button></td>`;
   }
   tr.innerHTML=cells;
@@ -2673,6 +2951,16 @@ function addRow(type, prefill) {
   if(type==='transfer'||type==='issue'||type==='consumption'||type==='subconreturn'){
     tr.querySelector('.qty-input').addEventListener('input',function(){ checkStock(this); });
   }
+  fillUnitSelect(tr, prefill&&prefill.unit);
+  tr.querySelector('.qty-input')?.addEventListener('input',function(){ updateConv(tr); });
+}
+
+// Fill a row's unit <select> from Unit Master, keeping any current value
+function fillUnitSelect(tr, preset){
+  const u=tr.querySelector('.unit-inp,.fab-unit,.al-unit');
+  if(!u||u.tagName!=='SELECT') return;
+  u.innerHTML=unitOptions(preset||u.value||'');
+  updateConv(tr);
 }
 
 function renum(type){
@@ -2687,8 +2975,12 @@ function fillUnit(sel,type){
   const item=(MASTERS.items||[]).find(i=>i.name===name);
   const tr=sel.closest('tr');
   const u=tr.querySelector('.unit-inp');
-  if(u&&item) u.value=item.unit||'';
+  if(u&&item){
+    if(u.tagName==='SELECT') u.innerHTML=unitOptions(item.unit||'');
+    else u.value=item.unit||'';
+  }
   if((type==='transfer'||type==='issue')&&name) updateStock(sel,type);
+  updateConv(tr);
 }
 
 function calcAmt(el){
@@ -2749,8 +3041,19 @@ function getStock(item,loc,locType){
 function checkStock(input){
   // dataset.available is set by updateStock; -1 means "no site selected"
   const avail=parseFloat(input.dataset.available);
-  const qty=parseFloat(input.value)||0;
-  // Mark over-stock if: avail not set (NaN/0) and qty>0, OR qty exceeds avail
+  let qty=parseFloat(input.value)||0;
+  // Availability is held in the item's stock unit, so compare like with like:
+  // typing 1 MT against 500 Kg available must register as 1000, not 1.
+  const tr=input.closest('tr');
+  if(tr){
+    const item=tr.querySelector('.item-sel')?.value;
+    const entered=tr.querySelector('.unit-inp')?.value;
+    const stock=unitOf(item);
+    if(item&&entered&&stock){
+      const conv=convertQtyForItem(qty,entered,stock,item);
+      if(conv!==null) qty=conv;
+    }
+  }
   const isOver = (!isNaN(avail)) ? qty > avail : qty > 0;
   input.classList.toggle('over-stock', isOver);
 }
@@ -2821,16 +3124,37 @@ function setTxnBusy(type,busy){
   });
 }
 
+// Returns {qty, unit, rate} converted into the item's stock unit.
+// Rate is adjusted inversely so the amount is unchanged:
+//   41.25 MT @ ₹50,000 → 41,250 Kg @ ₹50   (same ₹20,62,500)
+function resolveRowUnits(tr, item, qty, unit, rate){
+  const stock=unitOf(item);
+  if(!item||!unit||!stock) return {qty:qty,unit:unit,rate:rate,ok:true};
+  const a=unitDef(unit), b=unitDef(stock);
+  if(a&&b&&a.unit===b.unit) return {qty:qty,unit:stock,rate:rate,ok:true};
+  const conv=convertQtyForItem(qty,unit,stock,item);
+  if(conv===null) return {qty:qty,unit:unit,rate:rate,ok:false,stock:stock};
+  const factor=qty?conv/qty:1;
+  return {qty:Math.round(conv*1000)/1000,unit:stock,
+          rate:rate?Math.round((rate/factor)*10000)/10000:rate, ok:true, converted:true};
+}
+
 async function saveTxn(type){
   const cfg={
     purchase:{sheet:'Purchase',
       hdr:()=>[v('pur-date'),v('pur-voucher'),v('pur-supplier'),null,null,null,null,null,v('pur-location'),v('pur-invoice'),v('pur-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||(q*rt);if(!i||!q)return null;if(!rt){toast('Rate is required for all items in Purchase','error');return'ABORT';}return[h[0],h[1],h[2],i,q,u,rt,a,h[8],h[9],h[10]];}},
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value,rt=parseFloat(tr.querySelector('.rate-inp')?.value)||0,a=parseFloat(tr.querySelector('.amt-inp')?.value)||(q*rt);if(!i||!q)return null;if(!rt){toast('Rate is required for all items in Purchase','error');return'ABORT';}
+        const cv=resolveRowUnits(tr,i,q,u,rt);
+        if(!cv.ok){toast(`❌ "${u}" cannot be converted to ${cv.stock} for "${i}" — add a conversion in Settings → Units`,'error');return'ABORT';}
+        return[h[0],h[1],h[2],i,cv.qty,cv.unit,cv.rate,a,h[8],h[9],h[10]];}},
     transfer:{sheet:'Transfer',
       hdr:()=>[v('trn-date'),v('trn-voucher'),v('trn-from'),v('trn-to'),null,null,null,
         v('trn-vehicle'),v('trn-driver'),v('trn-prepared'),v('trn-approved'),
         v('trn-delivered'),v('trn-received'),v('trn-delivery-date'),v('trn-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value;let q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const cv=resolveRowUnits(tr,i,q,u,0);
+        if(!cv.ok){toast(`❌ \"${u}\" cannot be converted to ${cv.stock} for \"${i}\" — add a conversion in Settings → Units`,'error');return'ABORT';}
+        q=cv.qty; u=cv.unit;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
         if(!isNaN(av)&&q>av){
@@ -2840,7 +3164,10 @@ async function saveTxn(type){
         return[h[0],h[1],h[2],h[3],i,q,u,h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14]];}},
     issue:{sheet:'Issue',
       hdr:()=>[v('iss-date'),v('iss-voucher'),v('iss-site'),v('iss-subcon'),null,null,null,v('iss-issuedby'),v('iss-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value;let q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const cv=resolveRowUnits(tr,i,q,u,0);
+        if(!cv.ok){toast(`❌ \"${u}\" cannot be converted to ${cv.stock} for \"${i}\" — add a conversion in Settings → Units`,'error');return'ABORT';}
+        q=cv.qty; u=cv.unit;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
         if(!isNaN(av)&&q>av){
@@ -2860,10 +3187,16 @@ async function saveTxn(type){
         return[h[0],h[1],h[2],h[3],i,q,u,n,h[8]];}},
     returns:{sheet:'Returns',
       hdr:()=>[v('ret-date'),v('ret-voucher'),v('ret-from'),v('ret-to'),null,null,null,v('ret-remarks')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value;let q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const cv=resolveRowUnits(tr,i,q,u,0);
+        if(!cv.ok){toast(`❌ \"${u}\" cannot be converted to ${cv.stock} for \"${i}\" — add a conversion in Settings → Units`,'error');return'ABORT';}
+        q=cv.qty; u=cv.unit;return[h[0],h[1],h[2],h[3],i,q,u,h[7]];}},
     subconreturn:{sheet:'SubconReturn',
       hdr:()=>[v('sr-date'),v('sr-voucher'),v('sr-site'),v('sr-subcon'),null,null,null,v('sr-reason')],
-      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value,q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+      row:(tr,h)=>{const i=tr.querySelector('.item-sel').value;let q=parseFloat(tr.querySelector('.qty-input').value)||0,u=tr.querySelector('.unit-inp').value;if(!i||!q)return null;
+        const cv=resolveRowUnits(tr,i,q,u,0);
+        if(!cv.ok){toast(`❌ \"${u}\" cannot be converted to ${cv.stock} for \"${i}\" — add a conversion in Settings → Units`,'error');return'ABORT';}
+        q=cv.qty; u=cv.unit;
         const qtyEl=tr.querySelector('.qty-input');
         const av=parseFloat(qtyEl.dataset.available);
         if(!isNaN(av)&&av>=0&&q>av){
@@ -4183,7 +4516,7 @@ function lockAsync(fnName){
 ['saveTxn','saveMaster','saveSiteMaster','saveProjectScope','saveSubconScope',
  'saveBOMRow','saveWP','saveWPEdit','reverseTxn',
  'saveVillage','decideApproval','decideApprovalFromCard',
- 'saveFabrication','saveAllocation'].forEach(lockAsync);
+ 'saveFabrication','saveAllocation','saveUnit','saveItemUnit'].forEach(lockAsync);
 </script>
 </body>
 </html>
